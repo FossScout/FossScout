@@ -621,12 +621,13 @@ Expected: compilation failure.
 private val Context.favouritesDataStore by preferencesDataStore(name = "favourites")
 
 class AppContainer(context: Context) {
-    private val json = Json { ignoreUnknownKeys = true }
     val favouritesRepository = FavouritesRepository(
-        DataStoreFavouritesStore(context.favouritesDataStore, json),
+        DataStoreFavouritesStore(context.favouritesDataStore),
     )
 }
 ```
+
+Add `implementation(libs.androidx.datastore.preferences)` to `app` because `AppContainer` provisions the DataStore; `DataStoreFavouritesStore` defaults its own preference key.
 
 `MainActivity` creates one `AppContainer` and passes it to `FossScoutApp`. `FossScoutApp` uses `viewModel(factory = viewModelFactory { initializer { ... } })` to construct `DiscoverViewModel(container.favouritesRepository, ProjectRepository())`; do not add a global service locator.
 
