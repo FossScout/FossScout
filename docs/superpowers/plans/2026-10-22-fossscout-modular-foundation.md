@@ -557,7 +557,7 @@ class FavouritesRepository(
 
 `add` updates an existing entry in place (preserving `createdAtEpochMillis`, note, tags) or appends a new one with `now()`. `updateNote` validates `MAX_NOTE_LENGTH` and updates `updatedAtEpochMillis`. `remove` filters by `appKey`. All writes call `store.save`.
 
-`DataStoreFavouritesStore` uses a `DataStore<Preferences>` with one string key and `Json { ignoreUnknownKeys = true }`. It decodes to `List<Favourite>` and encodes on save. A corrupt value returns an empty list rather than crashing.
+`DataStoreFavouritesStore` uses a `DataStore<Preferences>` with one string key and `Json { ignoreUnknownKeys = true }`. It stores a versioned envelope (`schemaVersion`, `favourites`) and rejects unknown versions. A corrupt or unknown-version value raises a typed format error instead of returning an empty list, so a later write cannot silently replace unreadable data. Add codec tests for round-trip, corrupt JSON, and unknown version.
 
 - [ ] **Step 4: Run the test and confirm it passes**
 
@@ -631,7 +631,7 @@ Add `implementation(libs.androidx.datastore.preferences)` to `app` because `AppC
 
 `MainActivity` creates one `AppContainer` and passes it to `FossScoutApp`. `FossScoutApp` uses `viewModel(factory = viewModelFactory { initializer { ... } })` to construct `DiscoverViewModel(container.favouritesRepository, ProjectRepository())`; do not add a global service locator.
 
-`FavouritesViewModel` exposes `StateFlow<FavouritesUiState>` with favourites, loading, and error. It collects `FavouritesRepository.favourites`. `FavouritesScreen` shows a list of `FavouriteCard` items with app name, optional note preview, a note edit action, and a remove action. `FavouriteNoteDialog` edits the note with a character counter and a save button.
+`FavouritesViewModel` exposes `StateFlow<FavouritesUiState>` with favourites, loading, read/write errors, and a rotation-safe editor state. It collects `FavouritesRepository.favourites`; a read failure shows a retryable error instead of an empty list. `FavouritesScreen` shows a list of `FavouriteCard` items with app name, optional note preview, a note edit action, and a remove action. `FavouriteNoteDialog` edits the note with a character counter and a save button; it stays open and shows an error if the write fails. `DiscoverViewModel` also exposes a visible saved-state error rather than silently treating a read failure as “nothing saved.”
 
 Connect the saved tab in `FossScoutApp`: replace the `DiscoverScreen(savedOnly = true)` branch with `FavouritesScreen` when `FeatureId.FAVOURITES` is enabled. If disabled, hide the Saved destination.
 
@@ -704,7 +704,7 @@ class FeatureSettingsRepository(private val store: FeatureSettingsStore) {
 
 Add `DataStoreFeatureSettingsStore` beside `DataStoreFavouritesStore` and expose it from `AppContainer` as `featureSettingsRepository`.
 
-`FeatureSettingsScreen` lists `FeatureState`s. Available features get a Switch; unavailable features show a localized title from `FeatureId`, an “Unavailable in this build” string from `strings.xml`, and localized labels for `state.missingCapabilities`. Do not display raw enum names. Use `FeatureRegistry` with the current profile and the repository's disabled set.
+`FeatureSettingsScreen` lists `FeatureState`s from a `FeatureSettingsUiState` with loading and read/write error fields. Available features get a Switch; unavailable features show a localized title from `FeatureId`, an “Unavailable in this build” string from `strings.xml`, and localized labels for `state.missingCapabilities`. Do not display raw enum names. Use `FeatureRegistry` with the current profile and the repository's disabled set. A failed settings write must not escape `viewModelScope`; keep the previous toggle state and show a localized error. Rethrow `CancellationException` in error handling.
 
 Add a Settings destination to the bottom navigation. If `FeatureId.SETTINGS` is disabled, hide it. Changing a toggle updates the registry state immediately.
 
