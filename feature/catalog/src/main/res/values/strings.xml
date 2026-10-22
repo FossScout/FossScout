@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discover_title">FossScout</string>
+    <string name="discover_subtitle">Scout the open-source ecosystem.</string>
+    <string name="discover_saved_title">Saved projects</string>
+    <string name="discover_saved_subtitle">The open-source tools you want to revisit.</string>
+    <string name="discover_search_placeholder">Search projects or tags</string>
+    <string name="discover_clear_search">Clear search</string>
+    <string name="discover_clear_filters">Clear filters</string>
+    <string name="discover_saved_state_read_error">Saved projects aren\'t available right now.</string>
+    <string name="discover_saved_state_write_error">Couldn\'t update saved projects.</string>
+    <string name="discover_retry">Retry</string>
+    <string name="discover_empty_nothing_saved_title">Nothing saved yet</string>
+    <string name="discover_empty_nothing_saved_body">Tap the heart on a project to keep it here.</string>
+    <string name="discover_empty_no_results_title">No projects found</string>
+    <string name="discover_empty_saved_no_match_body">Nothing in your saved list matches these filters.</string>
+    <string name="discover_empty_no_match_body">Try a different search term or category.</string>
+
+    <plurals name="discover_project_count">
+        <item quantity="one">%1$d project</item>
+        <item quantity="other">%1$d projects</item>
+    </plurals>
+</resources>

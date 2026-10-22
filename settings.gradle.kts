@@ -21,4 +21,13 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "FossScout"
-include(":app")
+include(
+    ":app",
+    ":core:model",
+    ":core:feature",
+    ":core:data",
+    ":core:ui",
+    ":feature:catalog",
+    ":feature:favourites",
+    ":feature:settings",
+)

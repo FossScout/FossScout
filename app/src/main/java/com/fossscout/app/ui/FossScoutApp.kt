@@ -3,12 +3,14 @@ package com.fossscout.app.ui
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -16,35 +18,87 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.fossscout.app.data.Project
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.fossscout.app.AppContainer
+import com.fossscout.app.R
+import com.fossscout.app.profile.ProfileFeatures
 import com.fossscout.app.ui.about.AboutScreen
-import com.fossscout.app.ui.discover.DiscoverScreen
-import com.fossscout.app.ui.discover.DiscoverViewModel
+import com.fossscout.core.feature.FeatureCatalog
+import com.fossscout.core.feature.FeatureId
+import com.fossscout.feature.catalog.data.Project
+import com.fossscout.feature.catalog.data.ProjectRepository
+import com.fossscout.feature.catalog.discover.DiscoverScreen
+import com.fossscout.feature.catalog.discover.DiscoverViewModel
+import com.fossscout.feature.favourites.FavouritesScreen
+import com.fossscout.feature.favourites.FavouritesViewModel
+import com.fossscout.feature.settings.FeatureSettingsScreen
+import com.fossscout.feature.settings.FeatureSettingsViewModel
 
 private enum class AppDestination(
-    val label: String,
+    val featureId: FeatureId?,
+    @StringRes val labelRes: Int,
     val icon: ImageVector,
 ) {
-    DISCOVER("Discover", Icons.Filled.Search),
-    SAVED("Saved", Icons.Filled.Favorite),
-    ABOUT("About", Icons.Filled.Info),
+    DISCOVER(null, R.string.nav_discover, Icons.Filled.Search),
+    SAVED(FeatureId.FAVOURITES, R.string.nav_saved, Icons.Filled.Favorite),
+    SETTINGS(FeatureId.SETTINGS, R.string.nav_settings, Icons.Filled.Settings),
+    ABOUT(null, R.string.nav_about, Icons.Filled.Info),
 }
 
 @Composable
 fun FossScoutApp(
-    discoverViewModel: DiscoverViewModel = viewModel(),
+    container: AppContainer,
+    discoverViewModel: DiscoverViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                DiscoverViewModel(
+                    favouritesRepository = container.favouritesRepository,
+                    projectRepository = ProjectRepository(),
+                )
+            }
+        },
+    ),
 ) {
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
-    val destinations = AppDestination.entries
-    val destination = destinations[selectedIndex]
+    val featureDescriptors = remember {
+        FeatureCatalog.all.filter { it.id in ProfileFeatures.enabledFeatures }
+    }
+    val featureSettingsViewModel: FeatureSettingsViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                FeatureSettingsViewModel(
+                    repository = container.featureSettingsRepository,
+                    profile = ProfileFeatures.profile,
+                    descriptors = featureDescriptors,
+                )
+            }
+        },
+    )
+    val featureSettingsState by featureSettingsViewModel.uiState.collectAsStateWithLifecycle()
+    val featureStates = featureSettingsState.states
+    val enabledFeatures = remember(featureStates) {
+        featureStates.filter { it.enabled }.map { it.descriptor.id }.toSet()
+    }
+    val favouritesEnabled = FeatureId.FAVOURITES in enabledFeatures
+    val destinations = remember(enabledFeatures) {
+        AppDestination.entries.filter { destination ->
+            destination.featureId == null || destination.featureId in enabledFeatures
+        }
+    }
+
+    var selectedDestination by rememberSaveable { mutableStateOf(AppDestination.DISCOVER.name) }
+    val destination = destinations.firstOrNull { it.name == selectedDestination }
+        ?: destinations.first()
     val state by discoverViewModel.uiState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
@@ -53,17 +107,18 @@ fun FossScoutApp(
     Scaffold(
         bottomBar = {
             NavigationBar {
-                destinations.forEachIndexed { index, item ->
+                destinations.forEach { item ->
+                    val label = stringResource(item.labelRes)
                     NavigationBarItem(
-                        selected = index == selectedIndex,
-                        onClick = { selectedIndex = index },
+                        selected = item == destination,
+                        onClick = { selectedDestination = item.name },
                         icon = {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = item.label,
+                                contentDescription = label,
                             )
                         },
-                        label = { Text(item.label) },
+                        label = { Text(label) },
                     )
                 }
             }
@@ -83,20 +138,41 @@ fun FossScoutApp(
                 onClearFilters = discoverViewModel::clearFilters,
                 onOpenProject = openProject,
                 modifier = screenModifier,
+                showSaveAction = favouritesEnabled,
+                onRetrySavedState = discoverViewModel::retrySavedState,
             )
 
-            AppDestination.SAVED -> DiscoverScreen(
-                state = state,
-                savedOnly = true,
-                onQueryChange = discoverViewModel::onQueryChange,
-                onCategorySelected = discoverViewModel::onCategorySelected,
-                onToggleSaved = discoverViewModel::onToggleSaved,
-                onClearFilters = discoverViewModel::clearFilters,
-                onOpenProject = openProject,
-                modifier = screenModifier,
-            )
+            AppDestination.SAVED -> {
+                val favouritesViewModel: FavouritesViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer {
+                            FavouritesViewModel(container.favouritesRepository)
+                        }
+                    },
+                )
+                val favouritesState by favouritesViewModel.uiState.collectAsStateWithLifecycle()
+
+                FavouritesScreen(
+                    state = favouritesState,
+                    onRemove = favouritesViewModel::remove,
+                    onEditNote = favouritesViewModel::openNote,
+                    onNoteDraftChange = favouritesViewModel::updateNoteDraft,
+                    onSaveNote = favouritesViewModel::saveNote,
+                    onDismissEditor = favouritesViewModel::dismissEditor,
+                    onRetry = favouritesViewModel::retry,
+                    onDismissError = favouritesViewModel::dismissError,
+                    modifier = screenModifier,
+                )
+            }
 
             AppDestination.ABOUT -> AboutScreen(modifier = screenModifier)
+
+            AppDestination.SETTINGS -> FeatureSettingsScreen(
+                uiState = featureSettingsState,
+                onToggle = featureSettingsViewModel::setEnabled,
+                onDismissError = featureSettingsViewModel::dismissError,
+                modifier = screenModifier,
+            )
         }
     }
 }
