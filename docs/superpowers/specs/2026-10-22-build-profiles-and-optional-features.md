@@ -51,13 +51,17 @@ Every optional feature module exposes a declaration like:
 ```kotlin
 data class FeatureDescriptor(
     val id: String,
-    val title: String,
     val availability: Availability,
     val requiredCapabilities: Set<Capability>,
+    val enhancedBy: Set<Capability> = emptySet(),
     val defaultEnabled: Boolean,
     val settings: List<FeatureSetting>,
 )
 ```
+
+`FeatureDescriptor` is data-only. User-facing titles and explanations live in
+`strings.xml` and are mapped from the feature ID by the UI layer; the domain
+module carries no localization resources.
 
 `Availability` values:
 
