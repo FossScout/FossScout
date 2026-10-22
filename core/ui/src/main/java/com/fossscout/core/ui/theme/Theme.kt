@@ -1,4 +1,4 @@
-package com.fossscout.app.ui.theme
+package com.fossscout.core.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

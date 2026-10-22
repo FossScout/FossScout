@@ -1,4 +1,4 @@
-package com.fossscout.app.ui.theme
+package com.fossscout.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

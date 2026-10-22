@@ -1,9 +1,9 @@
-package com.fossscout.app.ui.discover
+package com.fossscout.feature.catalog.discover
 
 import androidx.lifecycle.ViewModel
-import com.fossscout.app.data.Project
-import com.fossscout.app.data.ProjectCategory
-import com.fossscout.app.data.ProjectRepository
+import com.fossscout.feature.catalog.data.Project
+import com.fossscout.feature.catalog.data.ProjectCategory
+import com.fossscout.feature.catalog.data.ProjectRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

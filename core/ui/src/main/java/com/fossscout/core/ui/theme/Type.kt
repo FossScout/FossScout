@@ -1,4 +1,4 @@
-package com.fossscout.app.ui.theme
+package com.fossscout.core.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

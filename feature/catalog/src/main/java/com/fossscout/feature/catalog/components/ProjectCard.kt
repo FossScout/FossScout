@@ -1,4 +1,4 @@
-package com.fossscout.app.ui.components
+package com.fossscout.feature.catalog.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.fossscout.app.data.Project
+import com.fossscout.feature.catalog.data.Project
 
 @Composable
 fun ProjectCard(

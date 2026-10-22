@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.fossscout.app.ui.FossScoutApp
-import com.fossscout.app.ui.theme.FossScoutTheme
+import com.fossscout.core.ui.theme.FossScoutTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

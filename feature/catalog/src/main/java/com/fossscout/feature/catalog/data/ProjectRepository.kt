@@ -1,4 +1,4 @@
-package com.fossscout.app.data
+package com.fossscout.feature.catalog.data
 
 /**
  * Single access point for project data. Keeping this behind a repository makes it

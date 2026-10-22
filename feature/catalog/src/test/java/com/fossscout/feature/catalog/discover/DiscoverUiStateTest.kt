@@ -1,7 +1,7 @@
-package com.fossscout.app.ui.discover
+package com.fossscout.feature.catalog.discover
 
-import com.fossscout.app.data.ProjectCategory
-import com.fossscout.app.data.SampleProjects
+import com.fossscout.feature.catalog.data.ProjectCategory
+import com.fossscout.feature.catalog.data.SampleProjects
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

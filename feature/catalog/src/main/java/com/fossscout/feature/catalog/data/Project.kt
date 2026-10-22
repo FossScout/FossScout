@@ -1,4 +1,4 @@
-package com.fossscout.app.data
+package com.fossscout.feature.catalog.data
 
 /**
  * Broad groups used to filter the catalog. [ALL] is a UI-only sentinel and is not

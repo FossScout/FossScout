@@ -1,4 +1,4 @@
-package com.fossscout.app.ui.discover
+package com.fossscout.feature.catalog.discover
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -38,11 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.fossscout.app.data.Project
-import com.fossscout.app.data.ProjectCategory
-import com.fossscout.app.data.SampleProjects
-import com.fossscout.app.ui.components.ProjectCard
-import com.fossscout.app.ui.theme.FossScoutTheme
+import com.fossscout.core.ui.theme.FossScoutTheme
+import com.fossscout.feature.catalog.components.ProjectCard
+import com.fossscout.feature.catalog.data.Project
+import com.fossscout.feature.catalog.data.ProjectCategory
+import com.fossscout.feature.catalog.data.SampleProjects
 
 @Composable
 fun DiscoverScreen(

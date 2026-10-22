@@ -24,13 +24,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.fossscout.app.data.Project
 import com.fossscout.app.profile.ProfileFeatures
 import com.fossscout.app.ui.about.AboutScreen
-import com.fossscout.app.ui.discover.DiscoverScreen
-import com.fossscout.app.ui.discover.DiscoverViewModel
 import com.fossscout.core.feature.FeatureCatalog
 import com.fossscout.core.feature.FeatureRegistry
+import com.fossscout.feature.catalog.data.Project
+import com.fossscout.feature.catalog.discover.DiscoverScreen
+import com.fossscout.feature.catalog.discover.DiscoverViewModel
 
 private enum class AppDestination(
     val label: String,

@@ -1,4 +1,4 @@
-package com.fossscout.app.data
+package com.fossscout.feature.catalog.data
 
 /**
  * Bundled sample catalog. Replace this with a network-backed repository later
