@@ -25,9 +25,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fossscout.app.data.Project
+import com.fossscout.app.profile.ProfileFeatures
 import com.fossscout.app.ui.about.AboutScreen
 import com.fossscout.app.ui.discover.DiscoverScreen
 import com.fossscout.app.ui.discover.DiscoverViewModel
+import com.fossscout.core.feature.FeatureCatalog
+import com.fossscout.core.feature.FeatureRegistry
 
 private enum class AppDestination(
     val label: String,
@@ -46,6 +49,9 @@ fun FossScoutApp(
     val destinations = AppDestination.entries
     val destination = destinations[selectedIndex]
     val state by discoverViewModel.uiState.collectAsStateWithLifecycle()
+
+    val descriptors = FeatureCatalog.all.filter { it.id in ProfileFeatures.enabledFeatures }
+    val registry = FeatureRegistry(ProfileFeatures.profile, descriptors)
 
     val context = LocalContext.current
     val openProject: (Project) -> Unit = { project -> context.openWebsite(project.website) }

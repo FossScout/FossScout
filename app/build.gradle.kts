@@ -31,6 +31,19 @@ android {
         }
     }
 
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("playstore") {
+            dimension = "distribution"
+            applicationId = "com.fossscout.app"
+        }
+        create("fdroid") {
+            dimension = "distribution"
+            applicationId = "com.fossscout.app.fdroid"
+            versionNameSuffix = "-fdroid"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -52,6 +65,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:feature"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
