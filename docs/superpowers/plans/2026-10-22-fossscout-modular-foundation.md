@@ -467,6 +467,7 @@ git commit -m "refactor: extract catalog and design system modules"
 - Create: `core/data/src/main/java/com/fossscout/core/data/FavouritesStore.kt`
 - Create: `core/data/src/main/java/com/fossscout/core/data/DataStoreFavouritesStore.kt`
 - Create: `core/data/src/main/java/com/fossscout/core/data/FavouritesRepository.kt`
+- Modify: `core/data/build.gradle.kts`
 - Test: `core/data/src/test/java/com/fossscout/core/data/FavouritesRepositoryTest.kt`
 
 **Interfaces:**
@@ -659,6 +660,7 @@ git commit -m "feat: add favourites UI with private notes"
 - Create: `core/data/src/main/java/com/fossscout/core/data/FeatureSettingsRepository.kt`
 - Create: `feature/settings/src/main/java/com/fossscout/feature/settings/FeatureSettingsScreen.kt`
 - Create: `feature/settings/src/main/java/com/fossscout/feature/settings/FeatureSettingsViewModel.kt`
+- Modify: `core/data/build.gradle.kts`
 - Test: `core/data/src/test/java/com/fossscout/core/data/FeatureSettingsRepositoryTest.kt`
 - Modify: `app/src/main/java/com/fossscout/app/AppContainer.kt`
 - Modify: `app/src/main/java/com/fossscout/app/ui/FossScoutApp.kt`
