@@ -37,6 +37,7 @@ fun ProjectCard(
     onToggleSaved: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    showSaveAction: Boolean = true,
 ) {
     Card(
         modifier = modifier
@@ -63,20 +64,26 @@ fun ProjectCard(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                IconButton(onClick = onToggleSaved) {
-                    Icon(
-                        imageVector = if (isSaved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                        contentDescription = if (isSaved) {
-                            "Remove ${project.name} from saved projects"
-                        } else {
-                            "Save ${project.name}"
-                        },
-                        tint = if (isSaved) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        },
-                    )
+                if (showSaveAction) {
+                    IconButton(onClick = onToggleSaved) {
+                        Icon(
+                            imageVector = if (isSaved) {
+                                Icons.Filled.Favorite
+                            } else {
+                                Icons.Filled.FavoriteBorder
+                            },
+                            contentDescription = if (isSaved) {
+                                "Remove ${project.name} from saved projects"
+                            } else {
+                                "Save ${project.name}"
+                            },
+                            tint = if (isSaved) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                    }
                 }
             }
 

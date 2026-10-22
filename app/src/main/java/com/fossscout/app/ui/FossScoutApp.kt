@@ -15,8 +15,10 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -24,34 +26,75 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.fossscout.app.AppContainer
 import com.fossscout.app.profile.ProfileFeatures
 import com.fossscout.app.ui.about.AboutScreen
 import com.fossscout.core.feature.FeatureCatalog
+import com.fossscout.core.feature.FeatureId
 import com.fossscout.core.feature.FeatureRegistry
 import com.fossscout.feature.catalog.data.Project
+import com.fossscout.feature.catalog.data.ProjectRepository
 import com.fossscout.feature.catalog.discover.DiscoverScreen
 import com.fossscout.feature.catalog.discover.DiscoverViewModel
+import com.fossscout.feature.favourites.FavouritesScreen
+import com.fossscout.feature.favourites.FavouritesViewModel
 
 private enum class AppDestination(
+    val featureId: FeatureId?,
     val label: String,
     val icon: ImageVector,
 ) {
-    DISCOVER("Discover", Icons.Filled.Search),
-    SAVED("Saved", Icons.Filled.Favorite),
-    ABOUT("About", Icons.Filled.Info),
+    DISCOVER(null, "Discover", Icons.Filled.Search),
+    SAVED(FeatureId.FAVOURITES, "Saved", Icons.Filled.Favorite),
+    ABOUT(null, "About", Icons.Filled.Info),
 }
 
 @Composable
 fun FossScoutApp(
-    discoverViewModel: DiscoverViewModel = viewModel(),
+    container: AppContainer,
+    discoverViewModel: DiscoverViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                DiscoverViewModel(
+                    favouritesRepository = container.favouritesRepository,
+                    projectRepository = ProjectRepository(),
+                )
+            }
+        },
+    ),
 ) {
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
-    val destinations = AppDestination.entries
-    val destination = destinations[selectedIndex]
-    val state by discoverViewModel.uiState.collectAsStateWithLifecycle()
+    val registry = remember {
+        FeatureRegistry(
+            profile = ProfileFeatures.profile,
+            descriptors = FeatureCatalog.all.filter { it.id in ProfileFeatures.enabledFeatures },
+        )
+    }
+    val enabledFeatures = remember(registry) {
+        FeatureCatalog.all
+            .filter { it.id in ProfileFeatures.enabledFeatures }
+            .mapNotNull { descriptor ->
+                descriptor.id.takeIf { registry.state(descriptor.id).enabled }
+            }
+            .toSet()
+    }
+    val favouritesEnabled = FeatureId.FAVOURITES in enabledFeatures
+    val destinations = remember(enabledFeatures) {
+        AppDestination.entries.filter { destination ->
+            destination.featureId == null || destination.featureId in enabledFeatures
+        }
+    }
 
-    val descriptors = FeatureCatalog.all.filter { it.id in ProfileFeatures.enabledFeatures }
-    val registry = FeatureRegistry(ProfileFeatures.profile, descriptors)
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    LaunchedEffect(destinations.size) {
+        if (selectedIndex > destinations.lastIndex) {
+            selectedIndex = destinations.lastIndex
+        }
+    }
+    val safeIndex = selectedIndex.coerceIn(0, destinations.lastIndex)
+    val destination = destinations[safeIndex]
+    val state by discoverViewModel.uiState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val openProject: (Project) -> Unit = { project -> context.openWebsite(project.website) }
@@ -61,7 +104,7 @@ fun FossScoutApp(
             NavigationBar {
                 destinations.forEachIndexed { index, item ->
                     NavigationBarItem(
-                        selected = index == selectedIndex,
+                        selected = index == safeIndex,
                         onClick = { selectedIndex = index },
                         icon = {
                             Icon(
@@ -89,18 +132,26 @@ fun FossScoutApp(
                 onClearFilters = discoverViewModel::clearFilters,
                 onOpenProject = openProject,
                 modifier = screenModifier,
+                showSaveAction = favouritesEnabled,
             )
 
-            AppDestination.SAVED -> DiscoverScreen(
-                state = state,
-                savedOnly = true,
-                onQueryChange = discoverViewModel::onQueryChange,
-                onCategorySelected = discoverViewModel::onCategorySelected,
-                onToggleSaved = discoverViewModel::onToggleSaved,
-                onClearFilters = discoverViewModel::clearFilters,
-                onOpenProject = openProject,
-                modifier = screenModifier,
-            )
+            AppDestination.SAVED -> {
+                val favouritesViewModel: FavouritesViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer {
+                            FavouritesViewModel(container.favouritesRepository)
+                        }
+                    },
+                )
+                val favouritesState by favouritesViewModel.uiState.collectAsStateWithLifecycle()
+
+                FavouritesScreen(
+                    state = favouritesState,
+                    onRemove = favouritesViewModel::remove,
+                    onSaveNote = favouritesViewModel::saveNote,
+                    modifier = screenModifier,
+                )
+            }
 
             AppDestination.ABOUT -> AboutScreen(modifier = screenModifier)
         }

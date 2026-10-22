@@ -8,12 +8,14 @@ import com.fossscout.app.ui.FossScoutApp
 import com.fossscout.core.ui.theme.FossScoutTheme
 
 class MainActivity : ComponentActivity() {
+    private val container by lazy { AppContainer(applicationContext) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             FossScoutTheme {
-                FossScoutApp()
+                FossScoutApp(container = container)
             }
         }
     }

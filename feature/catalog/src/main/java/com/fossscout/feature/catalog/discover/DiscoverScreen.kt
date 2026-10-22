@@ -50,10 +50,11 @@ fun DiscoverScreen(
     savedOnly: Boolean,
     onQueryChange: (String) -> Unit,
     onCategorySelected: (ProjectCategory?) -> Unit,
-    onToggleSaved: (String) -> Unit,
+    onToggleSaved: (Project) -> Unit,
     onClearFilters: () -> Unit,
     onOpenProject: (Project) -> Unit,
     modifier: Modifier = Modifier,
+    showSaveAction: Boolean = true,
 ) {
     val visibleProjects = remember(state, savedOnly) { state.visibleProjects(savedOnly) }
     val filtersActive = state.query.isNotBlank() || state.category != null
@@ -183,8 +184,9 @@ fun DiscoverScreen(
                     ProjectCard(
                         project = project,
                         isSaved = project.id in state.savedIds,
-                        onToggleSaved = { onToggleSaved(project.id) },
+                        onToggleSaved = { onToggleSaved(project) },
                         onClick = { onOpenProject(project) },
+                        showSaveAction = showSaveAction,
                     )
                 }
             }
