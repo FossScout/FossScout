@@ -1,6 +1,6 @@
 # FossScout — Feature Scope and Distribution Design
 
-Status: **Draft — decisions in progress**
+Status: **Draft — v1 modular foundation implemented; inventory, matching, and store features remain pending (not yet approved)**
 Date: 2026-10-22
 Owners: product + engineering (to be confirmed)
 
