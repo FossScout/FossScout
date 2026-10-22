@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.core)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

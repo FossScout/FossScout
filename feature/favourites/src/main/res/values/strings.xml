@@ -4,6 +4,13 @@
     <string name="favourites_subtitle">The open-source tools you want to revisit.</string>
     <string name="favourites_empty_title">Nothing saved yet</string>
     <string name="favourites_empty_body">Tap the heart on a project to keep it here.</string>
+    <string name="favourites_loading">Loading saved projects…</string>
+    <string name="favourites_error_read">Couldn\'t load saved projects</string>
+    <string name="favourites_error_read_body">Your saved projects are still on this device. Try loading them again.</string>
+    <string name="favourites_error_save">Couldn\'t save your note.</string>
+    <string name="favourites_error_remove">Couldn\'t remove the saved project.</string>
+    <string name="favourites_retry">Retry</string>
+    <string name="favourites_dismiss">Dismiss</string>
     <string name="favourite_edit_note">Edit note for %1$s</string>
     <string name="favourite_remove">Remove %1$s from saved projects</string>
     <string name="favourite_note_label">Private note</string>
@@ -11,6 +18,9 @@
     <string name="note_dialog_label">Private note</string>
     <string name="note_dialog_hint">Only stored on this device. Notes are never shared.</string>
     <string name="note_dialog_counter">%1$d/%2$d characters</string>
+    <string name="note_dialog_too_long">Notes can be at most %1$d characters.</string>
+    <string name="note_dialog_save_error">Couldn\'t save your note. Try again.</string>
     <string name="note_dialog_save">Save</string>
+    <string name="note_dialog_saving">Saving…</string>
     <string name="note_dialog_cancel">Cancel</string>
 </resources>

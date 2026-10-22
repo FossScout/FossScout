@@ -2,6 +2,10 @@
 <resources>
     <string name="settings_title">Settings</string>
     <string name="settings_subtitle">Choose which features appear in FossScout.</string>
+    <string name="settings_loading">Loading settings…</string>
+    <string name="settings_error_read">Couldn\'t load your settings. Showing defaults.</string>
+    <string name="settings_error_write">Couldn\'t save that change.</string>
+    <string name="settings_dismiss">Dismiss</string>
     <string name="settings_unavailable_in_build">Unavailable in this build</string>
     <string name="settings_missing_capabilities">Needs: %1$s</string>
     <string name="settings_always_available">Always available</string>

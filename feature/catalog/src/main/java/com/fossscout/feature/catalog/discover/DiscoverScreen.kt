@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -35,10 +34,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fossscout.core.ui.theme.FossScoutTheme
+import com.fossscout.feature.catalog.R
 import com.fossscout.feature.catalog.components.ProjectCard
 import com.fossscout.feature.catalog.data.Project
 import com.fossscout.feature.catalog.data.ProjectCategory
@@ -55,9 +57,12 @@ fun DiscoverScreen(
     onOpenProject: (Project) -> Unit,
     modifier: Modifier = Modifier,
     showSaveAction: Boolean = true,
+    onRetrySavedState: () -> Unit = {},
 ) {
     val visibleProjects = remember(state, savedOnly) { state.visibleProjects(savedOnly) }
     val filtersActive = state.query.isNotBlank() || state.category != null
+    val savedStateReady = !state.isSavedStateLoading &&
+        state.savedStateError != DiscoverSavedError.READ_FAILED
 
     Column(
         modifier = modifier
@@ -68,17 +73,21 @@ fun DiscoverScreen(
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
         ) {
             Text(
-                text = if (savedOnly) "Saved projects" else "FossScout",
+                text = stringResource(
+                    if (savedOnly) R.string.discover_saved_title else R.string.discover_title,
+                ),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = if (savedOnly) {
-                    "The open-source tools you want to revisit."
-                } else {
-                    "Scout the open-source ecosystem."
-                },
+                text = stringResource(
+                    if (savedOnly) {
+                        R.string.discover_saved_subtitle
+                    } else {
+                        R.string.discover_subtitle
+                    },
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -87,7 +96,7 @@ fun DiscoverScreen(
                 value = state.query,
                 onValueChange = onQueryChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search projects or tags") },
+                placeholder = { Text(stringResource(R.string.discover_search_placeholder)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Search,
@@ -99,7 +108,7 @@ fun DiscoverScreen(
                         IconButton(onClick = { onQueryChange("") }) {
                             Icon(
                                 imageVector = Icons.Filled.Close,
-                                contentDescription = "Clear search",
+                                contentDescription = stringResource(R.string.discover_clear_search),
                             )
                         }
                     }
@@ -114,6 +123,13 @@ fun DiscoverScreen(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
                 ),
+            )
+        }
+
+        state.savedStateError?.let { error ->
+            SavedStateBanner(
+                error = error,
+                onRetry = onRetrySavedState,
             )
         }
 
@@ -149,14 +165,18 @@ fun DiscoverScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = projectCountLabel(visibleProjects.size),
+                text = pluralStringResource(
+                    R.plurals.discover_project_count,
+                    visibleProjects.size,
+                    visibleProjects.size,
+                ),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.weight(1f))
             if (filtersActive) {
                 TextButton(onClick = onClearFilters) {
-                    Text("Clear filters")
+                    Text(stringResource(R.string.discover_clear_filters))
                 }
             }
         }
@@ -164,7 +184,7 @@ fun DiscoverScreen(
         if (visibleProjects.isEmpty()) {
             EmptyState(
                 savedOnly = savedOnly,
-                hasSavedProjects = state.savedIds.isNotEmpty(),
+                hasSavedProjects = savedStateReady && state.savedIds.isNotEmpty(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -186,8 +206,48 @@ fun DiscoverScreen(
                         isSaved = project.id in state.savedIds,
                         onToggleSaved = { onToggleSaved(project) },
                         onClick = { onOpenProject(project) },
-                        showSaveAction = showSaveAction,
+                        showSaveAction = showSaveAction && savedStateReady,
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SavedStateBanner(
+    error: DiscoverSavedError,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.errorContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 14.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(
+                    when (error) {
+                        DiscoverSavedError.READ_FAILED ->
+                            R.string.discover_saved_state_read_error
+
+                        DiscoverSavedError.WRITE_FAILED ->
+                            R.string.discover_saved_state_write_error
+                    },
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.weight(1f),
+            )
+            if (error == DiscoverSavedError.READ_FAILED) {
+                TextButton(onClick = onRetry) {
+                    Text(stringResource(R.string.discover_retry))
                 }
             }
         }
@@ -222,16 +282,24 @@ private fun EmptyState(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = if (nothingSaved) "Nothing saved yet" else "No projects found",
+            text = stringResource(
+                if (nothingSaved) {
+                    R.string.discover_empty_nothing_saved_title
+                } else {
+                    R.string.discover_empty_no_results_title
+                },
+            ),
             style = MaterialTheme.typography.titleMedium,
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = when {
-                nothingSaved -> "Tap the heart on a project to keep it here."
-                savedOnly -> "Nothing in your saved list matches these filters."
-                else -> "Try a different search term or category."
-            },
+            text = stringResource(
+                when {
+                    nothingSaved -> R.string.discover_empty_nothing_saved_body
+                    savedOnly -> R.string.discover_empty_saved_no_match_body
+                    else -> R.string.discover_empty_no_match_body
+                },
+            ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -239,15 +307,15 @@ private fun EmptyState(
     }
 }
 
-private fun projectCountLabel(count: Int): String =
-    if (count == 1) "1 project" else "$count projects"
-
 @Preview(showBackground = true)
 @Composable
 private fun DiscoverScreenPreview() {
     FossScoutTheme {
         DiscoverScreen(
-            state = DiscoverUiState(projects = SampleProjects),
+            state = DiscoverUiState(
+                projects = SampleProjects,
+                isSavedStateLoading = false,
+            ),
             savedOnly = false,
             onQueryChange = {},
             onCategorySelected = {},

@@ -1,6 +1,7 @@
 package com.fossscout.core.data
 
 import com.fossscout.core.model.AppKey
+import com.fossscout.core.model.StoreId
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -47,5 +48,39 @@ class FavouritesRepositoryTest {
         repository.add(AppKey("a"), "A")
         val result = runCatching { repository.updateNote(AppKey("a"), "x".repeat(4_001)) }
         assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `adding an existing favourite preserves its preferred store when none is supplied`() = runTest {
+        repository.add(AppKey("a"), "A", preferredStoreId = StoreId("fdroid"))
+        repository.add(AppKey("a"), "A renamed")
+
+        assertEquals(
+            StoreId("fdroid"),
+            repository.favourites.first().single().preferredStoreId,
+        )
+    }
+
+    @Test
+    fun `new favourite captures one timestamp for creation and update`() = runTest {
+        var tick = 0L
+        val repository = FavouritesRepository(store, now = { tick++ })
+
+        val favourite = repository.add(AppKey("a"), "A")
+
+        assertEquals(favourite.createdAtEpochMillis, favourite.updatedAtEpochMillis)
+    }
+
+    @Test
+    fun `add does not overwrite data that could not be read`() = runTest {
+        val unreadableStore = FakeFavouritesStore(
+            readError = FavouritesFormatException("corrupt"),
+        )
+        val repository = FavouritesRepository(unreadableStore)
+
+        val result = runCatching { repository.add(AppKey("a"), "A") }
+
+        assertTrue(result.isFailure)
+        assertEquals(0, unreadableStore.saveCalls)
     }
 }

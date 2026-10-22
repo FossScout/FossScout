@@ -84,7 +84,8 @@ fun FossScoutApp(
             }
         },
     )
-    val featureStates by featureSettingsViewModel.states.collectAsStateWithLifecycle()
+    val featureSettingsState by featureSettingsViewModel.uiState.collectAsStateWithLifecycle()
+    val featureStates = featureSettingsState.states
     val enabledFeatures = remember(featureStates) {
         featureStates.filter { it.enabled }.map { it.descriptor.id }.toSet()
     }
@@ -138,6 +139,7 @@ fun FossScoutApp(
                 onOpenProject = openProject,
                 modifier = screenModifier,
                 showSaveAction = favouritesEnabled,
+                onRetrySavedState = discoverViewModel::retrySavedState,
             )
 
             AppDestination.SAVED -> {
@@ -153,7 +155,12 @@ fun FossScoutApp(
                 FavouritesScreen(
                     state = favouritesState,
                     onRemove = favouritesViewModel::remove,
+                    onEditNote = favouritesViewModel::openNote,
+                    onNoteDraftChange = favouritesViewModel::updateNoteDraft,
                     onSaveNote = favouritesViewModel::saveNote,
+                    onDismissEditor = favouritesViewModel::dismissEditor,
+                    onRetry = favouritesViewModel::retry,
+                    onDismissError = favouritesViewModel::dismissError,
                     modifier = screenModifier,
                 )
             }
@@ -161,8 +168,9 @@ fun FossScoutApp(
             AppDestination.ABOUT -> AboutScreen(modifier = screenModifier)
 
             AppDestination.SETTINGS -> FeatureSettingsScreen(
-                states = featureStates,
+                uiState = featureSettingsState,
                 onToggle = featureSettingsViewModel::setEnabled,
+                onDismissError = featureSettingsViewModel::dismissError,
                 modifier = screenModifier,
             )
         }

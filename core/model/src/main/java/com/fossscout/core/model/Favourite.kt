@@ -3,6 +3,7 @@ package com.fossscout.core.model
 import kotlinx.serialization.Serializable
 
 const val MAX_NOTE_LENGTH = 4_000
+const val FAVOURITES_SCHEMA_VERSION = 1
 
 @Serializable
 data class Favourite(
@@ -13,6 +14,7 @@ data class Favourite(
     val tags: Set<String> = emptySet(),
     val createdAtEpochMillis: Long,
     val updatedAtEpochMillis: Long,
+    val schemaVersion: Int = FAVOURITES_SCHEMA_VERSION,
 ) {
     fun validate() {
         require(note.length <= MAX_NOTE_LENGTH) { "Note is too long" }

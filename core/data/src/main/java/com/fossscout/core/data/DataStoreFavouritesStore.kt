@@ -7,26 +7,21 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.fossscout.core.model.Favourite
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 class DataStoreFavouritesStore(
     private val dataStore: DataStore<Preferences>,
     private val key: Preferences.Key<String> = stringPreferencesKey("favourites"),
+    private val codec: FavouritesCodec = FavouritesCodec(),
 ) : FavouritesStore {
-    private val json = Json { ignoreUnknownKeys = true }
-
     override val favourites: Flow<List<Favourite>> =
         dataStore.data.map { preferences ->
             val encoded = preferences[key] ?: return@map emptyList()
-            runCatching { json.decodeFromString<List<Favourite>>(encoded) }
-                .getOrDefault(emptyList())
+            codec.decode(encoded)
         }
 
     override suspend fun save(favourites: List<Favourite>) {
         dataStore.edit { preferences ->
-            preferences[key] = json.encodeToString(favourites)
+            preferences[key] = codec.encode(favourites)
         }
     }
 }

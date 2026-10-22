@@ -1,5 +1,6 @@
 package com.fossscout.feature.settings
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,9 +16,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,8 +34,9 @@ import com.fossscout.core.feature.FeatureState
 
 @Composable
 fun FeatureSettingsScreen(
-    states: List<FeatureState>,
+    uiState: FeatureSettingsUiState,
     onToggle: (FeatureId, Boolean) -> Unit,
+    onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -55,21 +60,83 @@ fun FeatureSettingsScreen(
             )
         }
 
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(
-                start = 20.dp,
-                end = 20.dp,
-                top = 4.dp,
-                bottom = 24.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            items(items = states, key = { it.descriptor.id.name }) { state ->
-                FeatureSettingsRow(
-                    state = state,
-                    onToggle = onToggle,
+        uiState.error?.let { error ->
+            FeatureSettingsErrorBanner(
+                message = stringResource(error.messageRes()),
+                onDismiss = onDismissError,
+            )
+        }
+
+        if (uiState.isLoading) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.settings_loading),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 4.dp,
+                    bottom = 24.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(items = uiState.states, key = { it.descriptor.id.name }) { state ->
+                    FeatureSettingsRow(
+                        state = state,
+                        onToggle = onToggle,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@StringRes
+private fun FeatureSettingsError.messageRes(): Int = when (this) {
+    FeatureSettingsError.READ_FAILED -> R.string.settings_error_read
+    FeatureSettingsError.WRITE_FAILED -> R.string.settings_error_write
+}
+
+@Composable
+private fun FeatureSettingsErrorBanner(
+    message: String,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.errorContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 14.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.settings_dismiss))
             }
         }
     }

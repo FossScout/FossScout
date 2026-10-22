@@ -1,5 +1,6 @@
 package com.fossscout.feature.favourites
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,16 +24,14 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -47,11 +46,14 @@ import com.fossscout.core.model.Favourite
 fun FavouritesScreen(
     state: FavouritesUiState,
     onRemove: (AppKey) -> Unit,
-    onSaveNote: (AppKey, String) -> Unit,
+    onEditNote: (Favourite) -> Unit,
+    onNoteDraftChange: (String) -> Unit,
+    onSaveNote: () -> Unit,
+    onDismissEditor: () -> Unit,
+    onRetry: () -> Unit,
+    onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var editing by remember { mutableStateOf<Favourite?>(null) }
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -73,14 +75,35 @@ fun FavouritesScreen(
             )
         }
 
-        if (state.favourites.isEmpty()) {
-            EmptyFavourites(
+        val error = state.error
+        if (error != null && error != FavouritesError.READ_FAILED) {
+            FavouritesErrorBanner(
+                message = stringResource(error.messageRes()),
+                onDismiss = onDismissError,
+            )
+        }
+
+        when {
+            state.isLoading -> FavouritesLoading(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
             )
-        } else {
-            LazyColumn(
+
+            error == FavouritesError.READ_FAILED -> FavouritesReadError(
+                onRetry = onRetry,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            )
+
+            state.favourites.isEmpty() -> EmptyFavourites(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            )
+
+            else -> LazyColumn(
                 modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(
                     start = 20.dp,
@@ -93,7 +116,7 @@ fun FavouritesScreen(
                 items(items = state.favourites, key = { it.appKey.value }) { favourite ->
                     FavouriteCard(
                         favourite = favourite,
-                        onEditNote = { editing = favourite },
+                        onEditNote = { onEditNote(favourite) },
                         onRemove = { onRemove(favourite.appKey) },
                     )
                 }
@@ -101,12 +124,96 @@ fun FavouritesScreen(
         }
     }
 
-    editing?.let { favourite ->
+    state.editor?.let { editor ->
         FavouriteNoteDialog(
-            favourite = favourite,
-            onDismiss = { editing = null },
-            onSave = { note -> onSaveNote(favourite.appKey, note) },
+            editor = editor,
+            onNoteChange = onNoteDraftChange,
+            onSave = onSaveNote,
+            onDismiss = onDismissEditor,
         )
+    }
+}
+
+@StringRes
+private fun FavouritesError.messageRes(): Int = when (this) {
+    FavouritesError.READ_FAILED -> R.string.favourites_error_read
+    FavouritesError.SAVE_FAILED -> R.string.favourites_error_save
+    FavouritesError.REMOVE_FAILED -> R.string.favourites_error_remove
+}
+
+@Composable
+private fun FavouritesErrorBanner(
+    message: String,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.errorContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 14.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.favourites_dismiss))
+            }
+        }
+    }
+}
+
+@Composable
+private fun FavouritesLoading(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        CircularProgressIndicator()
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.favourites_loading),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun FavouritesReadError(
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = stringResource(R.string.favourites_error_read),
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = stringResource(R.string.favourites_error_read_body),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        TextButton(onClick = onRetry) {
+            Text(stringResource(R.string.favourites_retry))
+        }
     }
 }
 

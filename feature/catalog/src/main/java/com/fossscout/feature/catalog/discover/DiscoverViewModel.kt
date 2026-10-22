@@ -8,6 +8,8 @@ import com.fossscout.core.model.AppKey
 import com.fossscout.feature.catalog.data.Project
 import com.fossscout.feature.catalog.data.ProjectCategory
 import com.fossscout.feature.catalog.data.ProjectRepository
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,11 +17,15 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+enum class DiscoverSavedError { READ_FAILED, WRITE_FAILED }
+
 data class DiscoverUiState(
     val projects: List<Project> = emptyList(),
     val query: String = "",
     val category: ProjectCategory? = null,
     val savedIds: Set<String> = emptySet(),
+    val isSavedStateLoading: Boolean = true,
+    val savedStateError: DiscoverSavedError? = null,
 ) {
     fun visibleProjects(savedOnly: Boolean): List<Project> {
         val normalizedQuery = query.trim()
@@ -45,19 +51,14 @@ class DiscoverViewModel(
     )
     val uiState: StateFlow<DiscoverUiState> = _uiState.asStateFlow()
 
+    private var savedStateJob: Job? = null
+
     init {
-        viewModelScope.launch {
-            favouritesRepository.favourites
-                .catch { throwable ->
-                    Log.e(TAG, "Failed to read favourites", throwable)
-                    _uiState.update { it.copy(savedIds = emptySet()) }
-                }
-                .collect { favourites ->
-                    _uiState.update { state ->
-                        state.copy(savedIds = favourites.map { it.appKey.value }.toSet())
-                    }
-                }
-        }
+        collectSavedState()
+    }
+
+    fun retrySavedState() {
+        collectSavedState()
     }
 
     fun onQueryChange(query: String) {
@@ -69,8 +70,12 @@ class DiscoverViewModel(
     }
 
     fun onToggleSaved(project: Project) {
+        val current = _uiState.value
+        if (current.isSavedStateLoading || current.savedStateError == DiscoverSavedError.READ_FAILED) {
+            return
+        }
         viewModelScope.launch {
-            runCatching {
+            try {
                 val appKey = AppKey(project.id)
                 val isSaved = project.id in _uiState.value.savedIds
                 if (isSaved) {
@@ -78,14 +83,60 @@ class DiscoverViewModel(
                 } else {
                     favouritesRepository.add(appKey, project.name)
                 }
-            }.onFailure { throwable ->
+                _uiState.update { state ->
+                    state.copy(
+                        savedStateError = state.savedStateError
+                            .takeUnless { it == DiscoverSavedError.WRITE_FAILED },
+                    )
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
                 Log.e(TAG, "Failed to toggle saved state for ${project.id}", throwable)
+                _uiState.update { state ->
+                    state.copy(savedStateError = DiscoverSavedError.WRITE_FAILED)
+                }
             }
         }
     }
 
     fun clearFilters() {
         _uiState.update { it.copy(query = "", category = null) }
+    }
+
+    private fun collectSavedState() {
+        savedStateJob?.cancel()
+        _uiState.update { state ->
+            state.copy(
+                isSavedStateLoading = true,
+                savedStateError = state.savedStateError
+                    .takeUnless { it == DiscoverSavedError.READ_FAILED },
+            )
+        }
+        savedStateJob = viewModelScope.launch {
+            favouritesRepository.favourites
+                .catch { throwable ->
+                    if (throwable is CancellationException) throw throwable
+                    Log.e(TAG, "Failed to read favourites", throwable)
+                    _uiState.update { state ->
+                        state.copy(
+                            savedIds = emptySet(),
+                            isSavedStateLoading = false,
+                            savedStateError = DiscoverSavedError.READ_FAILED,
+                        )
+                    }
+                }
+                .collect { favourites ->
+                    _uiState.update { state ->
+                        state.copy(
+                            savedIds = favourites.map { it.appKey.value }.toSet(),
+                            isSavedStateLoading = false,
+                            savedStateError = state.savedStateError
+                                .takeUnless { it == DiscoverSavedError.READ_FAILED },
+                        )
+                    }
+                }
+        }
     }
 
     private companion object {

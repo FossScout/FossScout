@@ -24,19 +24,20 @@ class FavouritesRepository(
     ): Favourite = mutex.withLock {
         val current = store.favourites.first()
         val existing = current.firstOrNull { it.appKey == appKey }
+        val timestamp = now()
         val favourite = if (existing != null) {
             existing.copy(
                 displayName = displayName,
-                preferredStoreId = preferredStoreId,
-                updatedAtEpochMillis = now(),
+                preferredStoreId = preferredStoreId ?: existing.preferredStoreId,
+                updatedAtEpochMillis = timestamp,
             )
         } else {
             Favourite(
                 appKey = appKey,
                 displayName = displayName,
                 preferredStoreId = preferredStoreId,
-                createdAtEpochMillis = now(),
-                updatedAtEpochMillis = now(),
+                createdAtEpochMillis = timestamp,
+                updatedAtEpochMillis = timestamp,
             )
         }
         favourite.validate()
