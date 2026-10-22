@@ -1,13 +1,14 @@
 package com.fossscout.core.feature
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class FeatureRegistryTest {
     private val inventory = FeatureDescriptor(
         id = FeatureId.INVENTORY,
-        title = "Installed apps",
         availability = Availability.GENERAL_WITH_RESTRICTED_ENHANCEMENT,
         requiredCapabilities = setOf(Capability.MANUAL_PACKAGE_SELECTION),
         enhancedBy = setOf(Capability.BROAD_PACKAGE_VISIBILITY),
@@ -26,13 +27,62 @@ class FeatureRegistryTest {
     fun `restricted feature is unavailable in the play profile`() {
         val standalone = FeatureDescriptor(
             id = FeatureId.STANDALONE,
-            title = "Standalone install",
             availability = Availability.RESTRICTED,
             requiredCapabilities = setOf(Capability.DIRECT_APK_INSTALL),
         )
         val play = BuildProfile("playstore", setOf(Capability.MANUAL_PACKAGE_SELECTION))
         val state = FeatureRegistry(play, listOf(standalone)).state(FeatureId.STANDALONE)
         assertFalse(state.available)
-        assertTrue(state.unavailableReason!!.contains("build", ignoreCase = true))
+        assertTrue(state.missingCapabilities.contains(Capability.DIRECT_APK_INSTALL))
+    }
+
+    @Test
+    fun `unknown feature id is rejected`() {
+        val registry = FeatureRegistry(BuildProfile("playstore", emptySet()), emptyList())
+        val error = assertThrows(IllegalArgumentException::class.java) {
+            registry.state(FeatureId.INVENTORY)
+        }
+        assertTrue(error.message!!.contains(FeatureId.INVENTORY.name))
+    }
+
+    @Test
+    fun `available features preserve descriptor order`() {
+        val first = FeatureDescriptor(
+            id = FeatureId.COVERAGE,
+            availability = Availability.GENERAL,
+            requiredCapabilities = emptySet(),
+        )
+        val unavailable = FeatureDescriptor(
+            id = FeatureId.STANDALONE,
+            availability = Availability.RESTRICTED,
+            requiredCapabilities = setOf(Capability.DIRECT_APK_INSTALL),
+        )
+        val second = FeatureDescriptor(
+            id = FeatureId.FAVOURITES,
+            availability = Availability.GENERAL,
+            requiredCapabilities = emptySet(),
+        )
+        val registry = FeatureRegistry(
+            BuildProfile("playstore", emptySet()),
+            listOf(first, unavailable, second),
+        )
+        assertEquals(listOf(first, second), registry.availableFeatures())
+    }
+
+    @Test
+    fun `user-disabled feature is not enabled`() {
+        val settings = FeatureDescriptor(
+            id = FeatureId.SETTINGS,
+            availability = Availability.GENERAL,
+            requiredCapabilities = emptySet(),
+        )
+        val registry = FeatureRegistry(
+            BuildProfile("playstore", emptySet()),
+            listOf(settings),
+            userDisabled = setOf(FeatureId.SETTINGS),
+        )
+        val state = registry.state(FeatureId.SETTINGS)
+        assertTrue(state.available)
+        assertFalse(state.enabled)
     }
 }

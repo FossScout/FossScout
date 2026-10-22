@@ -8,7 +8,6 @@ enum class FeatureId {
 
 data class FeatureDescriptor(
     val id: FeatureId,
-    val title: String,
     val availability: Availability,
     val requiredCapabilities: Set<Capability>,
     val enhancedBy: Set<Capability> = emptySet(),
@@ -22,5 +21,5 @@ data class FeatureState(
     val available: Boolean,
     val enhanced: Boolean,
     val enabled: Boolean,
-    val unavailableReason: String?,
+    val missingCapabilities: Set<Capability>,
 )
