@@ -28,14 +28,17 @@ retain credit and license notices.
 These are facts about the current repository, not product decisions.
 
 - FossScout is an Android app for discovering free and open source software.
-- Current state is an early scaffold (`v0.1.0`): Material 3 Compose UI, a small
-  bundled catalog, search, category filters, in-memory saved projects, and an
-  About screen.
-- The catalog and saved state are not yet persisted; both are placeholders for a
-  real data source and local storage.
+- Current state is a modular foundation (`v0.1.0`): Material 3 Compose UI, a
+  bundled catalog, search, category filters, locally persisted favourites and
+  notes, runtime feature settings, and an About screen.
+- The app has `playstore` and `fdroid` build profiles. The catalog is still
+  bundled; store adapters, matching, inventory scanning, and sharing are not
+  implemented yet.
 - Planned technical baseline: Kotlin, Jetpack Compose, min SDK 24, compile/target
   SDK 35.
-- No accessibility service, network layer, or product flavors exist yet.
+- v1 has no accessibility service, no direct APK install, and no store network
+  layer. The F-Droid profile carries the broad-package-visibility capability in
+  metadata; no matching manifest permission is declared yet.
 - The project is MIT licensed.
 
 ## 3. Distribution requirement
@@ -44,18 +47,16 @@ FossScout must ship as two variants:
 
 | Variant | Distribution | Feature posture |
 | --- | --- | --- |
-| Play Store build | Google Play | Restricted to capabilities allowed by Play policy. No accessibility-service-dependent features that Play would reject. |
-| F-Droid build | F-Droid (and likely direct APK) | Full feature set, including the accessibility service and additional options unavailable in the Play build. |
+| Play Store build | Google Play | Restricted to capabilities allowed by Play policy. No accessibility-service-dependent features, no direct APK install. |
+| F-Droid build | F-Droid (and likely direct APK) | May add restricted capabilities; v1 uses the same no-install feature set as Play plus the broad-visibility capability. |
 
-This is a **stated requirement**, but the exact split has not been decided. The
-design must define:
-
-- which features are core to both builds;
-- which features are F-Droid-only, and why each is excluded from Play;
-- how the two builds are produced (product flavors, separate package IDs or
-  shared ID, shared code boundaries);
-- how users understand which build they have;
-- what happens to saved data and settings if someone switches builds.
+This is a **stated requirement** implemented as capability-based profiles: the
+Play build excludes restricted capabilities, while F-Droid and direct builds may
+add them. In v1 neither profile includes direct APK install or an accessibility
+service; those are deferred. The profile model is defined in
+`2026-10-22-build-profiles-and-optional-features.md`. Earlier questions about the
+split, build production, package IDs, and data migration are resolved by D20,
+D21, and the profile specification.
 
 ### Play policy findings (verified 2026-10-22)
 

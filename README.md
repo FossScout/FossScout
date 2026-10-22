@@ -13,8 +13,8 @@ favourites and feature settings locally with DataStore.
 
 The catalog is still bundled with the app. Inventory scanning, matching,
 alternatives, the store registry, index caching, coverage reporting, replacement
-guidance, and companion handoff are declared in the feature registry but are not
-implemented yet.
+guidance, and companion handoff are registered and enabled in the v1 profiles
+but are not implemented yet, so their toggles do not change behavior today.
 
 **v1 does not download or install APKs, and it has no AccessibilityService.**
 Direct APK install and the install-time accessibility prompt are deferred.
@@ -52,7 +52,8 @@ The app has two product flavors on the `distribution` dimension:
 Both profiles currently enable the same features. Each flavor supplies its own
 `ProfileFeatures` object under `app/src/<flavor>/java/`, which maps the build
 profile's capabilities to the feature registry. Optional features are separate
-modules so a future profile can exclude them.
+modules; the current app composition includes all of them, and a future profile
+can exclude a module at the dependency boundary.
 
 ## Getting started
 
@@ -102,7 +103,7 @@ FossScout/
 │   ├── src/playstore/          # Play profile capabilities and enabled features
 │   └── src/fdroid/             # F-Droid profile capabilities and enabled features
 ├── core/
-│   ├── model/                  # Domain types: AppKey, Favourite, Collection
+│   ├── model/                  # Domain types: AppKey, Favourite, AppCollection
 │   ├── feature/                # Capability, feature descriptors, registry, feature catalog
 │   ├── data/                   # Favourites and feature-settings repositories + DataStore stores
 │   └── ui/                     # Shared Compose theme (colors, typography, theming)
