@@ -1,5 +1,6 @@
 package com.fossscout.feature.favourites
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fossscout.core.data.FavouritesRepository
@@ -24,7 +25,9 @@ class FavouritesViewModel(
     init {
         viewModelScope.launch {
             repository.favourites
-                .catch { /* Keep the last good state if local storage cannot be read. */ }
+                .catch { throwable ->
+                    Log.e(TAG, "Failed to read favourites", throwable)
+                }
                 .collect { favourites ->
                     _uiState.value = FavouritesUiState(favourites = favourites)
                 }
@@ -32,15 +35,26 @@ class FavouritesViewModel(
     }
 
     fun saveNote(appKey: AppKey, note: String) {
-        val normalized = normalizeNote(note)
         viewModelScope.launch {
-            repository.updateNote(appKey, normalized)
+            runCatching {
+                repository.updateNote(appKey, normalizeNote(note))
+            }.onFailure { throwable ->
+                Log.e(TAG, "Failed to save note for ${appKey.value}", throwable)
+            }
         }
     }
 
     fun remove(appKey: AppKey) {
         viewModelScope.launch {
-            repository.remove(appKey)
+            runCatching {
+                repository.remove(appKey)
+            }.onFailure { throwable ->
+                Log.e(TAG, "Failed to remove ${appKey.value}", throwable)
+            }
         }
+    }
+
+    private companion object {
+        const val TAG = "FavouritesViewModel"
     }
 }

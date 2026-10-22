@@ -1,5 +1,6 @@
 package com.fossscout.feature.catalog.discover
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fossscout.core.data.FavouritesRepository
@@ -10,6 +11,7 @@ import com.fossscout.feature.catalog.data.ProjectRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -45,11 +47,16 @@ class DiscoverViewModel(
 
     init {
         viewModelScope.launch {
-            favouritesRepository.favourites.collect { favourites ->
-                _uiState.update { state ->
-                    state.copy(savedIds = favourites.map { it.appKey.value }.toSet())
+            favouritesRepository.favourites
+                .catch { throwable ->
+                    Log.e(TAG, "Failed to read favourites", throwable)
+                    _uiState.update { it.copy(savedIds = emptySet()) }
                 }
-            }
+                .collect { favourites ->
+                    _uiState.update { state ->
+                        state.copy(savedIds = favourites.map { it.appKey.value }.toSet())
+                    }
+                }
         }
     }
 
@@ -62,18 +69,26 @@ class DiscoverViewModel(
     }
 
     fun onToggleSaved(project: Project) {
-        val appKey = AppKey(project.id)
-        val isSaved = project.id in _uiState.value.savedIds
         viewModelScope.launch {
-            if (isSaved) {
-                favouritesRepository.remove(appKey)
-            } else {
-                favouritesRepository.add(appKey, project.name)
+            runCatching {
+                val appKey = AppKey(project.id)
+                val isSaved = project.id in _uiState.value.savedIds
+                if (isSaved) {
+                    favouritesRepository.remove(appKey)
+                } else {
+                    favouritesRepository.add(appKey, project.name)
+                }
+            }.onFailure { throwable ->
+                Log.e(TAG, "Failed to toggle saved state for ${project.id}", throwable)
             }
         }
     }
 
     fun clearFilters() {
         _uiState.update { it.copy(query = "", category = null) }
+    }
+
+    private companion object {
+        const val TAG = "DiscoverViewModel"
     }
 }
