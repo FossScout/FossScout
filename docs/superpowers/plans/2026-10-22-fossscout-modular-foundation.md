@@ -244,7 +244,6 @@ import org.junit.Test
 class FeatureRegistryTest {
     private val inventory = FeatureDescriptor(
         id = FeatureId.INVENTORY,
-        title = "Installed apps",
         availability = Availability.GENERAL_WITH_RESTRICTED_ENHANCEMENT,
         requiredCapabilities = setOf(Capability.MANUAL_PACKAGE_SELECTION),
         enhancedBy = setOf(Capability.BROAD_PACKAGE_VISIBILITY),
@@ -263,14 +262,13 @@ class FeatureRegistryTest {
     fun `restricted feature is unavailable in the play profile`() {
         val standalone = FeatureDescriptor(
             id = FeatureId.STANDALONE,
-            title = "Standalone install",
             availability = Availability.RESTRICTED,
             requiredCapabilities = setOf(Capability.DIRECT_APK_INSTALL),
         )
         val play = BuildProfile("playstore", setOf(Capability.MANUAL_PACKAGE_SELECTION))
         val state = FeatureRegistry(play, listOf(standalone)).state(FeatureId.STANDALONE)
         assertFalse(state.available)
-        assertTrue(state.unavailableReason!!.contains("build", ignoreCase = true))
+        assertTrue(state.missingCapabilities.contains(Capability.DIRECT_APK_INSTALL))
     }
 }
 ```
@@ -306,7 +304,6 @@ enum class FeatureId {
 
 data class FeatureDescriptor(
     val id: FeatureId,
-    val title: String,
     val availability: Availability,
     val requiredCapabilities: Set<Capability>,
     val enhancedBy: Set<Capability> = emptySet(),
@@ -320,7 +317,7 @@ data class FeatureState(
     val available: Boolean,
     val enhanced: Boolean,
     val enabled: Boolean,
-    val unavailableReason: String?,
+    val missingCapabilities: Set<Capability>,
 )
 
 class FeatureRegistry(
@@ -333,7 +330,7 @@ class FeatureRegistry(
 }
 ```
 
-`FeatureCatalog` lists all 17 descriptors with the availability and capabilities from `features/README.md`. `FeatureRegistry.state` must return `available = requiredCapabilities.all(profile.capabilities::contains)`, `enhanced = enhancedBy.isNotEmpty() && enhancedBy.all(profile.capabilities::contains)`, `enabled = available && descriptor.defaultEnabled && id !in userDisabled`, and a human-readable reason when unavailable.
+`FeatureCatalog` lists all 17 descriptors with the availability and capabilities from `features/README.md`. `FeatureDescriptor` contains no user-facing text; the settings UI maps `FeatureId` and `Capability` to `strings.xml` resources. `FeatureRegistry.state` must return `available = requiredCapabilities.all(profile.capabilities::contains)`, `enhanced = enhancedBy.isNotEmpty() && enhancedBy.all(profile.capabilities::contains)`, `enabled = available && descriptor.defaultEnabled && id !in userDisabled`, and `missingCapabilities = requiredCapabilities - profile.capabilities`. An unknown `FeatureId` throws `IllegalArgumentException` naming the ID.
 
 - [ ] **Step 4: Run the test and confirm it passes**
 
@@ -706,7 +703,7 @@ class FeatureSettingsRepository(private val store: FeatureSettingsStore) {
 
 Add `DataStoreFeatureSettingsStore` beside `DataStoreFavouritesStore` and expose it from `AppContainer` as `featureSettingsRepository`.
 
-`FeatureSettingsScreen` lists `FeatureState`s. Available features get a Switch; unavailable features show the descriptor title, an “Unavailable in this build” label, and the `unavailableReason`. Use `FeatureRegistry` with the current profile and the repository's disabled set.
+`FeatureSettingsScreen` lists `FeatureState`s. Available features get a Switch; unavailable features show a localized title from `FeatureId`, an “Unavailable in this build” string from `strings.xml`, and localized labels for `state.missingCapabilities`. Do not display raw enum names. Use `FeatureRegistry` with the current profile and the repository's disabled set.
 
 Add a Settings destination to the bottom navigation. If `FeatureId.SETTINGS` is disabled, hide it. Changing a toggle updates the registry state immediately.
 
