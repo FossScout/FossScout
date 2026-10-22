@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Choose which features appear in FossScout.</string>
+    <string name="settings_unavailable_in_build">Unavailable in this build</string>
+    <string name="settings_missing_capabilities">Needs: %1$s</string>
+    <string name="settings_always_available">Always available</string>
+    <string name="settings_toggle_feature">Enable %1$s</string>
+
+    <string name="feature_inventory_title">Installed apps</string>
+    <string name="feature_matching_title">Find open-source matches</string>
+    <string name="feature_alternatives_title">Alternative suggestions</string>
+    <string name="feature_stores_title">Store integration</string>
+    <string name="feature_index_cache_title">Offline index cache</string>
+    <string name="feature_coverage_title">Coverage overview</string>
+    <string name="feature_replacement_guidance_title">Replacement guidance</string>
+    <string name="feature_companion_handoff_title">Companion handoff</string>
+    <string name="feature_standalone_title">Standalone installs</string>
+    <string name="feature_install_prompt_title">Install prompts</string>
+    <string name="feature_favourites_title">Saved projects</string>
+    <string name="feature_sharing_title">Share and import</string>
+    <string name="feature_backup_title">Backup and restore</string>
+    <string name="feature_security_title">Security checks</string>
+    <string name="feature_updates_title">Update checks</string>
+    <string name="feature_contribution_title">Contribute to FossScout</string>
+    <string name="feature_settings_title">Settings</string>
+
+    <string name="capability_broad_package_visibility">broad package visibility</string>
+    <string name="capability_manual_package_selection">manual package selection</string>
+    <string name="capability_accessibility_install_prompt">accessibility install prompts</string>
+    <string name="capability_direct_apk_install">direct APK install</string>
+    <string name="capability_background_update_check">background update checks</string>
+    <string name="capability_store_index_network">store index access</string>
+    <string name="capability_share_import_export">share and import</string>
+    <string name="capability_custom_store_adapters">custom store adapters</string>
+    <string name="capability_source_repository_adapters">source repository adapters</string>
+    <string name="capability_accessibility_service">accessibility service</string>
+</resources>

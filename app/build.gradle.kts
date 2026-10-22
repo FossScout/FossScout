@@ -70,6 +70,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":feature:catalog"))
     implementation(project(":feature:favourites"))
+    implementation(project(":feature:settings"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.datastore.preferences)
