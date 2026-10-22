@@ -64,7 +64,7 @@ core/
   ui/
     build.gradle.kts
     src/main/java/com/fossscout/core/ui/theme/*
-    src/main/java/com/fossscout/core/ui/components/*
+    src/main/java/com/fossscout/core/ui/theme/*
 feature/
   catalog/
     build.gradle.kts
@@ -423,13 +423,13 @@ git commit -m "build: add playstore and fdroid capability profiles"
 **Files:**
 - Move: `app/src/main/java/com/fossscout/app/data/*` → `feature/catalog/src/main/java/com/fossscout/feature/catalog/data/`
 - Move: `app/src/main/java/com/fossscout/app/ui/discover/*` → `feature/catalog/src/main/java/com/fossscout/feature/catalog/discover/`
-- Move: `app/src/main/java/com/fossscout/app/ui/components/*` → `core/ui/src/main/java/com/fossscout/core/ui/components/`
+- Move: `app/src/main/java/com/fossscout/app/ui/components/ProjectCard.kt` → `feature/catalog/src/main/java/com/fossscout/feature/catalog/components/ProjectCard.kt`
 - Move: `app/src/main/java/com/fossscout/app/ui/theme/*` → `core/ui/src/main/java/com/fossscout/core/ui/theme/`
 - Move: `app/src/test/java/com/fossscout/app/ui/discover/DiscoverUiStateTest.kt` → `feature/catalog/src/test/java/com/fossscout/feature/catalog/discover/DiscoverUiStateTest.kt`
 - Modify: imports in moved files and `app/src/main/java/com/fossscout/app/ui/FossScoutApp.kt`
 
 **Interfaces:**
-- Produces: `com.fossscout.feature.catalog.data.Project`, `ProjectCategory`, `SampleProjects`, `ProjectRepository`; `com.fossscout.feature.catalog.discover.DiscoverScreen`, `DiscoverViewModel`, `DiscoverUiState`; `com.fossscout.core.ui.theme.FossScoutTheme`; `com.fossscout.core.ui.components.ProjectCard`.
+- Produces: `com.fossscout.feature.catalog.data.Project`, `ProjectCategory`, `SampleProjects`, `ProjectRepository`; `com.fossscout.feature.catalog.discover.DiscoverScreen`, `DiscoverViewModel`, `DiscoverUiState`; `com.fossscout.feature.catalog.components.ProjectCard`; `com.fossscout.core.ui.theme.FossScoutTheme`.
 
 - [ ] **Step 1: Move files and update package declarations**
 
