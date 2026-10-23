@@ -24,6 +24,9 @@ app/release/
 app/debug/
 output-metadata.json
 
+# Generated screenshots
+screenshots/
+
 # Kotlin
 .kotlin/
 
