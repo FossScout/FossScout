@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Ready** (S01 and S02 merged) |
+| Status | **Done** (F05 and F14 verification core; trust audit UI remains in S10) |
 | Features | F05, F14 (verification core; trust UI is S10) |
 | Depends on | S01, S02 |
 | Can run in parallel with | S06 |
@@ -101,10 +101,87 @@ spike in the completion note.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
+Implemented on `feat/s03-index-sync-verification` on 2026-10-23.
 
-- commit:
-- upstream format/version verified:
-- tests:
-- F05/F14 criteria completed:
-- remaining gaps:
+- commit: `6ee4e4ad71be09e012ebb62472c0e0e1593b6908`
+  (`feat(index): add S03 verified index sync and cache`); this completion record
+  is a follow-up commit on the same branch. `STATUS.md` was not edited by this
+  session.
+- modules: new pure-Kotlin/JVM `core:index` module for the shared snapshot, job,
+  verifier, trust, parser, payload, and F-Droid v2 sync/repository code. The
+  existing `core:data` module owns versioned DataStore metadata persistence.
+  `feature:stores` renders sync/freshness/trust/storage state, and `app` wires
+  the repository, `INTERNET` permission, and the real integer storage-budget
+  setting.
+- upstream format/version verified: the spike checked the current signed F-Droid
+  v2 repository flow. The adapter fetches `entry.jar`, verifies its JAR
+  signature and signer-certificate SHA-256, then verifies the full index/diff
+  SHA-256 and size declared by the signed `entry.json`. The observed
+  `entry.json` schema `version` was **30000**; it carries `timestamp`, `maxAge`,
+  `index {name, sha256, size, numPackages}`, and `diffs {oldTimestamp: ...}`.
+  The full `index-v2.json` contains `repo` plus `packages` with each package's
+  `metadata` and `versions`. The parser consumes that metadata for F02/F03/F06/
+  F18 and records upstream timestamps and diff versions. No live network is used
+  by tests; fixtures create real signed JARs with the JDK signing tools.
+- security/activation boundary: downloads go to temporary files first. Only a
+  cryptographically signed entry whose signer matches the pinned fingerprint can
+  become `VERIFIED`; a valid signed entry without a pin can become active but is
+  `UNVERIFIED`. Unsigned, invalid, tampered, hash/size-mismatched, corrupt, and
+  parse-failed indexes are never activatable. A changed or removed pin blocks
+  sync before any request. Cancellation, I/O failure, and storage-limit failures
+  leave the previous snapshot and payload untouched. Payload replacement is
+  atomic, and same-timestamp/304 reuse also requires the signed index hash and
+  active payload identity to match; otherwise the adapter retries unconditionally.
+- sync/cache implementation: HTTPS is the default and HTTP is allowed only for
+  descriptors that carry the S02 opt-in. The adapter sends `ETag`/
+  `If-Modified-Since`, reuses an unchanged snapshot, and uses signed diffs when
+  the previous timestamp is available and smaller. Full and diff indexes stream
+  through a custom JSON reader into normalized JSON Lines instead of loading the
+  whole upstream file; diffs load only changed packages and preserve unaffected
+  packages. Non-storage diff failures fall back to a verified full index.
+- persistence/storage: `IndexStateCodec` version-checks snapshot, job, and trust
+  records before writing. Payloads are stored under the app-private snapshot
+  directory with a byte budget. `INDEX_CACHE` now declares a real integer
+  `storage_budget_mb` feature setting (16–2048 MB, default 256 MB), not a text
+  setting. Storage use is visible in Stores, new writes over budget are rejected
+  with a clear error, and cleanup removes unreferenced payloads while preserving
+  active snapshots.
+- Stores/F04-R2: every cached F-Droid v2 store card shows last successful sync,
+  `fresh`/`stale`/`never synced`, signature/trust evidence, sync progress,
+  cancellation, and mapped failure text; raw domain exceptions are not shown.
+  A newly added, valid F-Droid-compatible repository becomes usable through the
+  cached-index adapter after sync.
+- tests/build: `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint`
+  **passed** on the committed source. `test`: **328 test executions across 55
+  suites; 0 failures, 0 errors, 0 skipped** (JVM and Android debug/release
+  variants counted separately). The new `core:index` module contributes 37
+  fixture-based tests covering valid signed activation, tampered/corrupt/
+  unsigned rejection, no-pin `UNVERIFIED`, fingerprint change, HTTP policy,
+  conditional/ETag reuse, diff transfer, stale-validator retry, cancellation,
+  storage budget/cleanup, payload-path safety, malformed metadata, and the
+  F04-R2 adapter path.
+- Play merged manifest inspection
+  (`app/build/intermediates/merged_manifests/playstoreDebug/processPlaystoreDebugManifest/AndroidManifest.xml`)
+  **passed**: only `INTERNET` plus the framework dynamic-receiver permission were
+  added. No `QUERY_ALL_PACKAGES`, `REQUEST_INSTALL_PACKAGES`,
+  `BIND_ACCESSIBILITY_SERVICE`, accessibility service, `SYSTEM_ALERT_WINDOW`, or
+  `MANAGE_EXTERNAL_STORAGE` was added.
+- F05 criteria completed: **R1** corrupt/tampered/unsigned data never replaces
+  the active snapshot; **R2** a repeat sync uses conditional/diff transfer and
+  moves less than a full index; **R3** cached stores show last sync and
+  freshness; **R4** cancellation preserves the active snapshot; **R5** storage
+  use is visible, bounded by the integer setting, and cleanup/warning behaviour
+  is present.
+- F04-R2 completed: a valid added F-Droid repository is usable after sync.
+- F14 criteria completed: **R1** no pinned fingerprint ⇒ `UNVERIFIED`; **R2**
+  signatures and signed hashes are checked before metadata is trusted or
+  activated; **R5** HTTPS is required without the explicit S02 opt-in; **R6**
+  expected/actual fingerprint, signature status, source URL, index version/
+  timestamp, and failure are retained in `TrustRecord` and exposed to the UI.
+- remaining gaps: F14-R3/R4 (APK hash/size and signer continuity) remain
+  deferred with F09, so this session makes **no APK verification claim**. The
+  security-details/trust-audit screen (S10), scheduled/background sync, live API,
+  generic JSON/source-repository adapters, matching/alternatives/coverage (S05),
+  and real-device UI/network verification were not added. Trust for a valid
+  index with no pinned fingerprint stays explicitly `UNVERIFIED` until a pin is
+  reviewed.
