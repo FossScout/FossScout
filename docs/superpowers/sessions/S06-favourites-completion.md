@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Ready** |
+| Status | **Done** (F11 scope; collections/sharing land in S07) |
 | Features | F11 (F12 collections/sharing are S07) |
 | Depends on | Foundation; S02 store registry and S04 installed inventory are merged |
 | Can run in parallel with | S03 |
@@ -86,9 +86,23 @@ not clear notes.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
-
-- commit:
+- commit: `649bd9f` (`feat(favourites): complete S06 search tags and installed badges`); docs record in a follow-up commit. `STATUS.md` is updated by the parent after merge.
 - tests:
+  - `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` — **passed**.
+  - `test`: **324 test executions across 54 suites; 0 failures, 0 errors, 0 skipped** (debug/release variants and JVM modules counted separately).
+  - New coverage: canonical `AppKey`, tag normalisation/limits (`FavouriteTagsTest`), search and tag filtering (`FavouriteSearchTest`), repository detail updates and duplicate preservation (`FavouritesRepositoryTest`), encode/decode and persistence across store recreation (`FavouritesCodecTest`, `DataStoreFavouritesStoreTest`), installed-state mapping for installed/missing/unsupported/unknown sources (`InstalledAppStateProviderTest`), and favourites UI/state for empty search, tag editing, note search, installed badges, preferred stores, and read/write failures (`FavouritesUiStateTest`, `FavouritesViewModelTest`).
+  - `./gradlew lint` — **passed**; warnings only (new `PluralsCandidate` warnings for tag/note limit strings are non-failing).
+  - Play merged manifest inspection (`app/build/intermediates/merged_manifest/playstoreDebug/processPlaystoreDebugMainManifest/AndroidManifest.xml`): no `QUERY_ALL_PACKAGES`, `REQUEST_INSTALL_PACKAGES`, accessibility service, or other restricted capability.
+  - Device/emulator-only checks **not run**: real `PackageManager` install/uninstall transitions and badge refresh on process resume with live data. The derivation logic is exercised on JVM with fake installed-state providers.
 - F11 criteria completed:
+  - **F11-R1** — a favourite can be created and saved for an app that is not installed; saving does not require a store or installed package.
+  - **F11-R2** — favourites, notes, tags, and preferred store survive encode/decode and repository/store recreation; disabling and re-enabling favourites does not clear the backing data.
+  - **F11-R3** — installed state is derived at read time via `InstalledStateProvider` as INSTALLED / NOT_INSTALLED / UNAVAILABLE / UNKNOWN, shown as an advisory badge with an explanation; it is never written into `Favourite`, and a missing package never removes the favourite.
+  - **F11-R4** — notes remain local and private by default; the note privacy model is unchanged and no share/export surface was added.
+  - **F11-R5** — duplicate adds resolve to one canonical `AppKey` entry; canonical keys reject blank/whitespace variants, and duplicate adds preserve existing notes, tags, and preferred store.
+  - **F11-R7 (SHOULD)** — local search covers display name, notes, and tags; tag chips filter the list, with a distinct empty-search state.
+  - **F11-R8 (SHOULD)** — preferred store can be selected from the S02 registry (optional and nullable when unavailable) and is preserved through encode/decode and recreation.
 - remaining F11 gaps:
+  - **F11-R6 collections** remain out of scope for this session; F12/S07 owns collections and sharing (share/import, QR, backup).
+  - The installed badge is advisory only and refreshes on list changes and Saved-screen re-entry; real-time refresh while the app stays foregrounded through an external install/uninstall is not implemented.
+  - Device/emulator verification of live package-manager transitions is still outstanding.
