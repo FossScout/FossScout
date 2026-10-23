@@ -15,23 +15,30 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -41,6 +48,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.Favourite
+import com.fossscout.core.model.InstalledState
+import com.fossscout.core.model.StoreId
 
 @Composable
 fun FavouritesScreen(
@@ -48,19 +57,31 @@ fun FavouritesScreen(
     onRemove: (AppKey) -> Unit,
     onEditNote: (Favourite) -> Unit,
     onNoteDraftChange: (String) -> Unit,
+    onTagDraftChange: (String) -> Unit,
+    onAddTag: () -> Unit,
+    onRemoveTag: (String) -> Unit,
+    onPreferredStoreSelected: (StoreId?) -> Unit,
     onSaveNote: () -> Unit,
     onDismissEditor: () -> Unit,
+    onQueryChange: (String) -> Unit,
+    onTagSelected: (String?) -> Unit,
+    onClearFilters: () -> Unit,
+    onRefreshInstalled: () -> Unit,
     onRetry: () -> Unit,
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(Unit) {
+        onRefreshInstalled()
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
         Column(
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 8.dp),
         ) {
             Text(
                 text = stringResource(R.string.favourites_title),
@@ -73,6 +94,65 @@ fun FavouritesScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = state.query,
+                onValueChange = onQueryChange,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.favourites_search_placeholder)) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = null,
+                    )
+                },
+                trailingIcon = if (state.query.isNotEmpty()) {
+                    {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = stringResource(
+                                    R.string.favourites_clear_search,
+                                ),
+                            )
+                        }
+                    }
+                } else {
+                    null
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                ),
+            )
+        }
+
+        if (state.tags.isNotEmpty()) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item {
+                    FilterChip(
+                        selected = state.selectedTag == null,
+                        onClick = { onTagSelected(null) },
+                        label = { Text(stringResource(R.string.favourites_filter_all)) },
+                    )
+                }
+                items(items = state.tags, key = { it }) { tag ->
+                    FilterChip(
+                        selected = state.selectedTag == tag,
+                        onClick = {
+                            onTagSelected(if (state.selectedTag == tag) null else tag)
+                        },
+                        label = { Text(text = "#$tag") },
+                    )
+                }
+            }
         }
 
         val error = state.error
@@ -103,6 +183,13 @@ fun FavouritesScreen(
                     .weight(1f),
             )
 
+            state.visibleFavourites.isEmpty() -> EmptyFilteredFavourites(
+                onClearFilters = onClearFilters,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            )
+
             else -> LazyColumn(
                 modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(
@@ -113,9 +200,17 @@ fun FavouritesScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(items = state.favourites, key = { it.appKey.value }) { favourite ->
+                items(
+                    items = state.visibleFavourites,
+                    key = { it.appKey.value },
+                ) { favourite ->
                     FavouriteCard(
                         favourite = favourite,
+                        installedState = state.installedStates[favourite.appKey],
+                        preferredStoreName = favourite.preferredStoreId?.let { id ->
+                            state.storeName(id)
+                                ?: stringResource(R.string.favourite_store_unknown, id.value)
+                        },
                         onEditNote = { onEditNote(favourite) },
                         onRemove = { onRemove(favourite.appKey) },
                     )
@@ -127,7 +222,12 @@ fun FavouritesScreen(
     state.editor?.let { editor ->
         FavouriteNoteDialog(
             editor = editor,
+            storeOptions = state.storeOptions,
             onNoteChange = onNoteDraftChange,
+            onTagDraftChange = onTagDraftChange,
+            onAddTag = onAddTag,
+            onRemoveTag = onRemoveTag,
+            onPreferredStoreSelected = onPreferredStoreSelected,
             onSave = onSaveNote,
             onDismiss = onDismissEditor,
         )
@@ -220,6 +320,8 @@ private fun FavouritesReadError(
 @Composable
 private fun FavouriteCard(
     favourite: Favourite,
+    installedState: InstalledState?,
+    preferredStoreName: String?,
     onEditNote: () -> Unit,
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
@@ -269,6 +371,34 @@ private fun FavouriteCard(
                 }
             }
 
+            if (installedState != null) {
+                Spacer(modifier = Modifier.height(10.dp))
+                InstalledBadge(state = installedState)
+            }
+
+            if (favourite.tags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = favourite.tags.joinToString("  ") { "#$it" },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            if (preferredStoreName != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(
+                        R.string.favourite_preferred_store,
+                        preferredStoreName,
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
             if (favourite.note.isNotBlank()) {
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
@@ -287,6 +417,67 @@ private fun FavouriteCard(
             }
         }
     }
+}
+
+@Composable
+private fun InstalledBadge(
+    state: InstalledState,
+    modifier: Modifier = Modifier,
+) {
+    val container = when (state) {
+        InstalledState.INSTALLED -> MaterialTheme.colorScheme.primaryContainer
+        InstalledState.UNAVAILABLE -> MaterialTheme.colorScheme.errorContainer
+        InstalledState.NOT_INSTALLED,
+        InstalledState.UNKNOWN,
+        -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val content = when (state) {
+        InstalledState.INSTALLED -> MaterialTheme.colorScheme.onPrimaryContainer
+        InstalledState.UNAVAILABLE -> MaterialTheme.colorScheme.onErrorContainer
+        InstalledState.NOT_INSTALLED,
+        InstalledState.UNKNOWN,
+        -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = container,
+        ) {
+            Text(
+                text = stringResource(state.badgeRes()),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = content,
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = stringResource(state.explanationRes()),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@StringRes
+private fun InstalledState.badgeRes(): Int = when (this) {
+    InstalledState.INSTALLED -> R.string.favourite_installed_badge
+    InstalledState.NOT_INSTALLED -> R.string.favourite_not_installed_badge
+    InstalledState.UNAVAILABLE -> R.string.favourite_unavailable_badge
+    InstalledState.UNKNOWN -> R.string.favourite_unknown_badge
+}
+
+@StringRes
+private fun InstalledState.explanationRes(): Int = when (this) {
+    InstalledState.INSTALLED -> R.string.favourite_installed_explanation
+    InstalledState.NOT_INSTALLED -> R.string.favourite_not_installed_explanation
+    InstalledState.UNAVAILABLE -> R.string.favourite_unavailable_explanation
+    InstalledState.UNKNOWN -> R.string.favourite_unknown_explanation
 }
 
 @Composable
@@ -340,5 +531,48 @@ private fun EmptyFavourites(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+    }
+}
+
+@Composable
+private fun EmptyFilteredFavourites(
+    onClearFilters: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.size(64.dp),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(28.dp),
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.favourites_empty_filtered_title),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = stringResource(R.string.favourites_empty_filtered_body),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        TextButton(onClick = onClearFilters) {
+            Text(stringResource(R.string.favourites_clear_filters))
+        }
     }
 }

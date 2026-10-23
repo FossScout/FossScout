@@ -19,6 +19,9 @@ data class Favourite(
     fun validate() {
         require(note.length <= MAX_NOTE_LENGTH) { "Note is too long" }
         require(displayName.isNotBlank()) { "Display name is blank" }
+        require(tags.size <= MAX_TAGS) { "Too many tags" }
+        require(tags.none(String::isBlank)) { "Tag is blank" }
+        require(tags.all { it.length <= MAX_TAG_LENGTH }) { "Tag is too long" }
     }
 }
 

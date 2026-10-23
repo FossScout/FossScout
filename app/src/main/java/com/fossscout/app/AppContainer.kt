@@ -13,6 +13,7 @@ import com.fossscout.core.data.FeatureSettingsRepository
 import com.fossscout.core.data.StoreRegistryRepository
 import com.fossscout.core.feature.Capability
 import com.fossscout.core.feature.FeatureCatalog
+import com.fossscout.core.inventory.InstalledAppStateProvider
 import com.fossscout.core.inventory.InventoryRepository
 
 private val Context.favouritesDataStore by preferencesDataStore(name = "favourites")
@@ -42,12 +43,16 @@ class AppContainer(context: Context) {
     private val broadPackageVisibility =
         Capability.BROAD_PACKAGE_VISIBILITY in ProfileFeatures.profile.capabilities
 
+    private val installedAppSource = PackageManagerInstalledAppSource(
+        context = context.applicationContext,
+        supportsFullScan = broadPackageVisibility,
+    )
+
+    val installedStateProvider = InstalledAppStateProvider(installedAppSource)
+
     val inventoryRepository = InventoryRepository(
         store = DataStoreInventoryStore(context.inventoryDataStore),
-        source = PackageManagerInstalledAppSource(
-            context = context.applicationContext,
-            supportsFullScan = broadPackageVisibility,
-        ),
+        source = installedAppSource,
         allowFullScan = broadPackageVisibility,
     )
 }

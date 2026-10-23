@@ -165,7 +165,11 @@ fun FossScoutApp(
                 val favouritesViewModel: FavouritesViewModel = viewModel(
                     factory = viewModelFactory {
                         initializer {
-                            FavouritesViewModel(container.favouritesRepository)
+                            FavouritesViewModel(
+                                repository = container.favouritesRepository,
+                                storeRegistry = container.storeRegistryRepository,
+                                installedStateProvider = container.installedStateProvider,
+                            )
                         }
                     },
                 )
@@ -176,8 +180,16 @@ fun FossScoutApp(
                     onRemove = favouritesViewModel::remove,
                     onEditNote = favouritesViewModel::openNote,
                     onNoteDraftChange = favouritesViewModel::updateNoteDraft,
+                    onTagDraftChange = favouritesViewModel::updateTagDraft,
+                    onAddTag = favouritesViewModel::addTag,
+                    onRemoveTag = favouritesViewModel::removeTag,
+                    onPreferredStoreSelected = favouritesViewModel::selectPreferredStore,
                     onSaveNote = favouritesViewModel::saveNote,
                     onDismissEditor = favouritesViewModel::dismissEditor,
+                    onQueryChange = favouritesViewModel::onQueryChange,
+                    onTagSelected = favouritesViewModel::selectTag,
+                    onClearFilters = favouritesViewModel::clearFilters,
+                    onRefreshInstalled = favouritesViewModel::refreshInstalledStates,
                     onRetry = favouritesViewModel::retry,
                     onDismissError = favouritesViewModel::dismissError,
                     modifier = screenModifier,
