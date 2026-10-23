@@ -95,10 +95,25 @@ FileProvider/export MIME types on an emulator if possible.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
+- **Implementation commit:** `7d630e2` — `feat(share): add collections and offline sharing/import` on `feat/s07-collections-sharing`.
+- **Merge state:** implemented and verified on the branch; not merged. `STATUS.md` was intentionally left untouched for the post-merge integration step.
+- **Tests:** `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` — BUILD SUCCESSFUL (442 actionable tasks). Added 49 core/data test cases across collection codec/store/repository and share codec/export/import suites. All tests pass.
+- **Lint:** `./gradlew lint` — BUILD SUCCESSFUL, 0 errors. The app and `feature:favourites` reports contain 40 and 13 warnings respectively, mostly pre-existing plural-resource and Compose modifier-order warnings.
+- **Play manifest:** inspected the merged `playstoreDebug` manifest. It contains only `INTERNET` plus AndroidX's generated dynamic-receiver permission; the non-exported `FileProvider` (`${applicationId}.fileprovider`) is present. No `REQUEST_INSTALL_PACKAGES`, `QUERY_ALL_PACKAGES`, accessibility, or other restricted capability was added.
+- **Emulator-only checks not run:** no emulator/device was available, so the Android chooser MIME handling, `FileProvider` read grants, and `OpenDocument` picker flow were not exercised at runtime. Their manifests, provider path, and build wiring were verified statically.
 
-- commit:
-- tests:
-- F12 criteria completed:
-- deferred SHOULD items:
-- backup schema reuse notes:
+### F12 criteria
+
+- **F12-R1 — complete:** all export/import code is local; no account, upload, or server path exists.
+- **F12-R2 — complete:** notes are omitted by default on both export and import, with an explicit opt-in in each dialog.
+- **F12-R3 — complete:** import parses into an immutable preview and repository writes happen only after the user confirms.
+- **F12-R4 — complete:** merge, replace, and skip are implemented for favourites and collection conflicts and covered by tests.
+- **F12-R5 — complete:** imported store references are inert; known stores are copied by id, unknown stores are reported and dropped, and no store registry, install, or link action is triggered.
+- **F12-R6 — complete:** JSON, plain text, and persisted collections reject unsupported future schema versions with typed errors and a clear UI message.
+- **F12-R7 — complete:** plain text includes a versioned header, readable names, app keys, store references, tags, and notes only when opted in.
+- **F12-R8 — deferred SHOULD:** QR/deep-link sharing was not implemented and no QR dependency was added. JSON, plain text, and file export/import cover the v1 MUSTs.
+- **F12-R9 — deferred MAY:** sharing a selected subset of a collection is not implemented; collection sharing exports the whole ordered collection.
+
+### Backup schema reuse notes for S09
+
+`ShareEnvelope` documents the intended reuse contract. A full backup should wrap one or more share envelopes in its own outer, versioned envelope rather than defining another collection format. Collection identity remains `collectionId`; ordered items remain canonical `AppKey`s; favourite conflicts remain keyed by `AppKey`; stores remain references, never trusted descriptors; and notes remain opt-in. `ShareEnvelope` deliberately excludes settings, store descriptors, inventory, encryption, and checksums, so S09 must add those concerns at the outer layer rather than extending this v1 sharing payload in place.
