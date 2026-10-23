@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
 Last updated: **2026-10-23**
-Baseline: `feat/s01-feature-configuration` at `6949df7` (F17 feature configuration), based on `main` at `a4861f7`
+Baseline: `main` at `c53e49d` (S01 feature configuration, S02 store registry, and S04 installed inventory merged)
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
 
@@ -28,14 +28,14 @@ file after every feature session with the new commit, test result, and status.
 | Build profiles (`playstore`, `fdroid`) | **Done** for these two; `direct`/`custom` not implemented |
 | Local favourites and notes | **Partial** |
 | Feature configuration | **Done** |
-| Store, index, inventory, matching | **Not implemented** |
+| Store registry and installed inventory | **Partial** |
+| Index sync, matching, coverage, verification | **Not implemented** |
 | Sharing, backup, security, contribution | **Not implemented** |
-| Feature completion | **1 of 21 fully done; 1 partial; 12 registered/model-only; 3 deferred; 4 spec-only** |
+| Feature completion | **1 of 21 fully done; 3 partial; 10 registered/model-only; 3 deferred; 4 spec-only** |
 
-**Recommended next sessions:** [S02](../../sessions/S02-store-registry.md),
-[S04](../../sessions/S04-installed-inventory.md), and
-[S06](../../sessions/S06-favourites-completion.md) can run in parallel. S03
-waits for S02; S05 waits for S03 and S04; S09 waits for S06/S07.
+**Recommended next sessions:** [S03](../../sessions/S03-index-sync-verification.md)
+and [S06](../../sessions/S06-favourites-completion.md) can run in parallel now.
+S05 waits for S03; S07 waits for S06; S09 waits for S07.
 
 ## What works today
 
@@ -51,21 +51,29 @@ waits for S02; S05 waits for S03 and S04; S09 waits for S06/S07.
   build profiles supply capabilities only.
 - Capability-based `playstore` and `fdroid` profiles with separate application
   IDs (`com.fossscout.app`, `com.fossscout.app.fdroid`).
+- Local store registry with verified F-Droid and IzzyOnDroid descriptors,
+  custom-store add/edit/enable/reorder/delete, link-only fallback, explicit
+  HTTP opt-in, and versioned descriptor export.
+- Local installed-app inventory with manual package/label/store-link lookup on
+  both profiles, F-Droid-only full scan, persisted complete snapshots, stale
+  marking, system/disabled/work-profile/hide filters, and a classification
+  contract ready for S05.
 - Policy-safe “unavailable in this build” explanations and capability labels for
   restricted features.
 - Play-safe manifest: no install-packages permission, broad package visibility,
-  or accessibility service.
+  or accessibility service. Broad package visibility is confined to the F-Droid
+  flavor.
 - Material 3 UI, light/dark theme, About screen, and unit tests for the current
-  data/domain/settings behaviour.
+  data/domain/settings/store/inventory behaviour.
 
 ## Feature status
 
 | ID | Feature | Status | What exists / what is missing | Planned session |
 | --- | --- | --- | --- | --- |
-| F01 | Installed app inventory | **Registered** | Descriptor and profile capability only. No `PackageManager` source, manual picker, full scan, snapshot, filters, or stale timestamp. | S04, S05 |
+| F01 | Installed app inventory | **Partial** | Manual package/label/store-link lookup, F-Droid-only full scan, `PackageManager` source, persisted complete snapshots, stale marking, filters, hide list, classification contract, and inventory UI exist. Production classification still returns `UNKNOWN` until S05; real device/emulator `PackageManager`, installer/signer/work-profile, shared-intent, and process-restart checks remain. | S04, S05 |
 | F02 | FOSS matching | **Registered** | Descriptor only. No match levels, evidence, matching engine, or UI. | S05 |
 | F03 | Alternative suggestions | **Registered** | Descriptor only. No ranking, reasons, or alternative cards. | S05 |
-| F04 | Store registry and adapters | **Registered** | Descriptor only. No store model, adapters, built-in stores, custom-store UI, or descriptor export. | S02, S03 |
+| F04 | Store registry and adapters | **Partial** | Pure-Kotlin store/adapter contracts, verified built-in F-Droid and IzzyOnDroid descriptors, versioned registry persistence, custom-store CRUD, link-only fallback, HTTP opt-in, descriptor export, and Stores UI exist. Real adapter/index sync lands in S03; fingerprint-change events, health history, and import preview remain. | S02, S03 |
 | F05 | Index sync and offline cache | **Registered** | Descriptor only. No network layer, snapshots, freshness, cancellation, or storage budget. | S03 |
 | F06 | Coverage and confidence | **Registered** | Descriptor only. No coverage snapshot, skipped-store reasons, or incomplete-result state. | S05 |
 | F07 | Replacement guidance | **Registered** | Descriptor only. No signer/package comparison, update/replace/alternative labels, or warning UI. | S08 |
@@ -86,16 +94,17 @@ waits for S02; S05 waits for S03 and S04; S09 waits for S06/S07.
 
 ## Verification snapshot
 
-Commands run on `feat/s01-feature-configuration` at `6949df7` on 2026-10-23:
+Commands run on `main` at `c53e49d` on 2026-10-23 after merging S01, S02, and S04:
 
 | Check | Result |
 | --- | --- |
-| `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` | **Passed** |
-| Unit tests | **117 test executions across 21 suites; 0 failures, 0 errors, 0 skipped** (debug and release variants counted separately) |
+| `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` | **Passed** (5m 59s) |
+| Unit tests | **264 test executions across 47 suites; 0 failures, 0 errors, 0 skipped** (debug and release variants counted separately) |
 | `assemblePlaystoreDebug` | **Passed** |
 | `assembleFdroidDebug` | **Passed** |
-| Restricted manifest scan | **Passed**: the Play merged manifest contains no `REQUEST_INSTALL_PACKAGES`, `QUERY_ALL_PACKAGES`, `AccessibilityService`, or `BIND_ACCESSIBILITY_SERVICE` |
-| `./gradlew lint` | **Passed** (2m 6s): 0 errors, 37 warnings (existing dependency-version and redundant-label warnings). The previously reported Maven resolution block did not recur in this run. |
+| Play restricted manifest scan | **Passed**: no `REQUEST_INSTALL_PACKAGES`, `QUERY_ALL_PACKAGES`, `AccessibilityService`, or `BIND_ACCESSIBILITY_SERVICE` |
+| F-Droid manifest scan | **Expected**: contains `QUERY_ALL_PACKAGES` and a launcher-intent `<queries>` block for the full inventory scan |
+| `./gradlew lint` | **Passed** (2m 35s): 0 errors, 40 warnings. The previously reported Maven resolution block did not recur. |
 
 Debug builds may warn that native symbols for `libandroidx.graphics.path.so`
 and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build
@@ -115,9 +124,10 @@ warning, not a failing check.
 - F14 contains MUSTs for APK hash and signer checks that need F09. The planned
   v1 scope is repository/index verification, HTTPS, fingerprint pinning, and
   trust details.
-- Play package visibility is not finally decided. The planning assumption is
-  manual/selected inventory on Play and no `QUERY_ALL_PACKAGES`; F-Droid may
-  perform the full scan.
+- Play package visibility is not finally decided. The implementation now follows
+  the planning assumption: manual/selected inventory on Play with no
+  `QUERY_ALL_PACKAGES`; F-Droid performs the full scan. A Play policy review and
+  device verification are still required before release.
 - Only `playstore` and `fdroid` profiles exist. `direct` and `custom` remain
   future profiles.
 
@@ -125,8 +135,20 @@ warning, not a failing check.
 
 - F01/F02, F02/F06, F04/F05, and F05/F14 have circular dependencies in the
   specs. Shared contracts must be defined before the dependent features.
-- No store, snapshot, sync, inventory, matching, coverage, or verification
-  models exist.
+- Store registry and installed-inventory models/repositories exist. There is no
+  index sync/cache, real store adapter, matching, coverage, or verification
+  implementation yet.
+- F01's production classifier still returns `UNKNOWN`; S05 must replace it
+  without changing the inventory contract.
+- F04's real adapter/index usability waits for S03. The registry currently
+  proves contracts and local CRUD with fake adapters.
+- Android `PackageManager` behaviour is covered by JVM fakes only. Real
+  enumeration, package visibility, installer/signer/work-profile values,
+  shared-link handling, stale rendering, and hide-list survival across process
+  restart still need device/emulator verification.
+- The app now exposes six bottom-navigation destinations. This is functional but
+  needs a UX review before release; Inventory or Stores may belong in a
+  secondary surface.
 - `AppCollection` has no schema version or repository.
 - `AppKey` has no documented canonicalization rule for source-only apps.
 - No production feature declares a `FeatureSetting` yet. The generated

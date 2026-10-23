@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Ready** |
+| Status | **Done** (S02 scope; index sync lands in S03) |
 | Features | F04 (contracts/registry portion) |
 | Depends on | Foundation; S01 recommended for descriptor changes |
 | Can run in parallel with | S04, S06 |

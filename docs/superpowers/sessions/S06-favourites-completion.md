@@ -4,8 +4,8 @@
 | --- | --- |
 | Status | **Ready** |
 | Features | F11 (F12 collections/sharing are S07) |
-| Depends on | Foundation; S04 for installed badge; S02 for preferred-store UI |
-| Can run in parallel with | S02, S04 |
+| Depends on | Foundation; S02 store registry and S04 installed inventory are merged |
+| Can run in parallel with | S03 |
 | Profiles | `playstore`, `fdroid` |
 | Spec | [`F11-favourites-notes.md`](../specs/features/F11-favourites-notes.md) |
 

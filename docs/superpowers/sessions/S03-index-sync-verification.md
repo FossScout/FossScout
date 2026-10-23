@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Blocked by S02** |
+| Status | **Ready** (S01 and S02 merged) |
 | Features | F05, F14 (verification core; trust UI is S10) |
 | Depends on | S01, S02 |
-| Can run in parallel with | S07 |
+| Can run in parallel with | S06 |
 | Profiles | `playstore`, `fdroid` |
 | Specs | [`F05-index-sync-cache.md`](../specs/features/F05-index-sync-cache.md), [`F14-security-verification.md`](../specs/features/F14-security-verification.md) |
 
