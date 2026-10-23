@@ -2,10 +2,12 @@ package com.fossscout.app
 
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
+import com.fossscout.app.profile.ProfileFeatures
 import com.fossscout.core.data.DataStoreFeatureSettingsStore
 import com.fossscout.core.data.DataStoreFavouritesStore
 import com.fossscout.core.data.FavouritesRepository
 import com.fossscout.core.data.FeatureSettingsRepository
+import com.fossscout.core.feature.FeatureCatalog
 
 private val Context.favouritesDataStore by preferencesDataStore(name = "favourites")
 private val Context.featureSettingsDataStore by preferencesDataStore(name = "feature_settings")
@@ -19,8 +21,9 @@ class AppContainer(context: Context) {
         DataStoreFavouritesStore(context.favouritesDataStore),
     )
 
-    val dataStoreFeatureSettingsStore =
-        DataStoreFeatureSettingsStore(context.featureSettingsDataStore)
-
-    val featureSettingsRepository = FeatureSettingsRepository(dataStoreFeatureSettingsStore)
+    val featureSettingsRepository = FeatureSettingsRepository(
+        store = DataStoreFeatureSettingsStore(context.featureSettingsDataStore),
+        profile = ProfileFeatures.profile,
+        descriptors = FeatureCatalog.all,
+    )
 }

@@ -10,6 +10,20 @@
     <string name="settings_missing_capabilities">Needs: %1$s</string>
     <string name="settings_always_available">Always available</string>
     <string name="settings_toggle_feature">Enable %1$s</string>
+    <string name="settings_section_basic">Basic</string>
+    <string name="settings_section_advanced">Advanced</string>
+    <string name="settings_unavailable_section">Unavailable in this build</string>
+    <string name="settings_show_advanced">Show advanced settings</string>
+    <string name="settings_hide_advanced">Hide advanced settings</string>
+    <string name="settings_reset">Reset</string>
+    <string name="settings_reset_feature">Reset %1$s</string>
+    <string name="settings_reset_all">Reset all</string>
+    <string name="settings_reset_all_title">Reset all settings?</string>
+    <string name="settings_reset_all_message">This restores every feature and setting to its default.</string>
+    <string name="settings_cancel">Cancel</string>
+    <string name="settings_setting_title_fallback">Feature setting</string>
+    <string name="settings_setting_invalid">Invalid value</string>
+    <string name="settings_setting_save">Save</string>
 
     <string name="feature_inventory_title">Installed apps</string>
     <string name="feature_matching_title">Find open-source matches</string>

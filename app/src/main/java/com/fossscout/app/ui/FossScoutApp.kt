@@ -32,9 +32,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.fossscout.app.AppContainer
 import com.fossscout.app.R
-import com.fossscout.app.profile.ProfileFeatures
 import com.fossscout.app.ui.about.AboutScreen
-import com.fossscout.core.feature.FeatureCatalog
 import com.fossscout.core.feature.FeatureId
 import com.fossscout.feature.catalog.data.Project
 import com.fossscout.feature.catalog.data.ProjectRepository
@@ -70,16 +68,11 @@ fun FossScoutApp(
         },
     ),
 ) {
-    val featureDescriptors = remember {
-        FeatureCatalog.all.filter { it.id in ProfileFeatures.enabledFeatures }
-    }
     val featureSettingsViewModel: FeatureSettingsViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
                 FeatureSettingsViewModel(
                     repository = container.featureSettingsRepository,
-                    profile = ProfileFeatures.profile,
-                    descriptors = featureDescriptors,
                 )
             }
         },
@@ -170,6 +163,10 @@ fun FossScoutApp(
             AppDestination.SETTINGS -> FeatureSettingsScreen(
                 uiState = featureSettingsState,
                 onToggle = featureSettingsViewModel::setEnabled,
+                onSettingValueChange = featureSettingsViewModel::setSettingValue,
+                onResetFeature = featureSettingsViewModel::resetFeature,
+                onResetAll = featureSettingsViewModel::resetAll,
+                onToggleAdvanced = featureSettingsViewModel::toggleAdvanced,
                 onDismissError = featureSettingsViewModel::dismissError,
                 modifier = screenModifier,
             )

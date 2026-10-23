@@ -12,7 +12,18 @@ data class FeatureDescriptor(
     val requiredCapabilities: Set<Capability>,
     val enhancedBy: Set<Capability> = emptySet(),
     val defaultEnabled: Boolean = true,
-)
+    val settings: List<FeatureSetting> = emptyList(),
+) {
+    init {
+        val duplicateKeys = settings.groupingBy(FeatureSetting::key)
+            .eachCount()
+            .filterValues { count -> count > 1 }
+            .keys
+        require(duplicateKeys.isEmpty()) {
+            "Duplicate setting keys for ${id.name}: ${duplicateKeys.joinToString()}"
+        }
+    }
+}
 
 data class BuildProfile(val name: String, val capabilities: Set<Capability>)
 
@@ -22,4 +33,5 @@ data class FeatureState(
     val enhanced: Boolean,
     val enabled: Boolean,
     val missingCapabilities: Set<Capability>,
+    val settingValues: Map<String, FeatureSettingValue> = emptyMap(),
 )

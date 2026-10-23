@@ -3,6 +3,7 @@ package com.fossscout.feature.settings
 import androidx.annotation.StringRes
 import com.fossscout.core.feature.Capability
 import com.fossscout.core.feature.FeatureId
+import com.fossscout.core.feature.FeatureSetting
 
 @StringRes
 internal fun FeatureId.titleRes(): Int = when (this) {
@@ -23,6 +24,15 @@ internal fun FeatureId.titleRes(): Int = when (this) {
     FeatureId.UPDATES -> R.string.feature_updates_title
     FeatureId.CONTRIBUTION -> R.string.feature_contribution_title
     FeatureId.SETTINGS -> R.string.feature_settings_title
+}
+
+/**
+ * Settings labels are resolved by stable key so declarations stay free of
+ * Android resources. Add a case here when a feature declares a real setting.
+ */
+@StringRes
+internal fun FeatureSetting.titleRes(featureId: FeatureId): Int = when (featureId to key) {
+    else -> R.string.settings_setting_title_fallback
 }
 
 @StringRes

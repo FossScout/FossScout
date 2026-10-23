@@ -85,4 +85,85 @@ class FeatureRegistryTest {
         assertTrue(state.available)
         assertFalse(state.enabled)
     }
+
+    @Test
+    fun `declared setting values are resolved with defaults`() {
+        val setting = FeatureSetting(
+            key = "prefix",
+            section = FeatureSettingSection.BASIC,
+            defaultValue = FeatureSettingValue.TextValue("default"),
+        )
+        val descriptor = FeatureDescriptor(
+            id = FeatureId.FAVOURITES,
+            availability = Availability.GENERAL,
+            requiredCapabilities = emptySet(),
+            settings = listOf(setting),
+        )
+        val registry = FeatureRegistry(
+            profile = BuildProfile("playstore", emptySet()),
+            descriptors = listOf(descriptor),
+            storedValues = mapOf(
+                FeatureId.FAVOURITES to mapOf(
+                    setting.key to FeatureSettingValue.TextValue("custom"),
+                ),
+            ),
+        )
+
+        assertEquals(
+            FeatureSettingValue.TextValue("custom"),
+            registry.state(FeatureId.FAVOURITES).settingValues[setting.key],
+        )
+    }
+
+    @Test
+    fun `invalid stored setting values fall back to the declared default`() {
+        val setting = FeatureSetting(
+            key = "prefix",
+            section = FeatureSettingSection.BASIC,
+            defaultValue = FeatureSettingValue.TextValue("home"),
+            validation = FeatureSettingValidation.TextConstraints(maxLength = 4),
+        )
+        val descriptor = FeatureDescriptor(
+            id = FeatureId.FAVOURITES,
+            availability = Availability.GENERAL,
+            requiredCapabilities = emptySet(),
+            settings = listOf(setting),
+        )
+        val registry = FeatureRegistry(
+            profile = BuildProfile("playstore", emptySet()),
+            descriptors = listOf(descriptor),
+            storedValues = mapOf(
+                FeatureId.FAVOURITES to mapOf(
+                    setting.key to FeatureSettingValue.TextValue("too long"),
+                ),
+            ),
+        )
+
+        assertEquals(
+            FeatureSettingValue.TextValue("home"),
+            registry.state(FeatureId.FAVOURITES).settingValues[setting.key],
+        )
+    }
+
+    @Test
+    fun `states and enabled ids follow registry order`() {
+        val first = FeatureDescriptor(
+            id = FeatureId.COVERAGE,
+            availability = Availability.GENERAL,
+            requiredCapabilities = emptySet(),
+        )
+        val second = FeatureDescriptor(
+            id = FeatureId.FAVOURITES,
+            availability = Availability.GENERAL,
+            requiredCapabilities = emptySet(),
+        )
+        val registry = FeatureRegistry(
+            BuildProfile("playstore", emptySet()),
+            listOf(first, second),
+            userDisabled = setOf(FeatureId.FAVOURITES),
+        )
+
+        assertEquals(listOf(first, second), registry.states().map { it.descriptor })
+        assertEquals(setOf(FeatureId.COVERAGE), registry.enabledFeatureIds())
+    }
 }
