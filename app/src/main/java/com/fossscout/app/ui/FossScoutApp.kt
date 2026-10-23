@@ -7,6 +7,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
@@ -17,6 +18,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +42,8 @@ import com.fossscout.feature.catalog.discover.DiscoverScreen
 import com.fossscout.feature.catalog.discover.DiscoverViewModel
 import com.fossscout.feature.favourites.FavouritesScreen
 import com.fossscout.feature.favourites.FavouritesViewModel
+import com.fossscout.feature.inventory.InventoryScreen
+import com.fossscout.feature.inventory.InventoryViewModel
 import com.fossscout.feature.settings.FeatureSettingsScreen
 import com.fossscout.feature.settings.FeatureSettingsViewModel
 
@@ -49,6 +53,7 @@ private enum class AppDestination(
     val icon: ImageVector,
 ) {
     DISCOVER(null, R.string.nav_discover, Icons.Filled.Search),
+    INVENTORY(FeatureId.INVENTORY, R.string.nav_inventory, Icons.AutoMirrored.Filled.List),
     SAVED(FeatureId.FAVOURITES, R.string.nav_saved, Icons.Filled.Favorite),
     SETTINGS(FeatureId.SETTINGS, R.string.nav_settings, Icons.Filled.Settings),
     ABOUT(null, R.string.nav_about, Icons.Filled.Info),
@@ -57,6 +62,7 @@ private enum class AppDestination(
 @Composable
 fun FossScoutApp(
     container: AppContainer,
+    initialInventoryQuery: String? = null,
     discoverViewModel: DiscoverViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
@@ -92,6 +98,21 @@ fun FossScoutApp(
     var selectedDestination by rememberSaveable { mutableStateOf(AppDestination.DISCOVER.name) }
     val destination = destinations.firstOrNull { it.name == selectedDestination }
         ?: destinations.first()
+    val inventoryEnabled = FeatureId.INVENTORY in enabledFeatures
+    var handledSharedQuery by rememberSaveable { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(initialInventoryQuery, inventoryEnabled) {
+        val shared = initialInventoryQuery?.trim().orEmpty()
+        if (
+            inventoryEnabled &&
+            shared.isNotEmpty() &&
+            handledSharedQuery != initialInventoryQuery
+        ) {
+            selectedDestination = AppDestination.INVENTORY.name
+            handledSharedQuery = initialInventoryQuery
+        }
+    }
+
     val state by discoverViewModel.uiState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
@@ -154,6 +175,49 @@ fun FossScoutApp(
                     onDismissEditor = favouritesViewModel::dismissEditor,
                     onRetry = favouritesViewModel::retry,
                     onDismissError = favouritesViewModel::dismissError,
+                    modifier = screenModifier,
+                )
+            }
+
+            AppDestination.INVENTORY -> {
+                val inventoryViewModel: InventoryViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer {
+                            InventoryViewModel(
+                                repository = container.inventoryRepository,
+                                initialQuery = initialInventoryQuery,
+                            )
+                        }
+                    },
+                )
+                LaunchedEffect(initialInventoryQuery) {
+                    val shared = initialInventoryQuery?.trim().orEmpty()
+                    if (
+                        shared.isNotEmpty() &&
+                        inventoryViewModel.uiState.value.query != shared
+                    ) {
+                        inventoryViewModel.submitSharedInput(shared)
+                    }
+                }
+                val inventoryState by
+                    inventoryViewModel.uiState.collectAsStateWithLifecycle()
+
+                InventoryScreen(
+                    state = inventoryState,
+                    onQueryChange = inventoryViewModel::onQueryChange,
+                    onSearch = inventoryViewModel::search,
+                    onCheck = inventoryViewModel::checkInput,
+                    onSelectCandidate = inventoryViewModel::selectCandidate,
+                    onFullScan = inventoryViewModel::startFullScan,
+                    onCancelScan = inventoryViewModel::cancelScan,
+                    onIncludeSystemChange = inventoryViewModel::setIncludeSystemApps,
+                    onIncludeDisabledChange = inventoryViewModel::setIncludeDisabledApps,
+                    onIncludeWorkProfileChange =
+                        inventoryViewModel::setIncludeWorkProfileApps,
+                    onIncludeHiddenChange = inventoryViewModel::setIncludeHiddenApps,
+                    onHide = inventoryViewModel::hide,
+                    onUnhide = inventoryViewModel::unhide,
+                    onDismissError = inventoryViewModel::dismissError,
                     modifier = screenModifier,
                 )
             }

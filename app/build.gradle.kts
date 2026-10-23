@@ -67,9 +67,11 @@ android {
 dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:feature"))
+    implementation(project(":core:inventory"))
     implementation(project(":core:ui"))
     implementation(project(":feature:catalog"))
     implementation(project(":feature:favourites"))
+    implementation(project(":feature:inventory"))
     implementation(project(":feature:settings"))
 
     implementation(libs.androidx.core.ktx)

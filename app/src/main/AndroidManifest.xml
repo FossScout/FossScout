@@ -20,6 +20,29 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="play.google.com"
+                    android:pathPrefix="/store/apps/details" />
+                <data
+                    android:scheme="https"
+                    android:host="f-droid.org"
+                    android:pathPrefix="/packages" />
+                <data
+                    android:scheme="https"
+                    android:host="f-droid.org"
+                    android:pathPrefix="/en/packages" />
+                <data android:scheme="market" />
+            </intent-filter>
         </activity>
     </application>
 
