@@ -5,12 +5,16 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.fossscout.app.inventory.PackageManagerInstalledAppSource
 import com.fossscout.app.profile.ProfileFeatures
 import com.fossscout.core.data.DataStoreFeatureSettingsStore
+import com.fossscout.core.data.DataStoreCollectionsStore
 import com.fossscout.core.data.DataStoreFavouritesStore
 import com.fossscout.core.data.DataStoreInventoryStore
 import com.fossscout.core.data.DataStoreStoreRegistryStore
 import com.fossscout.core.data.DataStoreSnapshotMetadataStore
+import com.fossscout.core.data.CollectionsRepository
 import com.fossscout.core.data.FavouritesRepository
 import com.fossscout.core.data.FeatureSettingsRepository
+import com.fossscout.core.data.ShareExportFactory
+import com.fossscout.core.data.ShareImportService
 import com.fossscout.core.data.StoreRegistryRepository
 import com.fossscout.core.feature.Capability
 import com.fossscout.core.feature.FeatureCatalog
@@ -26,6 +30,7 @@ import java.io.File
 import kotlinx.coroutines.flow.first
 
 private val Context.favouritesDataStore by preferencesDataStore(name = "favourites")
+private val Context.collectionsDataStore by preferencesDataStore(name = "collections")
 private val Context.featureSettingsDataStore by preferencesDataStore(name = "feature_settings")
 private val Context.storeRegistryDataStore by preferencesDataStore(name = "store_registry")
 private val Context.inventoryDataStore by preferencesDataStore(name = "inventory")
@@ -38,6 +43,17 @@ private val Context.indexStateDataStore by preferencesDataStore(name = "index_st
 class AppContainer(context: Context) {
     val favouritesRepository = FavouritesRepository(
         DataStoreFavouritesStore(context.favouritesDataStore),
+    )
+
+    val collectionsRepository = CollectionsRepository(
+        DataStoreCollectionsStore(context.collectionsDataStore),
+    )
+
+    val shareExportFactory = ShareExportFactory()
+
+    val shareImportService = ShareImportService(
+        favouritesRepository = favouritesRepository,
+        collectionsRepository = collectionsRepository,
     )
 
     val featureSettingsRepository = FeatureSettingsRepository(

@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -69,6 +70,11 @@ fun FavouritesScreen(
     onRefreshInstalled: () -> Unit,
     onRetry: () -> Unit,
     onDismissError: () -> Unit,
+    showSharing: Boolean = false,
+    onOpenCollections: () -> Unit = {},
+    onShareAll: () -> Unit = {},
+    onImport: () -> Unit = {},
+    onShareFavourite: (AppKey) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(Unit) {
@@ -94,7 +100,24 @@ fun FavouritesScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = onOpenCollections) {
+                    Text(stringResource(R.string.collections_title))
+                }
+                if (showSharing) {
+                    TextButton(onClick = onShareAll) {
+                        Text(stringResource(R.string.sharing_share_all))
+                    }
+                    TextButton(onClick = onImport) {
+                        Text(stringResource(R.string.sharing_import))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = state.query,
                 onValueChange = onQueryChange,
@@ -211,7 +234,9 @@ fun FavouritesScreen(
                             state.storeName(id)
                                 ?: stringResource(R.string.favourite_store_unknown, id.value)
                         },
+                        showSharing = showSharing,
                         onEditNote = { onEditNote(favourite) },
+                        onShare = { onShareFavourite(favourite.appKey) },
                         onRemove = { onRemove(favourite.appKey) },
                     )
                 }
@@ -322,7 +347,9 @@ private fun FavouriteCard(
     favourite: Favourite,
     installedState: InstalledState?,
     preferredStoreName: String?,
+    showSharing: Boolean,
     onEditNote: () -> Unit,
+    onShare: () -> Unit,
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -358,6 +385,18 @@ private fun FavouriteCard(
                         ),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+                if (showSharing) {
+                    IconButton(onClick = onShare) {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            contentDescription = stringResource(
+                                R.string.collections_share,
+                                favourite.displayName,
+                            ),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
                 IconButton(onClick = onRemove) {
                     Icon(

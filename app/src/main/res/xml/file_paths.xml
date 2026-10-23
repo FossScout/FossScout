@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Only the share-export cache is exposed, one file at a time, via a grant. -->
+    <cache-path
+        name="share_exports"
+        path="exports/" />
+</paths>

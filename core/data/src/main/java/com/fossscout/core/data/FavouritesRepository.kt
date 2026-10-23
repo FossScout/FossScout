@@ -103,6 +103,18 @@ class FavouritesRepository(
         )
     }
 
+    /**
+     * Atomically replaces every favourite. Used by explicit import/replace
+     * flows, which compute the complete result before writing once.
+     */
+    suspend fun replaceAll(favourites: List<Favourite>) = mutex.withLock {
+        require(favourites.map(Favourite::appKey).toSet().size == favourites.size) {
+            "Duplicate favourite app keys"
+        }
+        favourites.forEach(Favourite::validate)
+        store.save(favourites)
+    }
+
     suspend fun toggle(appKey: AppKey, displayName: String) = mutex.withLock {
         val current = store.favourites.first()
         if (current.any { it.appKey == appKey }) {
