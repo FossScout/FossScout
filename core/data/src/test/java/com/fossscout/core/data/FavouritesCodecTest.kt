@@ -3,6 +3,7 @@ package com.fossscout.core.data
 import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.FAVOURITES_SCHEMA_VERSION
 import com.fossscout.core.model.Favourite
+import com.fossscout.core.model.StoreId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -17,6 +18,8 @@ class FavouritesCodecTest {
                 appKey = AppKey("org.example"),
                 displayName = "Example",
                 note = "Try this",
+                tags = setOf("privacy", "tools"),
+                preferredStoreId = StoreId("fdroid"),
                 createdAtEpochMillis = 1L,
                 updatedAtEpochMillis = 2L,
             ),
@@ -26,6 +29,11 @@ class FavouritesCodecTest {
 
         assertEquals(favourites, decoded)
         assertEquals(FAVOURITES_SCHEMA_VERSION, decoded.single().schemaVersion)
+        assertEquals(
+            StoreId("fdroid"),
+            decoded.single().preferredStoreId,
+        )
+        assertEquals(setOf("privacy", "tools"), decoded.single().tags)
     }
 
     @Test

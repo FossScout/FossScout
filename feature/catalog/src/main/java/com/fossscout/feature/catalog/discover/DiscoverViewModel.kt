@@ -76,7 +76,7 @@ class DiscoverViewModel(
         }
         viewModelScope.launch {
             try {
-                val appKey = AppKey(project.id)
+                val appKey = AppKey.from(project.id)
                 val isSaved = project.id in _uiState.value.savedIds
                 if (isSaved) {
                     favouritesRepository.remove(appKey)

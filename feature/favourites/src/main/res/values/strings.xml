@@ -4,22 +4,53 @@
     <string name="favourites_subtitle">The open-source tools you want to revisit.</string>
     <string name="favourites_empty_title">Nothing saved yet</string>
     <string name="favourites_empty_body">Tap the heart on a project to keep it here.</string>
+    <string name="favourites_empty_filtered_title">No saved projects match</string>
+    <string name="favourites_empty_filtered_body">Try a different search term or tag filter.</string>
+    <string name="favourites_search_placeholder">Search names, notes, or tags</string>
+    <string name="favourites_clear_search">Clear search</string>
+    <string name="favourites_filter_all">All tags</string>
+    <string name="favourites_clear_filters">Clear filters</string>
     <string name="favourites_loading">Loading saved projects…</string>
     <string name="favourites_error_read">Couldn\'t load saved projects</string>
     <string name="favourites_error_read_body">Your saved projects are still on this device. Try loading them again.</string>
-    <string name="favourites_error_save">Couldn\'t save your note.</string>
+    <string name="favourites_error_save">Couldn\'t save your changes.</string>
     <string name="favourites_error_remove">Couldn\'t remove the saved project.</string>
     <string name="favourites_retry">Retry</string>
     <string name="favourites_dismiss">Dismiss</string>
     <string name="favourite_edit_note">Edit note for %1$s</string>
     <string name="favourite_remove">Remove %1$s from saved projects</string>
     <string name="favourite_note_label">Private note</string>
-    <string name="note_dialog_title">Note for %1$s</string>
+    <string name="favourite_preferred_store">Preferred store: %1$s</string>
+    <string name="favourite_store_unknown">Unknown store (%1$s)</string>
+
+    <string name="favourite_tags_label">Tags</string>
+    <string name="favourite_tags_none">No tags yet.</string>
+    <string name="favourite_tag_add_label">Add a tag</string>
+    <string name="favourite_tag_add">Add tag</string>
+    <string name="favourite_tag_remove">Remove tag %1$s</string>
+    <string name="favourite_tag_hint">Up to %1$d tags, each at most %2$d characters.</string>
+    <string name="favourite_tag_too_long">Tags can be at most %1$d characters.</string>
+    <string name="favourite_tag_too_many">You can add up to %1$d tags.</string>
+
+    <string name="favourite_store_label">Preferred store</string>
+    <string name="favourite_store_none">No preferred store</string>
+    <string name="favourite_store_unavailable">Add a store in Stores to set a preference. Saving without one works.</string>
+
+    <string name="favourite_installed_badge">Installed</string>
+    <string name="favourite_not_installed_badge">Not installed</string>
+    <string name="favourite_unavailable_badge">Unavailable</string>
+    <string name="favourite_unknown_badge">Unknown</string>
+    <string name="favourite_installed_explanation">Installed on this device.</string>
+    <string name="favourite_not_installed_explanation">Not installed on this device.</string>
+    <string name="favourite_unavailable_explanation">Not visible to this build, or not installed.</string>
+    <string name="favourite_unknown_explanation">Installation can\'t be checked for this entry.</string>
+
+    <string name="note_dialog_title">Edit %1$s</string>
     <string name="note_dialog_label">Private note</string>
     <string name="note_dialog_hint">Only stored on this device. Notes are never shared.</string>
     <string name="note_dialog_counter">%1$d/%2$d characters</string>
     <string name="note_dialog_too_long">Notes can be at most %1$d characters.</string>
-    <string name="note_dialog_save_error">Couldn\'t save your note. Try again.</string>
+    <string name="note_dialog_save_error">Couldn\'t save your changes. Try again.</string>
     <string name="note_dialog_save">Save</string>
     <string name="note_dialog_saving">Saving…</string>
     <string name="note_dialog_cancel">Cancel</string>

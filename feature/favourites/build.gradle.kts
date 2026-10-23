@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:feature"))
     implementation(project(":core:data"))
+    implementation(project(":core:inventory"))
     implementation(project(":core:ui"))
 
     implementation(libs.androidx.lifecycle.runtime.compose)

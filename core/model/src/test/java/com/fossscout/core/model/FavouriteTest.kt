@@ -11,6 +11,12 @@ class FavouriteTest {
     }
 
     @Test
+    fun `app key rejects non-canonical spellings`() {
+        assertThrows(IllegalArgumentException::class.java) { AppKey(" org.example ") }
+        assertEquals(AppKey("org.example"), AppKey.from("  org.example  "))
+    }
+
+    @Test
     fun `note length is capped`() {
         val favourite = Favourite(
             appKey = AppKey("org.example"),

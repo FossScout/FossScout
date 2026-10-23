@@ -20,6 +20,7 @@ import com.fossscout.core.feature.IndexCacheSettings
 import com.fossscout.core.index.FileSnapshotPayloadStore
 import com.fossscout.core.index.IndexSyncRepository
 import com.fossscout.core.index.UrlConnectionHttpFetcher
+import com.fossscout.core.inventory.InstalledAppStateProvider
 import com.fossscout.core.inventory.InventoryRepository
 import java.io.File
 import kotlinx.coroutines.flow.first
@@ -72,12 +73,16 @@ class AppContainer(context: Context) {
     private val broadPackageVisibility =
         Capability.BROAD_PACKAGE_VISIBILITY in ProfileFeatures.profile.capabilities
 
+    private val installedAppSource = PackageManagerInstalledAppSource(
+        context = context.applicationContext,
+        supportsFullScan = broadPackageVisibility,
+    )
+
+    val installedStateProvider = InstalledAppStateProvider(installedAppSource)
+
     val inventoryRepository = InventoryRepository(
         store = DataStoreInventoryStore(context.inventoryDataStore),
-        source = PackageManagerInstalledAppSource(
-            context = context.applicationContext,
-            supportsFullScan = broadPackageVisibility,
-        ),
+        source = installedAppSource,
         allowFullScan = broadPackageVisibility,
     )
 }

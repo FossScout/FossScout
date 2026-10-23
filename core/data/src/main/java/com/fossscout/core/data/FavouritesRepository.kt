@@ -2,8 +2,8 @@ package com.fossscout.core.data
 
 import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.Favourite
-import com.fossscout.core.model.MAX_NOTE_LENGTH
 import com.fossscout.core.model.StoreId
+import com.fossscout.core.model.normalizeTags
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
@@ -55,13 +55,47 @@ class FavouritesRepository(
         store.save(store.favourites.first().filterNot { it.appKey == appKey })
     }
 
-    suspend fun updateNote(appKey: AppKey, note: String) = mutex.withLock {
-        require(note.length <= MAX_NOTE_LENGTH) { "Note is too long" }
+    suspend fun updateNote(appKey: AppKey, note: String) = update(appKey) { favourite ->
+        favourite.copy(note = note)
+    }
+
+    suspend fun updateTags(appKey: AppKey, tags: Iterable<String>) = update(appKey) { favourite ->
+        favourite.copy(tags = normalizeTags(tags))
+    }
+
+    /**
+     * Replaces every editable detail in one write. Tags are normalized here so
+     * callers cannot persist duplicates, blanks, or oversized values.
+     */
+    suspend fun updateDetails(
+        appKey: AppKey,
+        note: String,
+        tags: Iterable<String>,
+        preferredStoreId: StoreId?,
+    ) = update(appKey) { favourite ->
+        favourite.copy(
+            note = note,
+            tags = normalizeTags(tags),
+            preferredStoreId = preferredStoreId,
+        )
+    }
+
+    suspend fun updatePreferredStore(appKey: AppKey, preferredStoreId: StoreId?) =
+        update(appKey) { favourite ->
+            favourite.copy(preferredStoreId = preferredStoreId)
+        }
+
+    private suspend fun update(
+        appKey: AppKey,
+        transform: (Favourite) -> Favourite,
+    ) = mutex.withLock {
         val current = store.favourites.first()
         store.save(
             current.map { favourite ->
                 if (favourite.appKey == appKey) {
-                    favourite.copy(note = note, updatedAtEpochMillis = now()).also { it.validate() }
+                    transform(favourite)
+                        .copy(updatedAtEpochMillis = now())
+                        .also { it.validate() }
                 } else {
                     favourite
                 }
