@@ -92,9 +92,48 @@ descriptor round-trip. Confirm no new network dependency is required yet.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
+Implemented on `feat/s02-store-registry` on 2026-10-23.
 
-- commit:
-- tests:
-- F04 criteria completed:
-- remaining F04 criteria (expected: R2 sync):
+- commit: `461ead9` (implementation); this completion record is a follow-up
+  commit on the same branch.
+- modules: new `core:store-api` (pure-Kotlin descriptor, adapter, health, and
+  capability contracts), new `feature:stores` (Store screen and view model),
+  and registry codec/store/repository additions under `core:data`. App wiring
+  adds the DataStore-backed repository and a Stores destination gated by
+  `FeatureId.STORES`.
+- tests: **184 test executions across 31 suites; 0 failures, 0 errors, 0
+  skipped** (`./gradlew test`, debug and release variants counted separately).
+  New coverage includes CRUD, priority normalization/reorder, link-only
+  fallback, HTTP opt-in, codec/descriptor export round-trips, malformed and
+  future schema rejection, and fake-adapter capability handling.
+- build: `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` **passed**.
+- lint: `./gradlew lint` **passed** (0 errors; 37 existing app warnings). The new
+  `feature:stores` module reports no lint issues.
+- Play merged manifest scan: **passed**. No `REQUEST_INSTALL_PACKAGES`,
+  `QUERY_ALL_PACKAGES`, `AccessibilityService`, or
+  `BIND_ACCESSIBILITY_SERVICE` entries were added.
+- F04 criteria completed: R1 (fresh install ships F-Droid and IzzyOnDroid), R2
+  (custom F-Droid-compatible stores add, persist, and become matchable), R3
+  (unsupported adapters persist as link-only with a reason, open their homepage,
+  and are excluded from matching), R4 (enable/disable/reorder/edit/delete feed
+  the next registry read without restart), R5 (versioned JSON descriptor export
+  and share), R6 (HTTP requires explicit opt-in). The registry codec rejects
+  malformed and future data without overwriting the active registry.
+- remaining F04 criteria (expected: R2 sync): R2's actual index usability waits
+  for S03 sync; R7 fingerprint-change security events, richer R8 health history
+  (last-sync/latency display), and MAY R9 import preview remain for later
+  sessions.
+- verified store sources (checked 2026-10-23; not guessed):
+  - F-Droid: homepage <https://f-droid.org>, index
+    <https://f-droid.org/repo>, fingerprint
+    `43238d512c1e5eb2d6569f4a3afbf5523418b82e0a3ed1552770abb9a9c9ccab`.
+    Source: <https://f-droid.org/docs/Release_Channels_and_Signing_Keys/>,
+    listed as the APK signing certificate SHA-256 fingerprint.
+  - IzzyOnDroid: homepage <https://apt.izzysoft.de/fdroid/>, index
+    <https://apt.izzysoft.de/fdroid/repo>, fingerprint
+    `3bf0d6abfeae2f401707b6d966be743bf0eee49c2561b9ba39073711f628937a`.
+    Source: <https://apt.izzysoft.de/fdroid/>, whose repository link publishes
+    the value in its `fingerprint` query parameter.
+- known gaps: no real adapter/network implementation, index parsing, sync
+  cache/freshness, signature-verification UI, APK install, import preview, or
+  deep-link handoff was added (all intentionally out of S02 scope).
