@@ -71,6 +71,7 @@ dependencies {
     implementation(project(":feature:catalog"))
     implementation(project(":feature:favourites"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:stores"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.datastore.preferences)

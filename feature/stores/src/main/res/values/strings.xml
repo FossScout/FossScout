@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stores_title">Stores</string>
+    <string name="stores_subtitle">Choose which stores FossScout may use for matching.</string>
+    <string name="stores_add">Add store</string>
+    <string name="stores_loading">Loading stores…</string>
+    <string name="stores_empty">No stores yet. Add one to get started.</string>
+    <string name="stores_error_read">Couldn\'t load your stores. Your saved registry was left untouched.</string>
+    <string name="stores_error_write">Couldn\'t save that store change.</string>
+    <string name="stores_error_invalid">Check the store details and try again.</string>
+    <string name="stores_error_http">Plain HTTP needs explicit approval before this store can be saved.</string>
+    <string name="stores_dismiss">Dismiss</string>
+    <string name="stores_retry">Retry</string>
+    <string name="stores_builtin">Predefined</string>
+    <string name="stores_adapter_label">Adapter: %1$s</string>
+    <string name="stores_fingerprint_label">SHA-256 fingerprint: %1$s</string>
+    <string name="stores_no_fingerprint">No fingerprint recorded.</string>
+    <string name="stores_link_only_title">Link only — excluded from matching</string>
+    <string name="stores_link_only_adapter">This adapter is not supported in this build.</string>
+    <string name="stores_link_only_endpoint">No catalog endpoint is configured for this adapter.</string>
+    <string name="stores_open_homepage">Open homepage</string>
+    <string name="stores_toggle">Enable %1$s</string>
+    <string name="stores_move_up">Move %1$s up</string>
+    <string name="stores_move_down">Move %1$s down</string>
+    <string name="stores_edit_store">Edit %1$s</string>
+    <string name="stores_delete_store">Delete %1$s</string>
+    <string name="stores_export_store">Export %1$s</string>
+    <string name="stores_health_error">Health error: %1$s</string>
+    <string name="stores_health_unknown">Not synced yet</string>
+    <plurals name="stores_health_items">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+    <string name="stores_trust_note_fdroid">Official F-Droid repository, signed with the F-Droid signing key.</string>
+    <string name="stores_trust_note_izzy">IzzyOnDroid F-Droid repository, signed with the IzzyOnDroid key.</string>
+    <string name="stores_trust_note_predefined">Predefined store shipped with FossScout.</string>
+
+    <string name="stores_editor_add_title">Add store</string>
+    <string name="stores_editor_edit_title">Edit store</string>
+    <string name="stores_editor_name">Name</string>
+    <string name="stores_editor_homepage">Homepage / repository URL</string>
+    <string name="stores_editor_adapter">Adapter type</string>
+    <string name="stores_editor_index_url">Index URL (defaults to homepage)</string>
+    <string name="stores_editor_api_url">API URL (optional)</string>
+    <string name="stores_editor_repository_url">Source repository URL (optional)</string>
+    <string name="stores_editor_fingerprint">SHA-256 fingerprint (optional)</string>
+    <string name="stores_editor_trust_note">Trust note (optional)</string>
+    <string name="stores_editor_http_warning">This store uses plain HTTP. Traffic can be read or modified in transit.</string>
+    <string name="stores_editor_http_opt_in">I understand and want to allow plain HTTP</string>
+    <string name="stores_editor_save">Save</string>
+    <string name="stores_editor_cancel">Cancel</string>
+    <string name="stores_delete_title">Delete store?</string>
+    <string name="stores_delete_message">%1$s will be removed from this device. Predefined stores can be added again only by reinstalling or importing a descriptor.</string>
+    <string name="stores_delete_confirm">Delete</string>
+    <string name="stores_export_title">Exported descriptor</string>
+    <string name="stores_export_message">This versioned JSON can be shared with another FossScout install.</string>
+    <string name="stores_export_share">Share</string>
+    <string name="stores_export_close">Close</string>
+
+    <string name="stores_adapter_fdroid_v2">F-Droid index v2</string>
+    <string name="stores_adapter_fdroid_v1">F-Droid index v1</string>
+    <string name="stores_adapter_live_api">Live API</string>
+    <string name="stores_adapter_generic_json">Generic JSON</string>
+    <string name="stores_adapter_source_repository">Source repository</string>
+    <string name="stores_adapter_deep_link">Deep link / search</string>
+</resources>

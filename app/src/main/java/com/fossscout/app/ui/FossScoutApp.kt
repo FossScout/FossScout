@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -42,6 +43,9 @@ import com.fossscout.feature.favourites.FavouritesScreen
 import com.fossscout.feature.favourites.FavouritesViewModel
 import com.fossscout.feature.settings.FeatureSettingsScreen
 import com.fossscout.feature.settings.FeatureSettingsViewModel
+import com.fossscout.feature.stores.StoreExportRequest
+import com.fossscout.feature.stores.StoresScreen
+import com.fossscout.feature.stores.StoresViewModel
 
 private enum class AppDestination(
     val featureId: FeatureId?,
@@ -50,6 +54,7 @@ private enum class AppDestination(
 ) {
     DISCOVER(null, R.string.nav_discover, Icons.Filled.Search),
     SAVED(FeatureId.FAVOURITES, R.string.nav_saved, Icons.Filled.Favorite),
+    STORES(FeatureId.STORES, R.string.nav_stores, Icons.Filled.ShoppingCart),
     SETTINGS(FeatureId.SETTINGS, R.string.nav_settings, Icons.Filled.Settings),
     ABOUT(null, R.string.nav_about, Icons.Filled.Info),
 }
@@ -160,6 +165,39 @@ fun FossScoutApp(
 
             AppDestination.ABOUT -> AboutScreen(modifier = screenModifier)
 
+            AppDestination.STORES -> {
+                val storesViewModel: StoresViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer {
+                            StoresViewModel(container.storeRegistryRepository)
+                        }
+                    },
+                )
+                val storesState by storesViewModel.uiState.collectAsStateWithLifecycle()
+
+                StoresScreen(
+                    state = storesState,
+                    onAdd = storesViewModel::startAdd,
+                    onEdit = storesViewModel::startEdit,
+                    onEditorChange = storesViewModel::updateEditor,
+                    onSaveEditor = storesViewModel::saveEditor,
+                    onDismissEditor = storesViewModel::dismissEditor,
+                    onToggle = storesViewModel::setEnabled,
+                    onMoveUp = storesViewModel::moveUp,
+                    onMoveDown = storesViewModel::moveDown,
+                    onRequestDelete = storesViewModel::requestDelete,
+                    onConfirmDelete = storesViewModel::confirmDelete,
+                    onDismissDelete = storesViewModel::dismissDelete,
+                    onExport = storesViewModel::export,
+                    onShareExport = context::shareStoreDescriptor,
+                    onDismissExport = storesViewModel::dismissExport,
+                    onOpenHomepage = context::openWebsite,
+                    onRetry = storesViewModel::retry,
+                    onDismissError = storesViewModel::dismissError,
+                    modifier = screenModifier,
+                )
+            }
+
             AppDestination.SETTINGS -> FeatureSettingsScreen(
                 uiState = featureSettingsState,
                 onToggle = featureSettingsViewModel::setEnabled,
@@ -177,5 +215,18 @@ fun FossScoutApp(
 private fun Context.openWebsite(url: String) {
     runCatching {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    }
+}
+
+private fun Context.shareStoreDescriptor(request: StoreExportRequest) {
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "application/json"
+        putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_store_subject, request.name))
+        putExtra(Intent.EXTRA_TEXT, request.json)
+    }
+    runCatching {
+        startActivity(
+            Intent.createChooser(send, getString(R.string.share_store_descriptor)),
+        )
     }
 }
