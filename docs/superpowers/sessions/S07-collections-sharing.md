@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Blocked by S06** |
+| Status | **Ready** (S06 merged) |
 | Features | F12 |
 | Depends on | S06 |
-| Can run in parallel with | S03 |
+| Can run in parallel with | S05 |
 | Profiles | `playstore`, `fdroid` |
 | Spec | [`F12-collections-sharing.md`](../specs/features/F12-collections-sharing.md) |
 

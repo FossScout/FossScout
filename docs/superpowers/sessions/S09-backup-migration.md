@@ -5,7 +5,7 @@
 | Status | **Blocked by S07** |
 | Features | F13 |
 | Depends on | S01, S02, S03 (trust records), S06, S07 |
-| Can run in parallel with | S05 |
+| Can run in parallel with | S08, S10, S11 |
 | Profiles | `playstore`, `fdroid` |
 | Spec | [`F13-backup-migration.md`](../specs/features/F13-backup-migration.md) |
 

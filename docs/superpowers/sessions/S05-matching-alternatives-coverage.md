@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Blocked by S03 and S04** |
+| Status | **Ready** (S02, S03, and S04 merged) |
 | Features | F02, F03, F06; completes F01-R4 |
 | Depends on | S02, S03, S04 |
-| Can run in parallel with | S09 |
+| Can run in parallel with | S07 |
 | Profiles | `playstore`, `fdroid` |
 | Specs | [`F02`](../specs/features/F02-foss-matching.md), [`F03`](../specs/features/F03-alternative-suggestions.md), [`F06`](../specs/features/F06-coverage-confidence.md) |
 
