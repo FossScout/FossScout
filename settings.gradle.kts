@@ -25,11 +25,13 @@ include(
     ":app",
     ":core:model",
     ":core:feature",
+    ":core:inventory",
     ":core:store-api",
     ":core:data",
     ":core:ui",
     ":feature:catalog",
     ":feature:favourites",
+    ":feature:inventory",
     ":feature:settings",
     ":feature:stores",
 )

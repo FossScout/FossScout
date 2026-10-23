@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="inventory_title">Installed apps</string>
+    <string name="inventory_subtitle">Local only — your app list never leaves this device.</string>
+    <string name="inventory_loading">Loading local inventory…</string>
+
+    <string name="inventory_query_label">App name, package, or store link</string>
+    <string name="inventory_query_hint">e.g. org.example.app or a Play/F-Droid link</string>
+    <string name="inventory_search">Search</string>
+    <string name="inventory_check">Check app</string>
+    <string name="inventory_checking">Checking…</string>
+    <string name="inventory_searching">Searching…</string>
+
+    <string name="inventory_scan_all">Scan all apps</string>
+    <string name="inventory_scanning">Scanning installed apps…</string>
+    <string name="inventory_cancel_scan">Cancel scan</string>
+    <string name="inventory_scan_unavailable_title">Full scan unavailable in this build</string>
+    <string name="inventory_scan_unavailable_body">This build can check one app at a time. Type a package name or paste a store link instead.</string>
+
+    <string name="inventory_checked_one">Checked one app</string>
+    <string name="inventory_scanned_all">Full device scan</string>
+    <string name="inventory_last_checked">Last checked %1$s</string>
+    <string name="inventory_stale_title">This inventory is stale</string>
+    <string name="inventory_stale_body">Results are from %1$s. Scan again or check a single app for fresh data.</string>
+    <string name="inventory_coverage">%1$d of %2$d apps checked</string>
+    <string name="inventory_coverage_partial">%1$d apps could not be read</string>
+    <string name="inventory_status_complete">Complete</string>
+    <string name="inventory_status_partial">Partial coverage</string>
+
+    <string name="inventory_empty_title">No inventory yet</string>
+    <string name="inventory_empty_body">Check one app, or use an F-Droid build to scan all installed apps.</string>
+    <string name="inventory_search_empty">No matching visible apps. You can still check the package name directly.</string>
+    <string name="inventory_no_matches">No apps match the current filters.</string>
+
+    <string name="inventory_filter_system">System apps</string>
+    <string name="inventory_filter_disabled">Disabled apps</string>
+    <string name="inventory_filter_work">Work profile</string>
+    <string name="inventory_filter_hidden">Hidden apps</string>
+    <string name="inventory_hidden_count">%1$d hidden</string>
+
+    <string name="inventory_pick_title">Pick an app</string>
+    <string name="inventory_pick_body">Several installed apps match. Choose the one you meant.</string>
+
+    <string name="inventory_hide">Hide %1$s from the list</string>
+    <string name="inventory_unhide">Show %1$s again</string>
+    <string name="inventory_hidden_badge">Hidden</string>
+    <string name="inventory_system_badge">System</string>
+    <string name="inventory_disabled_badge">Disabled</string>
+    <string name="inventory_work_badge">Work profile</string>
+
+    <string name="inventory_version_name_code">Version %1$s (%2$d)</string>
+    <string name="inventory_version_code">Version code %1$d</string>
+    <string name="inventory_installer">Installed by %1$s</string>
+    <string name="inventory_installer_unknown">Installer unknown (possibly sideloaded)</string>
+    <string name="inventory_signer">Signer %1$s</string>
+    <string name="inventory_signer_unknown">Signer unavailable</string>
+
+    <string name="inventory_classification_foss">FOSS</string>
+    <string name="inventory_classification_proprietary">Proprietary</string>
+    <string name="inventory_classification_unknown">Unknown</string>
+    <string name="inventory_classification_unavailable">Unavailable</string>
+    <string name="inventory_explanation_foss">A trusted free and open-source source is known.</string>
+    <string name="inventory_explanation_proprietary">Known closed-source app with evidence.</string>
+    <string name="inventory_explanation_unknown">No reliable license or source information yet.</string>
+    <string name="inventory_explanation_unavailable">Not installed, or Android package visibility hides it from FossScout.</string>
+
+    <string name="inventory_error_read">Couldn\'t load the saved inventory.</string>
+    <string name="inventory_error_check">Couldn\'t check that app.</string>
+    <string name="inventory_error_search">Couldn\'t search installed apps.</string>
+    <string name="inventory_error_scan">Couldn\'t finish the scan. The previous snapshot was kept.</string>
+    <string name="inventory_error_update">Couldn\'t save that change.</string>
+    <string name="inventory_dismiss">Dismiss</string>
+</resources>
