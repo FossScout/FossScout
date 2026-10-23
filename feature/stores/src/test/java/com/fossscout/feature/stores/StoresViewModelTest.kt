@@ -3,6 +3,23 @@ package com.fossscout.feature.stores
 import com.fossscout.core.data.StoreRegistryCodec
 import com.fossscout.core.data.StoreRegistryRepository
 import com.fossscout.core.data.StoreRegistryStore
+import com.fossscout.core.index.HttpFetcher
+import com.fossscout.core.index.HttpRequest
+import com.fossscout.core.index.HttpResponse
+import com.fossscout.core.index.FdroidV2Parser
+import com.fossscout.core.index.IndexState
+import com.fossscout.core.index.IndexSyncRepository
+import com.fossscout.core.index.PayloadWriteResult
+import com.fossscout.core.index.SignatureStatus
+import com.fossscout.core.index.SnapshotFreshness
+import com.fossscout.core.index.SnapshotMetadataStore
+import com.fossscout.core.index.SnapshotPayloadSink
+import com.fossscout.core.index.SnapshotPayloadStore
+import com.fossscout.core.index.StorePackage
+import com.fossscout.core.index.StoreSnapshot
+import com.fossscout.core.index.SyncJob
+import com.fossscout.core.index.SyncState
+import com.fossscout.core.index.TrustRecord
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.BuiltInStores
@@ -11,6 +28,8 @@ import com.fossscout.core.store.StoreDescriptor
 import com.fossscout.core.store.StoreMode
 import com.fossscout.core.store.StoreRegistry
 import java.io.IOException
+import java.io.InputStream
+import java.nio.file.Files
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -188,6 +207,66 @@ class StoresViewModelTest {
         assertTrue(state.entries.isEmpty())
     }
 
+    @Test
+    fun `index metadata exposes freshness last sync trust and storage`() = runTest(dispatcher) {
+        val now = 2_000_000L
+        val snapshot = StoreSnapshot(
+            storeId = BuiltInStores.FDROID_ID,
+            fetchedAtEpochMillis = now - 1_000,
+            indexTimestamp = 1_000,
+            indexSha256 = "a".repeat(64),
+            packageCount = 42,
+            payloadPath = "fdroid-1000.ndjson",
+            payloadSizeBytes = 1_024,
+            signatureStatus = SignatureStatus.VERIFIED,
+            sourceUrl = "https://f-droid.org/repo/index-v2.json",
+        )
+        val job = SyncJob(
+            storeId = BuiltInStores.FDROID_ID,
+            state = SyncState.SUCCEEDED,
+            finishedAtEpochMillis = now - 1_000,
+        )
+        val trust = TrustRecord(
+            storeId = BuiltInStores.FDROID_ID,
+            checkedAtEpochMillis = now - 1_000,
+            signatureStatus = SignatureStatus.VERIFIED,
+            signerFingerprint = BuiltInStores.FDROID_FINGERPRINT,
+            sourceUrl = "https://f-droid.org/repo/entry.jar",
+        )
+        val indexRepository = IndexSyncRepository(
+            metadataStore = FakeSnapshotMetadataStore(
+                IndexState(
+                    snapshots = mapOf(BuiltInStores.FDROID_ID to snapshot),
+                    jobs = mapOf(BuiltInStores.FDROID_ID to job),
+                    trustRecords = mapOf(BuiltInStores.FDROID_ID to trust),
+                ),
+            ),
+            payloadStore = UnusedPayloadStore(usageBytes = 1_024),
+            httpFetcher = UnusedHttpFetcher,
+            tempDir = Files.createTempDirectory("fossscout-stores-vm").toFile(),
+            storageBudgetBytes = { 16L * 1024L * 1024L },
+            now = { now },
+            staleAfterMillis = 24L * 60L * 60L * 1_000L,
+        )
+        val viewModel = StoresViewModel(
+            StoreRegistryRepository(store = FakeStoreRegistryStore()),
+            indexRepository,
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        val status = requireNotNull(state.syncStatuses[BuiltInStores.FDROID_ID])
+        assertEquals(snapshot, status.snapshot)
+        assertEquals(trust, status.trust)
+        assertEquals(job, status.job)
+        assertEquals(SnapshotFreshness.FRESH, status.freshness)
+        assertEquals(now - 1_000, status.lastSuccessfulSyncEpochMillis)
+        assertFalse(status.isSyncing)
+        assertEquals(1_024L, state.storage?.usageBytes)
+        assertEquals(16L * 1024L * 1024L, state.storage?.budgetBytes)
+        assertFalse(requireNotNull(state.storage).overBudget)
+    }
+
     private fun viewModel(
         store: FakeStoreRegistryStore = FakeStoreRegistryStore(),
     ): StoresViewModel {
@@ -215,4 +294,47 @@ private class FakeStoreRegistryStore(
     override suspend fun save(registry: StoreRegistry) {
         state.value = registry
     }
+}
+
+private class FakeSnapshotMetadataStore(
+    initial: IndexState = IndexState(),
+) : SnapshotMetadataStore {
+    private val mutableState = MutableStateFlow(initial)
+
+    override val state: Flow<IndexState> = flow { emitAll(mutableState) }
+
+    override suspend fun save(state: IndexState) {
+        mutableState.value = state
+    }
+}
+
+private class UnusedPayloadStore(
+    private val usageBytes: Long,
+) : SnapshotPayloadStore {
+    override suspend fun <T> writePayload(
+        storeId: String,
+        version: Long,
+        maxBytes: Long,
+        block: suspend (SnapshotPayloadSink) -> T,
+    ): PayloadWriteResult<T> = error("Not used")
+
+    override suspend fun open(payloadPath: String): InputStream = error("Not used")
+
+    override suspend fun exists(payloadPath: String): Boolean = false
+
+    override suspend fun delete(payloadPath: String) = Unit
+
+    override suspend fun usageBytes(): Long = usageBytes
+
+    override suspend fun cleanup(referencedPaths: Set<String>): Long = 0
+
+    override suspend fun forEachPackage(
+        payloadPath: String,
+        parser: FdroidV2Parser,
+        action: suspend (StorePackage) -> Boolean,
+    ) = Unit
+}
+
+private object UnusedHttpFetcher : HttpFetcher {
+    override suspend fun get(request: HttpRequest): HttpResponse = error("Not used")
 }

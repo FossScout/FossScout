@@ -1,5 +1,6 @@
 package com.fossscout.feature.stores
 
+import android.text.format.DateUtils
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -54,6 +55,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import com.fossscout.core.index.SignatureStatus
+import com.fossscout.core.index.SnapshotFreshness
+import com.fossscout.core.index.StorageStatus
+import com.fossscout.core.index.SyncFailureKind
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.BuiltInStores
@@ -80,6 +85,9 @@ fun StoresScreen(
     onShareExport: (StoreExportRequest) -> Unit,
     onDismissExport: () -> Unit,
     onOpenHomepage: (String) -> Unit,
+    onSync: (StoreId) -> Unit,
+    onCancelSync: (StoreId) -> Unit,
+    onCleanupStorage: () -> Unit,
     onRetry: () -> Unit,
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
@@ -116,6 +124,13 @@ fun StoresScreen(
                 error = error,
                 onRetry = onRetry,
                 onDismiss = onDismissError,
+            )
+        }
+
+        state.storage?.let { storage ->
+            StorageSummary(
+                storage = storage,
+                onCleanup = onCleanupStorage,
             )
         }
 
@@ -163,6 +178,7 @@ fun StoresScreen(
                 ) { entry ->
                     StoreCard(
                         entry = entry,
+                        syncStatus = state.syncStatuses[entry.descriptor.id.value],
                         canMoveUp = state.entries.indexOf(entry) > 0,
                         canMoveDown = state.entries.indexOf(entry) < state.entries.lastIndex,
                         onToggle = onToggle,
@@ -172,6 +188,8 @@ fun StoresScreen(
                         onRequestDelete = onRequestDelete,
                         onExport = onExport,
                         onOpenHomepage = onOpenHomepage,
+                        onSync = onSync,
+                        onCancelSync = onCancelSync,
                     )
                 }
             }
@@ -288,11 +306,68 @@ private fun StoresError.messageRes(): Int = when (this) {
     StoresError.WRITE_FAILED -> R.string.stores_error_write
     StoresError.INVALID_STORE -> R.string.stores_error_invalid
     StoresError.HTTP_OPT_IN_REQUIRED -> R.string.stores_error_http
+    StoresError.SYNC_FAILED -> R.string.stores_error_sync
+    StoresError.SYNC_UNAVAILABLE -> R.string.stores_error_sync_unavailable
+    StoresError.STORAGE_FAILED -> R.string.stores_error_storage
 }
+
+@Composable
+private fun StorageSummary(
+    storage: StorageStatus,
+    onCleanup: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = if (storage.overBudget) {
+            MaterialTheme.colorScheme.errorContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 14.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(
+                        R.string.stores_storage_usage,
+                        formatMegabytes(storage.usageBytes),
+                        formatMegabytes(storage.budgetBytes),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (storage.overBudget) {
+                        MaterialTheme.colorScheme.onErrorContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+                if (storage.overBudget) {
+                    Text(
+                        text = stringResource(R.string.stores_storage_over_budget),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+                }
+            }
+            TextButton(onClick = onCleanup) {
+                Text(stringResource(R.string.stores_storage_cleanup))
+            }
+        }
+    }
+}
+
+private fun formatMegabytes(bytes: Long): String =
+    "%.1f".format(bytes.toDouble() / (1024.0 * 1024.0))
 
 @Composable
 private fun StoreCard(
     entry: StoreEntry,
+    syncStatus: StoreSyncStatus?,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
     onToggle: (StoreId, Boolean) -> Unit,
@@ -302,6 +377,8 @@ private fun StoreCard(
     onRequestDelete: (StoreDescriptor) -> Unit,
     onExport: (StoreId) -> Unit,
     onOpenHomepage: (String) -> Unit,
+    onSync: (StoreId) -> Unit,
+    onCancelSync: (StoreId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val descriptor = entry.descriptor
@@ -412,6 +489,15 @@ private fun StoreCard(
             }
 
             val linkOnlyReason = entry.availability.reason
+            if (descriptor.adapterType == AdapterType.FDROID_V2) {
+                Spacer(modifier = Modifier.height(8.dp))
+                StoreSyncBlock(
+                    status = syncStatus,
+                    storeId = descriptor.id,
+                    onSync = onSync,
+                    onCancelSync = onCancelSync,
+                )
+            }
             if (linkOnlyReason != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(
@@ -491,6 +577,156 @@ private fun StoreCard(
             }
         }
     }
+}
+
+@Composable
+private fun StoreSyncBlock(
+    status: StoreSyncStatus?,
+    storeId: StoreId,
+    onSync: (StoreId) -> Unit,
+    onCancelSync: (StoreId) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val snapshot = status?.snapshot
+    val job = status?.job
+    val syncing = status?.isSyncing == true
+    val freshness = status?.freshness ?: SnapshotFreshness.NEVER_SYNCED
+    val signature = status?.trust?.signatureStatus ?: snapshot?.signatureStatus
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = when {
+                            snapshot == null -> stringResource(R.string.stores_sync_never)
+                            else -> stringResource(
+                                R.string.stores_sync_last,
+                                DateUtils.getRelativeTimeSpanString(
+                                    snapshot.fetchedAtEpochMillis,
+                                    System.currentTimeMillis(),
+                                    DateUtils.MINUTE_IN_MILLIS,
+                                ).toString(),
+                            )
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = stringResource(freshness.labelRes()),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = when (freshness) {
+                            SnapshotFreshness.FRESH -> MaterialTheme.colorScheme.primary
+                            SnapshotFreshness.STALE -> MaterialTheme.colorScheme.error
+                            SnapshotFreshness.NEVER_SYNCED ->
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                }
+                if (syncing) {
+                    OutlinedButton(onClick = { onCancelSync(storeId) }) {
+                        Text(stringResource(R.string.stores_sync_cancel))
+                    }
+                } else {
+                    OutlinedButton(onClick = { onSync(storeId) }) {
+                        Text(
+                            stringResource(
+                                if (snapshot == null) {
+                                    R.string.stores_sync_now
+                                } else {
+                                    R.string.stores_sync_again
+                                },
+                            ),
+                        )
+                    }
+                }
+            }
+
+            signature?.let { signatureStatus ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(signatureStatus.labelRes()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (signatureStatus == SignatureStatus.VERIFIED) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
+
+            status?.trust?.signerFingerprint?.let { signer ->
+                if (status.trust.signatureStatus == SignatureStatus.VERIFIED) {
+                    Text(
+                        text = stringResource(R.string.stores_signer_fingerprint, signer),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            if (syncing && job != null) {
+                val progress = job.progress
+                Text(
+                    text = if (progress == null) {
+                        stringResource(R.string.stores_sync_progress_unknown)
+                    } else {
+                        stringResource(
+                            R.string.stores_sync_progress,
+                            (progress * 100).toInt(),
+                        )
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            job?.error?.let { error ->
+                Text(
+                    text = stringResource(error.kind.messageRes()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+    }
+}
+
+@StringRes
+private fun SnapshotFreshness.labelRes(): Int = when (this) {
+    SnapshotFreshness.FRESH -> R.string.stores_freshness_fresh
+    SnapshotFreshness.STALE -> R.string.stores_freshness_stale
+    SnapshotFreshness.NEVER_SYNCED -> R.string.stores_freshness_never
+}
+
+@StringRes
+private fun SignatureStatus.labelRes(): Int = when (this) {
+    SignatureStatus.VERIFIED -> R.string.stores_signature_verified
+    SignatureStatus.UNVERIFIED -> R.string.stores_signature_unverified
+    SignatureStatus.UNSIGNED -> R.string.stores_signature_unsigned
+    SignatureStatus.INVALID -> R.string.stores_signature_invalid
+    SignatureStatus.NOT_CHECKED -> R.string.stores_signature_not_checked
+}
+
+@StringRes
+private fun SyncFailureKind.messageRes(): Int = when (this) {
+    SyncFailureKind.UNSUPPORTED -> R.string.stores_sync_error_unsupported
+    SyncFailureKind.HTTP_POLICY -> R.string.stores_sync_error_http_policy
+    SyncFailureKind.FINGERPRINT_CHANGED -> R.string.stores_sync_error_fingerprint
+    SyncFailureKind.NETWORK,
+    SyncFailureKind.HTTP_STATUS,
+    -> R.string.stores_sync_error_network
+
+    SyncFailureKind.VERIFICATION -> R.string.stores_sync_error_verification
+    SyncFailureKind.PARSE -> R.string.stores_sync_error_parse
+    SyncFailureKind.STORAGE_LIMIT -> R.string.stores_sync_error_storage
+    SyncFailureKind.IO -> R.string.stores_sync_error_io
+    SyncFailureKind.CANCELLED -> R.string.stores_sync_error_cancelled
+    SyncFailureKind.UNKNOWN -> R.string.stores_sync_error_unknown
 }
 
 @Composable

@@ -27,6 +27,7 @@ include(
     ":core:feature",
     ":core:inventory",
     ":core:store-api",
+    ":core:index",
     ":core:data",
     ":core:ui",
     ":feature:catalog",

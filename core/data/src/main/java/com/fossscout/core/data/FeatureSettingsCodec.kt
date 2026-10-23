@@ -61,6 +61,7 @@ class FeatureSettingsCodec(
                             value = when (value) {
                                 is FeatureSettingValue.BooleanValue -> value.value.toString()
                                 is FeatureSettingValue.TextValue -> value.value
+                                is FeatureSettingValue.IntegerValue -> value.value.toString()
                             },
                         )
                     }
@@ -105,6 +106,9 @@ class FeatureSettingsCodec(
                         ?.let(FeatureSettingValue::BooleanValue)
 
                 FeatureSettingType.TEXT.name -> FeatureSettingValue.TextValue(stored.value)
+
+                FeatureSettingType.INTEGER.name ->
+                    stored.value.toIntOrNull()?.let(FeatureSettingValue::IntegerValue)
 
                 else -> null
             } ?: return@forEach

@@ -4,11 +4,21 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fossscout.core.data.StoreRegistryRepository
+import com.fossscout.core.index.IndexState
+import com.fossscout.core.index.IndexSyncRepository
+import com.fossscout.core.index.SnapshotFreshness
+import com.fossscout.core.index.StorageStatus
+import com.fossscout.core.index.StoreSnapshot
+import com.fossscout.core.index.SyncJob
+import com.fossscout.core.index.SyncState
+import com.fossscout.core.index.TrustRecord
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.StoreDescriptor
 import com.fossscout.core.store.StoreDraft
 import com.fossscout.core.store.StoreEntry
+import com.fossscout.core.store.StoreHealth
+import com.fossscout.core.store.StoreHealthStatus
 import com.fossscout.core.store.StoreValidation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -16,10 +26,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class StoresError { READ_FAILED, WRITE_FAILED, INVALID_STORE, HTTP_OPT_IN_REQUIRED }
+enum class StoresError {
+    READ_FAILED,
+    WRITE_FAILED,
+    INVALID_STORE,
+    HTTP_OPT_IN_REQUIRED,
+    SYNC_FAILED,
+    SYNC_UNAVAILABLE,
+    STORAGE_FAILED,
+}
 
 data class StoreEditor(
     val id: StoreId? = null,
@@ -75,6 +94,20 @@ data class StoreExportRequest(
     val json: String,
 )
 
+/** Everything the Stores card needs to show sync and trust evidence. */
+data class StoreSyncStatus(
+    val snapshot: StoreSnapshot? = null,
+    val trust: TrustRecord? = null,
+    val job: SyncJob? = null,
+    val freshness: SnapshotFreshness = SnapshotFreshness.NEVER_SYNCED,
+) {
+    val isSyncing: Boolean
+        get() = job?.state == SyncState.RUNNING || job?.state == SyncState.QUEUED
+
+    val lastSuccessfulSyncEpochMillis: Long?
+        get() = snapshot?.fetchedAtEpochMillis
+}
+
 data class StoresUiState(
     val entries: List<StoreEntry> = emptyList(),
     val isLoading: Boolean = true,
@@ -82,18 +115,24 @@ data class StoresUiState(
     val editor: StoreEditor? = null,
     val deleteRequest: StoreDeleteRequest? = null,
     val exportRequest: StoreExportRequest? = null,
+    val syncStatuses: Map<String, StoreSyncStatus> = emptyMap(),
+    val storage: StorageStatus? = null,
 )
 
 class StoresViewModel(
     private val repository: StoreRegistryRepository,
+    private val indexSyncRepository: IndexSyncRepository? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(StoresUiState())
     val uiState: StateFlow<StoresUiState> = _uiState.asStateFlow()
 
     private var readJob: Job? = null
+    private val syncJobs = mutableMapOf<StoreId, Job>()
 
     init {
         collectStores()
+        collectIndexState()
+        refreshStorage()
     }
 
     fun retry() {
@@ -212,6 +251,109 @@ class StoresViewModel(
     fun dismissError() {
         _uiState.update { state -> state.copy(error = null) }
     }
+
+    /** Starts or reuses a sync job for one store. */
+    fun sync(id: StoreId) {
+        val syncRepository = indexSyncRepository ?: return
+        if (syncJobs[id]?.isActive == true) return
+        syncJobs[id] = viewModelScope.launch {
+            val descriptor = repository.entries.first()
+                .firstOrNull { it.descriptor.id == id }
+                ?.descriptor
+            if (descriptor == null) {
+                _uiState.update { state -> state.copy(error = StoresError.SYNC_UNAVAILABLE) }
+                return@launch
+            }
+            try {
+                val result = syncRepository.sync(descriptor)
+                val health = if (result.job.state == SyncState.SUCCEEDED) {
+                    StoreHealth(
+                        status = StoreHealthStatus.OK,
+                        lastSyncEpochMillis = result.snapshot?.fetchedAtEpochMillis,
+                        itemCount = result.snapshot?.packageCount,
+                    )
+                } else {
+                    descriptor.health.copy(
+                        status = StoreHealthStatus.ERROR,
+                        error = result.job.error?.kind?.name
+                            ?: result.job.state.name,
+                    )
+                }
+                runCatching { repository.updateHealth(id, health) }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                Log.e(TAG, "Failed to sync store ${id.value}", throwable)
+                _uiState.update { state -> state.copy(error = StoresError.SYNC_FAILED) }
+            } finally {
+                syncJobs.remove(id)
+                refreshStorage()
+            }
+        }
+    }
+
+    fun cancelSync(id: StoreId) {
+        syncJobs.remove(id)?.cancel()
+    }
+
+    fun cleanupStorage() {
+        val syncRepository = indexSyncRepository ?: return
+        viewModelScope.launch {
+            try {
+                syncRepository.cleanupStorage()
+                refreshStorage()
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                Log.e(TAG, "Failed to clean index storage", throwable)
+                _uiState.update { state -> state.copy(error = StoresError.STORAGE_FAILED) }
+            }
+        }
+    }
+
+    private fun collectIndexState() {
+        val syncRepository = indexSyncRepository ?: return
+        viewModelScope.launch {
+            syncRepository.state
+                .catch { throwable ->
+                    if (throwable is CancellationException) throw throwable
+                    Log.e(TAG, "Failed to read index metadata", throwable)
+                }
+                .collect { indexState ->
+                    _uiState.update { state ->
+                        state.copy(
+                            syncStatuses = indexState.toSyncStatuses(syncRepository),
+                        )
+                    }
+                    refreshStorage()
+                }
+        }
+    }
+
+    private fun refreshStorage() {
+        val syncRepository = indexSyncRepository ?: return
+        viewModelScope.launch {
+            val status = runCatching { syncRepository.storageStatus() }.getOrNull()
+            if (status != null) {
+                _uiState.update { state -> state.copy(storage = status) }
+            }
+        }
+    }
+
+    private fun IndexState.toSyncStatuses(
+        syncRepository: IndexSyncRepository,
+    ): Map<String, StoreSyncStatus> = snapshots.keys
+        .union(trustRecords.keys)
+        .union(jobs.keys)
+        .associateWith { storeId ->
+            val snapshot = snapshots[storeId]
+            StoreSyncStatus(
+                snapshot = snapshot,
+                trust = trustRecords[storeId],
+                job = jobs[storeId],
+                freshness = syncRepository.freshness(snapshot),
+            )
+        }
 
     private fun collectStores() {
         readJob?.cancel()

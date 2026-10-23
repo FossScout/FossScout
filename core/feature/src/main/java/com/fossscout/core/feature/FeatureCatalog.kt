@@ -30,6 +30,7 @@ object FeatureCatalog {
             id = FeatureId.INDEX_CACHE,
             availability = Availability.GENERAL,
             requiredCapabilities = setOf(Capability.STORE_INDEX_NETWORK),
+            settings = listOf(IndexCacheSettings.storageBudget),
         ),
         FeatureDescriptor(
             id = FeatureId.COVERAGE,

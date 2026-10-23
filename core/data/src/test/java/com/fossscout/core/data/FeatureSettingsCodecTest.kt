@@ -82,6 +82,37 @@ class FeatureSettingsCodecTest {
     }
 
     @Test
+    fun `integer setting values round trip and malformed numbers are ignored`() {
+        val settings = FeatureSettings(
+            values = mapOf(
+                FeatureId.INDEX_CACHE to mapOf(
+                    "storage_budget_mb" to FeatureSettingValue.IntegerValue(512),
+                ),
+            ),
+        )
+
+        val decoded = codec.decode(codec.encode(settings))
+
+        assertEquals(settings.values, decoded.values)
+
+        val malformed = """
+            {
+              "schemaVersion": $FEATURE_SETTINGS_SCHEMA_VERSION,
+              "values": [
+                {
+                  "featureId": "INDEX_CACHE",
+                  "key": "storage_budget_mb",
+                  "type": "INTEGER",
+                  "value": "not-a-number"
+                }
+              ]
+            }
+        """.trimIndent()
+
+        assertTrue(codec.decode(malformed).values.isEmpty())
+    }
+
+    @Test
     fun `unsupported schema version is rejected`() {
         val encoded = """
             {

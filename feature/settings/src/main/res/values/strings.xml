@@ -24,6 +24,7 @@
     <string name="settings_setting_title_fallback">Feature setting</string>
     <string name="settings_setting_invalid">Invalid value</string>
     <string name="settings_setting_save">Save</string>
+    <string name="settings_storage_budget_title">Index storage budget (MB)</string>
 
     <string name="feature_inventory_title">Installed apps</string>
     <string name="feature_matching_title">Find open-source matches</string>

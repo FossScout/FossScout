@@ -408,6 +408,46 @@ private fun FeatureSettingRow(
                 }
             }
         }
+
+        is FeatureSettingValue.IntegerValue -> {
+            var draft by remember(setting.key, value.value) {
+                mutableStateOf(value.value.toString())
+            }
+            val parsed = draft.toIntOrNull()
+            val draftValue = parsed?.let(FeatureSettingValue::IntegerValue)
+            val valid = draftValue != null && setting.validate(draftValue)
+
+            Column(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            ) {
+                OutlinedTextField(
+                    value = draft,
+                    onValueChange = { draft = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(title) },
+                    singleLine = true,
+                    isError = !valid,
+                    supportingText = if (!valid) {
+                        { Text(stringResource(R.string.settings_setting_invalid)) }
+                    } else {
+                        null
+                    },
+                )
+                TextButton(
+                    onClick = {
+                        draftValue?.let {
+                            onValueChange(featureId, setting.key, it)
+                        }
+                    },
+                    enabled = valid && parsed != value.value,
+                    modifier = Modifier.align(Alignment.End),
+                ) {
+                    Text(stringResource(R.string.settings_setting_save))
+                }
+            }
+        }
     }
 }
 

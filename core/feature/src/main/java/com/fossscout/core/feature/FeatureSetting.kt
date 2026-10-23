@@ -4,7 +4,7 @@ package com.fossscout.core.feature
 enum class FeatureSettingSection { BASIC, ADVANCED }
 
 /** Value kinds supported by declared feature settings. */
-enum class FeatureSettingType { BOOLEAN, TEXT }
+enum class FeatureSettingType { BOOLEAN, TEXT, INTEGER }
 
 sealed interface FeatureSettingValue {
     val type: FeatureSettingType
@@ -15,6 +15,10 @@ sealed interface FeatureSettingValue {
 
     data class TextValue(val value: String) : FeatureSettingValue {
         override val type: FeatureSettingType get() = FeatureSettingType.TEXT
+    }
+
+    data class IntegerValue(val value: Int) : FeatureSettingValue {
+        override val type: FeatureSettingType get() = FeatureSettingType.INTEGER
     }
 }
 
@@ -31,6 +35,17 @@ sealed interface FeatureSettingValidation {
     ) : FeatureSettingValidation {
         init {
             require(maxLength == null || maxLength >= 0) { "maxLength must not be negative" }
+        }
+    }
+
+    data class IntegerConstraints(
+        val min: Int? = null,
+        val max: Int? = null,
+    ) : FeatureSettingValidation {
+        init {
+            require(min == null || max == null || min <= max) {
+                "min must not be greater than max"
+            }
         }
     }
 }
@@ -51,6 +66,14 @@ data class FeatureSetting(
         require(key.isNotBlank()) { "Setting key must not be blank" }
         require(key == key.trim()) { "Setting key must not have surrounding whitespace" }
         require(validate(defaultValue)) { "Default value is invalid for setting $key" }
+        require(
+            validation !is FeatureSettingValidation.TextConstraints ||
+                defaultValue is FeatureSettingValue.TextValue,
+        ) { "Text constraints require a text default value" }
+        require(
+            validation !is FeatureSettingValidation.IntegerConstraints ||
+                defaultValue is FeatureSettingValue.IntegerValue,
+        ) { "Integer constraints require an integer default value" }
     }
 
     fun validate(value: FeatureSettingValue): Boolean {
@@ -62,6 +85,11 @@ data class FeatureSetting(
                 value is FeatureSettingValue.TextValue &&
                     (constraints.allowBlank || value.value.isNotBlank()) &&
                     (constraints.maxLength == null || value.value.length <= constraints.maxLength)
+
+            is FeatureSettingValidation.IntegerConstraints ->
+                value is FeatureSettingValue.IntegerValue &&
+                    (constraints.min == null || value.value >= constraints.min) &&
+                    (constraints.max == null || value.value <= constraints.max)
         }
     }
 }

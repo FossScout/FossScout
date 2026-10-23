@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.fossscout.core.feature.Capability
 import com.fossscout.core.feature.FeatureId
 import com.fossscout.core.feature.FeatureSetting
+import com.fossscout.core.feature.IndexCacheSettings
 
 @StringRes
 internal fun FeatureId.titleRes(): Int = when (this) {
@@ -32,6 +33,9 @@ internal fun FeatureId.titleRes(): Int = when (this) {
  */
 @StringRes
 internal fun FeatureSetting.titleRes(featureId: FeatureId): Int = when (featureId to key) {
+    FeatureId.INDEX_CACHE to IndexCacheSettings.STORAGE_BUDGET_MB ->
+        R.string.settings_storage_budget_title
+
     else -> R.string.settings_setting_title_fallback
 }
 

@@ -8,17 +8,27 @@ import com.fossscout.core.data.DataStoreFeatureSettingsStore
 import com.fossscout.core.data.DataStoreFavouritesStore
 import com.fossscout.core.data.DataStoreInventoryStore
 import com.fossscout.core.data.DataStoreStoreRegistryStore
+import com.fossscout.core.data.DataStoreSnapshotMetadataStore
 import com.fossscout.core.data.FavouritesRepository
 import com.fossscout.core.data.FeatureSettingsRepository
 import com.fossscout.core.data.StoreRegistryRepository
 import com.fossscout.core.feature.Capability
 import com.fossscout.core.feature.FeatureCatalog
+import com.fossscout.core.feature.FeatureId
+import com.fossscout.core.feature.FeatureSettingValue
+import com.fossscout.core.feature.IndexCacheSettings
+import com.fossscout.core.index.FileSnapshotPayloadStore
+import com.fossscout.core.index.IndexSyncRepository
+import com.fossscout.core.index.UrlConnectionHttpFetcher
 import com.fossscout.core.inventory.InventoryRepository
+import java.io.File
+import kotlinx.coroutines.flow.first
 
 private val Context.favouritesDataStore by preferencesDataStore(name = "favourites")
 private val Context.featureSettingsDataStore by preferencesDataStore(name = "feature_settings")
 private val Context.storeRegistryDataStore by preferencesDataStore(name = "store_registry")
 private val Context.inventoryDataStore by preferencesDataStore(name = "inventory")
+private val Context.indexStateDataStore by preferencesDataStore(name = "index_state")
 
 /**
  * Composition root for app-wide dependencies. Android framework objects are
@@ -37,6 +47,26 @@ class AppContainer(context: Context) {
 
     val storeRegistryRepository = StoreRegistryRepository(
         DataStoreStoreRegistryStore(context.storeRegistryDataStore),
+    )
+
+    val indexSyncRepository = IndexSyncRepository(
+        metadataStore = DataStoreSnapshotMetadataStore(context.indexStateDataStore),
+        payloadStore = FileSnapshotPayloadStore(
+            File(context.filesDir, "index-snapshots"),
+        ),
+        httpFetcher = UrlConnectionHttpFetcher(),
+        tempDir = File(context.cacheDir, "index-sync"),
+        storageBudgetBytes = {
+            val settings = featureSettingsRepository.snapshot.first()
+            val descriptor = FeatureCatalog.all
+                .first { it.id == FeatureId.INDEX_CACHE }
+            val setting = descriptor.settings
+                .first { it.key == IndexCacheSettings.STORAGE_BUDGET_MB }
+            val value = settings.valueFor(FeatureId.INDEX_CACHE, setting)
+            val megabytes = (value as? FeatureSettingValue.IntegerValue)?.value
+                ?: IndexCacheSettings.DEFAULT_STORAGE_BUDGET_MB
+            megabytes.toLong() * 1024L * 1024L
+        },
     )
 
     private val broadPackageVisibility =

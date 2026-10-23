@@ -35,6 +35,7 @@ dependencies {
     implementation(project(":core:feature"))
     implementation(project(":core:data"))
     implementation(project(":core:store-api"))
+    implementation(project(":core:index"))
     implementation(project(":core:ui"))
 
     implementation(libs.androidx.lifecycle.runtime.compose)

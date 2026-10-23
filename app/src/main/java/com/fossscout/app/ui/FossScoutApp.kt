@@ -233,7 +233,10 @@ fun FossScoutApp(
                 val storesViewModel: StoresViewModel = viewModel(
                     factory = viewModelFactory {
                         initializer {
-                            StoresViewModel(container.storeRegistryRepository)
+                            StoresViewModel(
+                                repository = container.storeRegistryRepository,
+                                indexSyncRepository = container.indexSyncRepository,
+                            )
                         }
                     },
                 )
@@ -256,6 +259,9 @@ fun FossScoutApp(
                     onShareExport = context::shareStoreDescriptor,
                     onDismissExport = storesViewModel::dismissExport,
                     onOpenHomepage = context::openWebsite,
+                    onSync = storesViewModel::sync,
+                    onCancelSync = storesViewModel::cancelSync,
+                    onCleanupStorage = storesViewModel::cleanupStorage,
                     onRetry = storesViewModel::retry,
                     onDismissError = storesViewModel::dismissError,
                     modifier = screenModifier,

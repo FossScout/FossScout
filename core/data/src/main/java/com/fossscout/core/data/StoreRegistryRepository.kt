@@ -84,6 +84,18 @@ class StoreRegistryRepository(
         )
     }
 
+    suspend fun updateHealth(id: StoreId, health: StoreHealth) = mutex.withLock {
+        val current = currentRegistry()
+        val existing = current.stores.firstOrNull { it.id == id }
+            ?: throw NoSuchElementException("Unknown store: ${id.value}")
+        if (existing.health == health) return@withLock
+        save(
+            current.stores.map { descriptor ->
+                if (descriptor.id == id) descriptor.copy(health = health) else descriptor
+            },
+        )
+    }
+
     suspend fun reorder(orderedIds: List<StoreId>) = mutex.withLock {
         val current = currentRegistry()
         val currentIds = current.stores.map(StoreDescriptor::id)
