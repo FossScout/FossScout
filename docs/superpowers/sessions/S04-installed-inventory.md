@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Ready** |
+| Status | **Done** (S04 scope; real classification lands in S05) |
 | Features | F01 (inventory; full classification integration in S05) |
 | Depends on | Foundation; S01 recommended |
 | Can run in parallel with | S02, S06 |
@@ -95,9 +95,21 @@ manual verification; record what was tested on a device/emulator.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
-
-- commit:
+- commit: `8c32bae987312550dd8ab1d0e7c2216edf798cf4` (`feat(inventory): add S04 installed-app inventory`); docs record in a follow-up commit.
 - tests/device checks:
+  - `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` — **passed**.
+  - `test`: **197 test executions across 37 suites; 0 failures, 0 errors, 0 skipped** (debug/release variants and JVM module counted separately).
+  - `./gradlew lint` — **passed**; the intentional F-Droid `QUERY_ALL_PACKAGES` declaration is locally suppressed and documented.
+  - Play merged manifest inspection (`app/build/intermediates/merged_manifests/playstoreDebug/.../AndroidManifest.xml`): no `QUERY_ALL_PACKAGES`, `REQUEST_INSTALL_PACKAGES`, `BIND_ACCESSIBILITY_SERVICE`, accessibility-service declaration, or `<queries>` block.
+  - F-Droid merged manifest inspection: contains `android.permission.QUERY_ALL_PACKAGES` and a launcher-intent `<queries>` block.
+  - Device/emulator-only checks **not run**: real `PackageManager` enumeration and installer/signer/work-profile values, Play package-visibility behaviour, shared-link `ACTION_SEND`/`ACTION_VIEW` handling, stale-banner rendering with real data, and hide-list survival across a real process restart. The list is exercised on JVM with a fake `InstalledAppSource`.
 - F01 criteria completed:
-- remaining F01-R4 classification integration:
+  - **F01-R1** — inventory is local-only; no network code or permission is involved.
+  - **F01-R2** — full scan is gated by `Capability.BROAD_PACKAGE_VISIBILITY` in the repository, source, and UI; only the F-Droid flavor declares broad visibility.
+  - **F01-R3** — manual package/label search, a candidate picker, store-link parsing (`play`, `f-droid`, `market`), and shared-text handling work in every profile; blocked lookups degrade to `UNAVAILABLE`.
+  - **F01-R4** — all four classification labels and explanations exist in the UI; the S04 `ClassificationSource` stub returns `UNKNOWN`.
+  - **F01-R5** — the last complete snapshot is persisted with its timestamp and snapshots older than 24 hours show a stale warning with the original time.
+  - **F01-R6** — system, disabled, work-profile, and hidden-app filters change the list without rescanning; hidden apps persist across repository instances.
+  - **F01-R7** — snapshots are written only after a scan completes; cancelling a full scan (during enumeration or classification) preserves the previous snapshot.
+  - **F01-R8** — hidden apps are stored in the local inventory envelope and excluded from the default list.
+- remaining F01-R4 classification integration: replace `UnknownClassificationSource` with the S05 matching engine. The app currently intentionally produces only `UNKNOWN` (visible app) and `UNAVAILABLE` (missing/not visible); `FOSS` and `PROPRIETARY` labels are ready but not yet selected by production classification.
