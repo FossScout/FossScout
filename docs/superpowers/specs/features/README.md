@@ -4,6 +4,8 @@ Status: **Draft**
 Date: 2026-10-22
 Master design: `../2026-10-22-fossscout-feature-scope-design.md`
 Build profiles: `../2026-10-22-build-profiles-and-optional-features.md`
+Implementation status: [`STATUS.md`](STATUS.md)
+Feature sessions: [`../../sessions/README.md`](../../sessions/README.md)
 
 Each feature has its own file with availability, required capabilities,
 requirements, acceptance criteria, data/privacy notes, and open questions.

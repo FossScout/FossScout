@@ -1,0 +1,140 @@
+# FossScout Implementation Status
+
+Last updated: **2026-10-23**
+Baseline: `main` at `54ac8b2` (`feat: establish modular foundation with Play and F-Droid profiles (#1)`)
+Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
+Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
+
+This file is the **implementation** tracker. The feature matrix in `README.md`
+records planned availability; it does not mean a feature is built. Update this
+file after every feature session with the new commit, test result, and status.
+
+## Status legend
+
+| Status | Meaning |
+| --- | --- |
+| **Done** | Implemented, tested, and matches the v1 scope of its spec. |
+| **Partial** | A usable subset exists; at least one MUST or acceptance criterion is still missing. |
+| **Registered** | A feature descriptor/profile entry exists, but there is no feature behavior. |
+| **Model only** | A data class exists, but there is no repository, UI, or behavior. |
+| **Deferred** | Intentionally outside v1 and excluded from the v1 profiles. |
+| **Spec only** | Post-v1 design; no feature ID or implementation. |
+
+## Summary
+
+| Area | Status |
+| --- | --- |
+| Modular foundation | **Done** |
+| Build profiles (`playstore`, `fdroid`) | **Done** for these two; `direct`/`custom` not implemented |
+| Local favourites and notes | **Partial** |
+| Feature configuration | **Partial** |
+| Store, index, inventory, matching | **Not implemented** |
+| Sharing, backup, security, contribution | **Not implemented** |
+| Feature completion | **0 of 21 fully done; 2 partial; 12 registered/model-only; 3 deferred; 4 spec-only** |
+
+**Recommended next session:** [S01 — F17 feature configuration](../../sessions/S01-feature-configuration.md).
+After S01, S02, S04, and S06 can run in parallel.
+
+## What works today
+
+- Bundled project catalog with search and category filters.
+- Locally persisted favourites with private notes, duplicate handling, note
+  length validation, and visible read/write error states.
+- Runtime feature toggles backed by DataStore; disabled features are hidden from
+  navigation where wired up.
+- Capability-based `playstore` and `fdroid` profiles with separate application
+  IDs (`com.fossscout.app`, `com.fossscout.app.fdroid`).
+- Play-safe manifest: no install-packages permission, broad package visibility,
+  or accessibility service.
+- Material 3 UI, light/dark theme, About screen, and unit tests for the current
+  data/domain/settings behaviour.
+
+## Feature status
+
+| ID | Feature | Status | What exists / what is missing | Planned session |
+| --- | --- | --- | --- | --- |
+| F01 | Installed app inventory | **Registered** | Descriptor and profile capability only. No `PackageManager` source, manual picker, full scan, snapshot, filters, or stale timestamp. | S04, S05 |
+| F02 | FOSS matching | **Registered** | Descriptor only. No match levels, evidence, matching engine, or UI. | S05 |
+| F03 | Alternative suggestions | **Registered** | Descriptor only. No ranking, reasons, or alternative cards. | S05 |
+| F04 | Store registry and adapters | **Registered** | Descriptor only. No store model, adapters, built-in stores, custom-store UI, or descriptor export. | S02, S03 |
+| F05 | Index sync and offline cache | **Registered** | Descriptor only. No network layer, snapshots, freshness, cancellation, or storage budget. | S03 |
+| F06 | Coverage and confidence | **Registered** | Descriptor only. No coverage snapshot, skipped-store reasons, or incomplete-result state. | S05 |
+| F07 | Replacement guidance | **Registered** | Descriptor only. No signer/package comparison, update/replace/alternative labels, or warning UI. | S08 |
+| F08 | Companion store handoff | **Registered** | Descriptor only. No store detection, app-page intent, repository-add flow, or no-store fallback. | S08 |
+| F09 | Standalone store client | **Deferred** | Excluded from both v1 profiles. Requires F05, F14, and `DIRECT_APK_INSTALL`. | S12 |
+| F10 | Install-time suggestion | **Deferred** | Excluded from both v1 profiles. Requires matching, handoff, and the accessibility module. | S12 |
+| F11 | Favourites and notes | **Partial** | Add/remove, private notes, persistence, duplicate handling, note limit, and error states work. Tags/preferred store are modeled but not exposed; no favourites search, installed badge, or collection integration. | S06, S07 |
+| F12 | Collections and sharing | **Model only** | `AppCollection` exists but has no schema version, persistence, repository, UI, sharing, or import. | S07 |
+| F13 | Backup and migration | **Registered** | Descriptor only. No backup envelope, manifest, export/import, conflict handling, or encryption. | S09 |
+| F14 | Security verification | **Registered** | Descriptor only. No fingerprint pinning, index signature verification, trust records, or security details UI. | S03, S10 |
+| F15 | Update tracking | **Deferred** | Not enabled in either v1 profile. | S12 |
+| F16 | Contribution hooks | **Registered** | Descriptor only. No report builder, redaction, preview, or sharing. | S11 |
+| F17 | Feature configuration | **Partial** | Descriptor-driven toggles, persistence, unavailable reasons, and gated navigation work. Descriptor has no settings schema; no per-feature/global reset, basic/advanced sections, or backup hook. | S01 |
+| F18 | Unified store search | **Spec only** | Post-v1. No feature ID or code. | S12 |
+| F19 | Permission and tracker diff | **Spec only** | Post-v1. No feature ID or code. | S12 |
+| F20 | Matching correction | **Spec only** | Post-v1. No feature ID or code. | S12 |
+| F21 | Trust badges | **Spec only** | Post-v1. No feature ID or code. | S12 |
+
+## Verification snapshot
+
+Commands run on `main` at `54ac8b2` on 2026-10-22/23:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew clean test assemblePlaystoreDebug assembleFdroidDebug` | **Passed** (2m 42s) |
+| `./gradlew test --rerun-tasks` | **Passed** (3m 48s, 269 tasks executed) |
+| Unit tests | **71 test executions across 16 suites; 0 failures, 0 errors, 0 skipped** |
+| `assemblePlaystoreDebug` | **Passed** |
+| `assembleFdroidDebug` | **Passed** |
+| Restricted manifest scan | **Passed**: neither profile contains `REQUEST_INSTALL_PACKAGES`, `QUERY_ALL_PACKAGES`, `AccessibilityService`, or `BIND_ACCESSIBILITY_SERVICE` |
+| Full Android lint report | **Blocked by environment**: `:app:generatePlaystoreDebugAndroidTestLintModel` cannot resolve `org.hamcrest:hamcrest-library:1.3` and `kotlinx-coroutines-test:1.7.3` from Maven Central in this sandbox. Main-source and module lint analysis ran; the aggregate report was not produced. |
+
+Debug builds also warn that native symbols for `libandroidx.graphics.path.so`
+and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build
+warning, not a failing check.
+
+## Known gaps and blockers
+
+### Product scope
+
+- The master design still marks the v1 feature scope **proposed** and the
+  feature files are Draft/Proposed. The session plan records the planning
+  assumptions used until the user confirms or changes them.
+- The master design's candidate numbering (`F1`–`F24`) does **not** match the
+  feature files (`F01`–`F21`). Sessions and code must use the `F01`–`F21` files.
+- F07 is listed in v1 but depends on F09, which is deferred. The planned v1
+  scope is guidance and handoff only.
+- F14 contains MUSTs for APK hash and signer checks that need F09. The planned
+  v1 scope is repository/index verification, HTTPS, fingerprint pinning, and
+  trust details.
+- Play package visibility is not finally decided. The planning assumption is
+  manual/selected inventory on Play and no `QUERY_ALL_PACKAGES`; F-Droid may
+  perform the full scan.
+- Only `playstore` and `fdroid` profiles exist. `direct` and `custom` remain
+  future profiles.
+
+### Architecture and data
+
+- `FeatureDescriptor` has no settings model, despite F17-R1. Per-feature
+  settings are not representable yet.
+- `ProfileFeatures.enabledFeatures` and `FeatureRegistry` are two sources of
+  availability truth. They can drift; the registry should be authoritative.
+- F01/F02, F02/F06, F04/F05, and F05/F14 have circular dependencies in the
+  specs. Shared contracts must be defined before the dependent features.
+- No store, snapshot, sync, inventory, matching, coverage, or verification
+  models exist.
+- `AppCollection` has no schema version or repository.
+- `AppKey` has no documented canonicalization rule for source-only apps.
+- Settings toggles for unimplemented features currently have no observable
+  effect. This is expected at this stage but should not be presented as a
+  shipped capability.
+
+## Status update protocol
+
+After a feature session is merged:
+
+1. Update the baseline commit and date at the top of this file.
+2. Update the affected feature row and the summary counts.
+3. Record the exact test/build commands and any new environment caveats.
+4. Add or remove blockers.
+5. Link the session file if the work was split further.

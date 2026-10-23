@@ -11,6 +11,11 @@ The modular foundation for v1 is implemented. The app is split into core and
 feature modules, ships as `playstore` and `fdroid` build profiles, and persists
 favourites and feature settings locally with DataStore.
 
+Current implementation status:
+[`docs/superpowers/specs/features/STATUS.md`](docs/superpowers/specs/features/STATUS.md).
+Remaining feature work is split into independent sessions:
+[`docs/superpowers/sessions/README.md`](docs/superpowers/sessions/README.md).
+
 The catalog is still bundled with the app. Inventory scanning, matching,
 alternatives, the store registry, index caching, coverage reporting, replacement
 guidance, and companion handoff are registered and enabled in the v1 profiles
