@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Ready** |
+| Status | **Done** |
 | Features | F17 |
 | Depends on | Foundation only |
 | Can run in parallel with | S02, S04, S06 after this session lands |
@@ -108,8 +108,12 @@ for reset/preservation. Verify the Play merged manifest is unchanged.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
-
-- commit:
-- tests:
-- remaining F17 gaps:
+- commit: `6949df7` (`feat: complete F17 feature configuration`)
+- tests: `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` passed
+  (117 test executions across 21 suites, 0 failures); `./gradlew lint` passed
+  with 0 errors and 37 existing warnings; Play merged manifest scanned clean.
+- remaining F17 gaps: no production feature declares a setting yet, so the
+  Advanced section is only populated by future real declarations; F13 backup
+  import/export UI remains S09; F17-R8 development overrides (MAY) are not
+  implemented; a future user-opt-in feature that defaults off will need an
+  enabled-override in the stored envelope.

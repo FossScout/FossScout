@@ -16,7 +16,7 @@ Start here:
 
 | Session | Scope | Status | Depends on | Can run in parallel with | Wave |
 | --- | --- | --- | --- | --- | --- |
-| [S01](S01-feature-configuration.md) | F17 feature configuration completion | **Ready** | Foundation | S02, S04, S06 after S01 | 0 |
+| [S01](S01-feature-configuration.md) | F17 feature configuration completion | **Done** | Foundation | S02, S04, S06 after S01 | 0 |
 | [S02](S02-store-registry.md) | F04 store contracts, registry, custom stores | **Ready** | Foundation | S04, S06 | 1 |
 | [S03](S03-index-sync-verification.md) | F05 index sync/cache + F14 verification core | **Blocked by S02** | S01, S02 | S07 | 2 |
 | [S04](S04-installed-inventory.md) | F01 installed inventory, manual/selected + full scan | **Ready** | Foundation | S02, S06 | 1 |

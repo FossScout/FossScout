@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
 Last updated: **2026-10-23**
-Baseline: `main` at `54ac8b2` (`feat: establish modular foundation with Play and F-Droid profiles (#1)`)
+Baseline: `feat/s01-feature-configuration` at `6949df7` (F17 feature configuration), based on `main` at `a4861f7`
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
 
@@ -27,23 +27,32 @@ file after every feature session with the new commit, test result, and status.
 | Modular foundation | **Done** |
 | Build profiles (`playstore`, `fdroid`) | **Done** for these two; `direct`/`custom` not implemented |
 | Local favourites and notes | **Partial** |
-| Feature configuration | **Partial** |
+| Feature configuration | **Done** |
 | Store, index, inventory, matching | **Not implemented** |
 | Sharing, backup, security, contribution | **Not implemented** |
-| Feature completion | **0 of 21 fully done; 2 partial; 12 registered/model-only; 3 deferred; 4 spec-only** |
+| Feature completion | **1 of 21 fully done; 1 partial; 12 registered/model-only; 3 deferred; 4 spec-only** |
 
-**Recommended next session:** [S01 — F17 feature configuration](../../sessions/S01-feature-configuration.md).
-After S01, S02, S04, and S06 can run in parallel.
+**Recommended next sessions:** [S02](../../sessions/S02-store-registry.md),
+[S04](../../sessions/S04-installed-inventory.md), and
+[S06](../../sessions/S06-favourites-completion.md) can run in parallel. S03
+waits for S02; S05 waits for S03 and S04; S09 waits for S06/S07.
 
 ## What works today
 
 - Bundled project catalog with search and category filters.
 - Locally persisted favourites with private notes, duplicate handling, note
   length validation, and visible read/write error states.
-- Runtime feature toggles backed by DataStore; disabled features are hidden from
-  navigation where wired up.
+- Runtime feature toggles backed by a versioned DataStore envelope, with
+  migration from the legacy `disabled_features` preference.
+- Descriptor-declared feature settings (boolean and text) with defaults and
+  validation, plus basic/advanced sections, per-feature reset, global reset, and
+  a read-only versioned snapshot for F13.
+- `FeatureRegistry` is the single source of availability and enabled state;
+  build profiles supply capabilities only.
 - Capability-based `playstore` and `fdroid` profiles with separate application
   IDs (`com.fossscout.app`, `com.fossscout.app.fdroid`).
+- Policy-safe “unavailable in this build” explanations and capability labels for
+  restricted features.
 - Play-safe manifest: no install-packages permission, broad package visibility,
   or accessibility service.
 - Material 3 UI, light/dark theme, About screen, and unit tests for the current
@@ -69,7 +78,7 @@ After S01, S02, S04, and S06 can run in parallel.
 | F14 | Security verification | **Registered** | Descriptor only. No fingerprint pinning, index signature verification, trust records, or security details UI. | S03, S10 |
 | F15 | Update tracking | **Deferred** | Not enabled in either v1 profile. | S12 |
 | F16 | Contribution hooks | **Registered** | Descriptor only. No report builder, redaction, preview, or sharing. | S11 |
-| F17 | Feature configuration | **Partial** | Descriptor-driven toggles, persistence, unavailable reasons, and gated navigation work. Descriptor has no settings schema; no per-feature/global reset, basic/advanced sections, or backup hook. | S01 |
+| F17 | Feature configuration | **Done** | Descriptor settings model (boolean/text with defaults and validation), versioned envelope with legacy migration, registry-authoritative availability, basic/advanced sections, per-feature/global reset, and read-only snapshot for F13. No production feature declares a setting yet; backup import/export UI is S09. | S01 |
 | F18 | Unified store search | **Spec only** | Post-v1. No feature ID or code. | S12 |
 | F19 | Permission and tracker diff | **Spec only** | Post-v1. No feature ID or code. | S12 |
 | F20 | Matching correction | **Spec only** | Post-v1. No feature ID or code. | S12 |
@@ -77,19 +86,18 @@ After S01, S02, S04, and S06 can run in parallel.
 
 ## Verification snapshot
 
-Commands run on `main` at `54ac8b2` on 2026-10-22/23:
+Commands run on `feat/s01-feature-configuration` at `6949df7` on 2026-10-23:
 
 | Check | Result |
 | --- | --- |
-| `./gradlew clean test assemblePlaystoreDebug assembleFdroidDebug` | **Passed** (2m 42s) |
-| `./gradlew test --rerun-tasks` | **Passed** (3m 48s, 269 tasks executed) |
-| Unit tests | **71 test executions across 16 suites; 0 failures, 0 errors, 0 skipped** |
+| `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` | **Passed** |
+| Unit tests | **117 test executions across 21 suites; 0 failures, 0 errors, 0 skipped** (debug and release variants counted separately) |
 | `assemblePlaystoreDebug` | **Passed** |
 | `assembleFdroidDebug` | **Passed** |
-| Restricted manifest scan | **Passed**: neither profile contains `REQUEST_INSTALL_PACKAGES`, `QUERY_ALL_PACKAGES`, `AccessibilityService`, or `BIND_ACCESSIBILITY_SERVICE` |
-| Full Android lint report | **Blocked by environment**: `:app:generatePlaystoreDebugAndroidTestLintModel` cannot resolve `org.hamcrest:hamcrest-library:1.3` and `kotlinx-coroutines-test:1.7.3` from Maven Central in this sandbox. Main-source and module lint analysis ran; the aggregate report was not produced. |
+| Restricted manifest scan | **Passed**: the Play merged manifest contains no `REQUEST_INSTALL_PACKAGES`, `QUERY_ALL_PACKAGES`, `AccessibilityService`, or `BIND_ACCESSIBILITY_SERVICE` |
+| `./gradlew lint` | **Passed** (2m 6s): 0 errors, 37 warnings (existing dependency-version and redundant-label warnings). The previously reported Maven resolution block did not recur in this run. |
 
-Debug builds also warn that native symbols for `libandroidx.graphics.path.so`
+Debug builds may warn that native symbols for `libandroidx.graphics.path.so`
 and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build
 warning, not a failing check.
 
@@ -115,16 +123,22 @@ warning, not a failing check.
 
 ### Architecture and data
 
-- `FeatureDescriptor` has no settings model, despite F17-R1. Per-feature
-  settings are not representable yet.
-- `ProfileFeatures.enabledFeatures` and `FeatureRegistry` are two sources of
-  availability truth. They can drift; the registry should be authoritative.
 - F01/F02, F02/F06, F04/F05, and F05/F14 have circular dependencies in the
   specs. Shared contracts must be defined before the dependent features.
 - No store, snapshot, sync, inventory, matching, coverage, or verification
   models exist.
 - `AppCollection` has no schema version or repository.
 - `AppKey` has no documented canonicalization rule for source-only apps.
+- No production feature declares a `FeatureSetting` yet. The generated
+  basic/advanced UI and reset flow are exercised by descriptor-driven tests; the
+  Advanced section appears when a future feature declares a real advanced
+  setting.
+- The settings envelope stores disabled IDs plus per-feature values. A future
+  feature whose `defaultEnabled` is false and that users can opt into will need
+  an explicit enabled-override field; no current descriptor uses that case.
+- Settings import/export UI remains part of F13/S09. S01 only exposes the
+  read-only snapshot.
+- F17-R8 development availability overrides (MAY) are not implemented.
 - Settings toggles for unimplemented features currently have no observable
   effect. This is expected at this stage but should not be presented as a
   shipped capability.
