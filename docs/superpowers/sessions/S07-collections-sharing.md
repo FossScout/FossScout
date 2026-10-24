@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Ready** (S06 merged) |
+| Status | **Done** (S07 scope) |
 | Features | F12 |
 | Depends on | S06 |
 | Can run in parallel with | S05 |
@@ -96,7 +96,8 @@ FileProvider/export MIME types on an emulator if possible.
 ## Completion record
 
 - **Implementation commit:** `7d630e2` — `feat(share): add collections and offline sharing/import` on `feat/s07-collections-sharing`.
-- **Merge state:** implemented and verified on the branch; not merged. `STATUS.md` was intentionally left untouched for the post-merge integration step.
+- **Docs commit:** `52bdc91` — `docs(s07): record collections and sharing completion`.
+- **Merge state:** merged into local `main` by fast-forward (`01d8b30..52bdc91`) on 2026-10-24. Post-merge `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint` passed in the restored toolchain (18m 50s, 613 actionable tasks). `STATUS.md` is updated by the S05 integration pass.
 - **Tests:** `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` — BUILD SUCCESSFUL (442 actionable tasks). Added 49 core/data test cases across collection codec/store/repository and share codec/export/import suites. All tests pass.
 - **Lint:** `./gradlew lint` — BUILD SUCCESSFUL, 0 errors. The app and `feature:favourites` reports contain 40 and 13 warnings respectively, mostly pre-existing plural-resource and Compose modifier-order warnings.
 - **Play manifest:** inspected the merged `playstoreDebug` manifest. It contains only `INTERNET` plus AndroidX's generated dynamic-receiver permission; the non-exported `FileProvider` (`${applicationId}.fileprovider`) is present. No `REQUEST_INSTALL_PACKAGES`, `QUERY_ALL_PACKAGES`, accessibility, or other restricted capability was added.

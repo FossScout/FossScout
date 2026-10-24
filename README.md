@@ -1,25 +1,26 @@
 # FossScout
 
-FossScout is an Android app for discovering free and open source software. The
-current `v0.1.0` foundation is a Material 3 Compose app with a bundled catalog,
-search and category filters, locally persisted favourites with private notes,
-runtime feature toggles, and an about screen.
+FossScout is an Android app for discovering free and open source software. It
+combines a bundled project catalog with installed-app inventory, FOSS matching
+against verified store indexes, favourites and collections, and local
+sharing/import, all in a Material 3 Compose UI.
 
 ## Status
 
 The modular foundation for v1 is implemented. The app is split into core and
 feature modules, ships as `playstore` and `fdroid` build profiles, and persists
-favourites and feature settings locally with DataStore.
+favourites, collections, and settings locally with DataStore.
 
 Current implementation status:
 [`docs/superpowers/specs/features/STATUS.md`](docs/superpowers/specs/features/STATUS.md).
 Remaining feature work is split into independent sessions:
 [`docs/superpowers/sessions/README.md`](docs/superpowers/sessions/README.md).
 
-The catalog is still bundled with the app. Inventory scanning, matching,
-alternatives, the store registry, index caching, coverage reporting, replacement
-guidance, and companion handoff are registered and enabled in the v1 profiles
-but are not implemented yet, so their toggles do not change behavior today.
+Installed-app inventory, the store registry, verified offline index caching,
+FOSS matching, coverage reporting, alternative suggestions, collections, and
+local sharing/import are implemented. Replacement guidance and companion
+handoff, backup, security details, and contribution reports remain scheduled
+sessions.
 
 **v1 does not download or install APKs, and it has no AccessibilityService.**
 Direct APK install and the install-time accessibility prompt are deferred.
@@ -31,6 +32,9 @@ Direct APK install and the install-time accessibility prompt are deferred.
 - Filter by category
 - Favourite projects and keep a private note on each one; favourites persist
   across app restarts
+- Build local collections and share/import them as JSON, plain text, or files
+- Inspect installed apps on the device and match them against verified F-Droid
+  and IzzyOnDroid indexes, with coverage gaps and clearly labelled alternatives
 - Enable or disable available features from the Settings screen; the choice
   persists across app restarts
 - Light and dark themes with a custom green palette
@@ -110,11 +114,18 @@ FossScout/
 ├── core/
 │   ├── model/                  # Domain types: AppKey, Favourite, AppCollection
 │   ├── feature/                # Capability, feature descriptors, registry, feature catalog
-│   ├── data/                   # Favourites and feature-settings repositories + DataStore stores
+│   ├── inventory/              # Installed-app contracts and inventory repository
+│   ├── store-api/              # Store/adapter contracts and registry models
+│   ├── index/                  # Signed F-Droid index sync, verification, and snapshots
+│   ├── matching/               # Pure-JVM matching, alternatives, and coverage engine
+│   ├── data/                   # Favourites, collections, settings, and DataStore stores
 │   └── ui/                     # Shared Compose theme (colors, typography, theming)
 ├── feature/
 │   ├── catalog/                # Bundled catalog, discover screen and view model
 │   ├── favourites/             # Saved-projects screen, notes and validation
+│   ├── inventory/              # Installed-app inventory and scan UI
+│   ├── matching/               # Match result, evidence, coverage, and alternatives UI
+│   ├── stores/                 # Store registry, sync, and trust evidence UI
 │   └── settings/               # Feature toggle screen and labels
 ├── docs/                       # Design specs and implementation plans
 ├── gradle/                     # Version catalog and wrapper
@@ -129,14 +140,11 @@ depend on `:app` or on each other.
 
 ## Roadmap
 
-- Implement installed-app inventory and FOSS matching, using manual package
-  selection on Play and the broader scan on F-Droid
-- Add the store registry, index cache, coverage reporting, replacement guidance,
-  and companion handoff
-- Add sharing, import/export, and backup for favourites and settings
-- Add project detail screens and contribution hooks
-- Add tests around remaining view models and repositories
-- Set up CI for builds and tests
+- Implement replacement guidance and companion store handoff
+- Add backup and migration for favourites, collections, and settings
+- Add security/trust details and contribution hooks
+- Add project detail screens
+- Expand device/emulator verification and set up CI for builds and tests
 
 Direct APK download/install and the install-time accessibility prompt are
 post-v1 and restricted to builds where the platform policy allows them.

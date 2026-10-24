@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Ready** (S02, S03, and S04 merged) |
+| Status | **Done** (S05 scope) |
 | Features | F02, F03, F06; completes F01-R4 |
 | Depends on | S02, S03, S04 |
 | Can run in parallel with | S07 |
@@ -106,10 +106,48 @@ by L1/L2.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
+- **Implementation commit:** `b9fa0da` — `feat(matching): add S05 matching alternatives and coverage`.
+- **Modules:** new pure-JVM `core:matching` (contracts, query, catalog projection/cache, ranker, engine, repository/classifier) and Compose `feature:matching` (result/detail screen, labels, UI state, view model). Wired through `AppContainer`, inventory classification, and an inventory-to-match overlay/back flow.
+- **Tests:** `./gradlew :core:matching:test :feature:matching:test` passed. `core:matching` contributes 45 tests; `feature:matching` contributes 16 tests across debug and release (32 executions). Full `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint` passed (1m 32s, 683 actionable tasks): **563 test executions across 85 suites, 0 failures, 0 errors, 0 skipped**. Lint: **0 errors**; the app report has the 40 pre-existing warnings and `feature:matching` adds none.
+- **Manifest:** no permission, service, or provider was added. Play still contains only `INTERNET` plus AndroidX's dynamic-receiver permission; F-Droid keeps its existing `QUERY_ALL_PACKAGES` and launcher `<queries>`.
+- **Device/emulator checks not run:** live F-Droid/IzzyOnDroid sync, real `PackageManager` signer values, inventory badge refresh, and runtime behavior with large indexes remain outstanding. Matching is exercised on JVM fixtures and fake catalogs.
 
-- commit:
-- tests:
-- F02/F03/F06 criteria completed:
-- confidence/freshness decisions:
-- remaining SHOULD gaps:
+### F02 criteria
+
+- **F02-R1 — complete:** package identity is checked before fuzzy signals; an exact package with license and source produces L1 and source evidence.
+- **F02-R2 — complete:** L0/L1/L2/L3 are distinct in the data model and UI; only L1 shows “Same app,” while L2 and L3 are explicitly labelled as not the same app.
+- **F02-R3 — complete:** the primary evidence card shows store, package, license, source URL, version, and signer; other-store matches show store, package, level, license, and source.
+- **F02-R4 — complete:** missing license or source metadata downgrades the exact listing to L0 and inventory classification to `UNKNOWN`.
+- **F02-R5 — complete:** stale, failed, never-synced, and unsupported enabled stores remain coverage gaps and block a conclusive “not found.” A match that is found still carries the incomplete coverage instead of hiding the gap.
+- **F02-R6 — complete:** matching reads only cached verified snapshots and makes no network request; the catalog cache is keyed by payload path and bounded.
+- **F02-R7 — deferred SHOULD:** reporting a wrong match belongs to F20/S12; no local report action was added.
+- **F02-R8 — deferred MAY:** pinning a preferred source was not implemented; F11's preferred store remains a display preference only.
+
+### F03 criteria
+
+- **F03-R1 — complete:** alternatives are computed only when no L1/L2 exists and are suppressed when the feature toggle is off.
+- **F03-R2 — complete:** every suggestion carries the L3 “Different app” label and the alternatives section states they are not replacements.
+- **F03-R3 — complete:** each suggestion lists category, tag, and/or name/description-token reasons.
+- **F03-R4 — complete:** disabled stores never contribute; unsupported and stale stores appear as coverage gaps.
+- **F03-R5 — complete for the session:** hide and undo work on the current result; hidden suggestions are not persisted.
+- **F03-R6 — complete:** ranking uses category (4), tag (3), and description-token (1) evidence, then display name and store id; store affiliation never adds score, and the cap is five.
+- **F03-R7 — deferred MAY:** side-by-side comparison was not implemented.
+
+### F06 and F01-R4 criteria
+
+- **F06-R1 — complete:** every `MatchDecision` carries a `CoverageSnapshot`; when coverage is enabled, the UI lists checked, stale, failed, and skipped stores.
+- **F06-R2 — complete:** “not found” requires at least one checked store and every enabled non-disabled store to be checked with fresh data. When no match is found, stale/offline/unsupported stores produce `INCOMPLETE`. Disabled stores are user choices and do not block.
+- **F06-R3 — complete:** every non-checked store carries a typed reason and visible label; the model enforces the checked/reason invariant.
+- **F06-R4 — deferred SHOULD:** coverage is not yet embedded in S07 share/export envelopes; S09 should include it in backup/report payloads.
+- **F06-R5 — deferred SHOULD:** targeted “refresh only affected stores” was not added.
+- **F06-R6 — complete:** confidence is label-first (`HIGH`/`MEDIUM`/`LOW`/`UNKNOWN`) and explained by match level, freshness, and signer/source evidence.
+- **F01-R4 — production integration complete for available evidence:** inventory now calls `MatchingRepository.classify`; exact FOSS evidence yields `FOSS`, missing/partial evidence yields `UNKNOWN`, and missing/not-visible packages yield `UNAVAILABLE`. `PROPRIETARY` is not selected because no proprietary evidence source exists; absence of a FOSS listing is not treated as proof of closed source.
+
+### Decisions and remaining gaps
+
+- Freshness is 24 hours, injected into the engine and shown in the coverage card.
+- A signer mismatch or shared upstream source URL produces L2, not L1; only L1 may be called the same app.
+- Unsupported enabled stores block a conclusive “not found,” while disabled stores do not.
+- Alternatives are capped at five and hidden/undone per result session only.
+- Matching, alternatives, and coverage each respect their `FeatureId` toggle; matching itself remains hidden when `FeatureId.MATCHING` is disabled.
+- Remaining gaps are the deferred SHOULDs above, `PROPRIETARY` evidence, and real-device/index verification. S09 can reuse the coverage snapshot and `ShareEnvelope`; S10 owns trust details.

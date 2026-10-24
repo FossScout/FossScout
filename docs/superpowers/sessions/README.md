@@ -20,31 +20,30 @@ Start here:
 | [S02](S02-store-registry.md) | F04 store contracts, registry, custom stores | **Done** (S02 scope) | Foundation | S04, S06 | 1 |
 | [S03](S03-index-sync-verification.md) | F05 index sync/cache + F14 verification core | **Done** (S03 scope) | S01, S02 | S06 | 2 |
 | [S04](S04-installed-inventory.md) | F01 installed inventory, manual/selected + full scan | **Done** (S04 scope) | Foundation | S02, S06 | 1 |
-| [S05](S05-matching-alternatives-coverage.md) | F02/F03/F06 matching, alternatives, coverage | **Ready** | S02, S03, S04 | S07 | 3 |
+| [S05](S05-matching-alternatives-coverage.md) | F02/F03/F06 matching, alternatives, coverage | **Done** (S05 scope) | S02, S03, S04 | S07 | 3 |
 | [S06](S06-favourites-completion.md) | F11 favourites completion | **Done** (S06 scope) | Foundation; S02/S04 contracts available | S03 | 2 |
-| [S07](S07-collections-sharing.md) | F12 collections, sharing, import | **Ready** | S06 | S05 | 3 |
-| [S08](S08-replacement-handoff.md) | F08 handoff + F07 guidance-only replacement | **Blocked by S05** | S02, S05 | S09, S10, S11 | 4 |
-| [S09](S09-backup-migration.md) | F13 backup and migration | **Blocked by S07** | S01, S02, S03, S06, S07 | S08, S10, S11 | 4 |
-| [S10](S10-security-trust.md) | F14 security details and trust audit UI | **Blocked by S05** | S03, S05 | S08, S09, S11 | 4 |
-| [S11](S11-contribution-hooks.md) | F16 contribution reports and redaction | **Blocked by S05** | S02, S05 | S08, S09, S10 | 4 |
+| [S07](S07-collections-sharing.md) | F12 collections, sharing, import | **Done** (S07 scope) | S06 | S05 | 3 |
+| [S08](S08-replacement-handoff.md) | F08 handoff + F07 guidance-only replacement | **Ready** | S02, S05 | S09, S10, S11 | 4 |
+| [S09](S09-backup-migration.md) | F13 backup and migration | **Ready** | S01, S02, S03, S06, S07 | S08, S10, S11 | 4 |
+| [S10](S10-security-trust.md) | F14 security details and trust audit UI | **Ready** | S03, S05 | S08, S09, S11 | 4 |
+| [S11](S11-contribution-hooks.md) | F16 contribution reports and redaction | **Ready** | S02, S05 | S08, S09, S10 | 4 |
 | [S12](S12-post-v1-backlog.md) | F09/F10/F15/F18–F21 | **Post-v1** | Separate decisions | None | 5 |
 
 ## Recommended order
 
 ```text
-S01 ── S02 ── S03 ──┐
-  └──── S04 ─────────┼── S05 ──┬── S08
-  └──── S06 ── S07 ──┘         ├── S10
-        └── S09 ───────────────┘
-                              └── S11
+S01 → S02 → S03 ─┐
+S01 → S04 ───────┼→ S05 → S08, S10, S11
+S01 → S06 → S07 ─┘       S07 → S09
 S12 remains post-v1.
 ```
 
-Completed: **S01, S02, S03, S04, S06**. The next parallel wave is **S05 + S07**.
+Completed: **S01, S02, S03, S04, S05, S06, S07**. The next parallel wave is
+**S08 + S09 + S10 + S11**.
 
-The remaining single-agent order is **S05 → S07 → S09 → S08 → S10 → S11**. If
-multiple sessions run in parallel, use the wave table and avoid editing the same
-app wiring files without coordinating.
+The remaining single-agent order is **S08 → S09 → S10 → S11**. If multiple
+sessions run in parallel, use the wave table and avoid editing the same app
+wiring files without coordinating.
 
 ## Planning assumptions
 
