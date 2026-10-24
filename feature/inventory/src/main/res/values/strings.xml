@@ -43,6 +43,7 @@
 
     <string name="inventory_hide">Hide %1$s from the list</string>
     <string name="inventory_unhide">Show %1$s again</string>
+    <string name="inventory_check_match">FOSS match details</string>
     <string name="inventory_hidden_badge">Hidden</string>
     <string name="inventory_system_badge">System</string>
     <string name="inventory_disabled_badge">Disabled</string>

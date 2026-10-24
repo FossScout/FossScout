@@ -67,8 +67,10 @@ fun InventoryScreen(
     onIncludeHiddenChange: (Boolean) -> Unit,
     onHide: (String) -> Unit,
     onUnhide: (String) -> Unit,
+    onCheckMatch: (InventoryEntry) -> Unit,
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
+    showMatchAction: Boolean = true,
 ) {
     Column(
         modifier = modifier
@@ -185,6 +187,8 @@ fun InventoryScreen(
                     InventoryEntryCard(
                         entry = entry,
                         isHidden = packageName != null && packageName in state.hiddenPackages,
+                        showMatchAction = showMatchAction,
+                        onCheckMatch = { onCheckMatch(entry) },
                         onHide = { packageName?.let(onHide) },
                         onUnhide = { packageName?.let(onUnhide) },
                     )
@@ -541,6 +545,8 @@ private fun CandidateCard(
 private fun InventoryEntryCard(
     entry: InventoryEntry,
     isHidden: Boolean,
+    showMatchAction: Boolean,
+    onCheckMatch: () -> Unit,
     onHide: () -> Unit,
     onUnhide: () -> Unit,
 ) {
@@ -620,7 +626,17 @@ private fun InventoryEntryCard(
             }
 
             Spacer(modifier = Modifier.height(4.dp))
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                if (showMatchAction) {
+                    TextButton(onClick = onCheckMatch) {
+                        Text(stringResource(R.string.inventory_check_match))
+                    }
+                }
                 if (isHidden) {
                     TextButton(onClick = onUnhide) {
                         Text(stringResource(R.string.inventory_unhide, entry.label))

@@ -28,11 +28,13 @@ include(
     ":core:inventory",
     ":core:store-api",
     ":core:index",
+    ":core:matching",
     ":core:data",
     ":core:ui",
     ":feature:catalog",
     ":feature:favourites",
     ":feature:inventory",
+    ":feature:matching",
     ":feature:settings",
     ":feature:stores",
 )

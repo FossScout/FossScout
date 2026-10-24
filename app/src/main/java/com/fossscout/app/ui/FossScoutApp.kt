@@ -57,6 +57,8 @@ import com.fossscout.feature.favourites.SharingErrorDialog
 import com.fossscout.feature.favourites.SharingViewModel
 import com.fossscout.feature.inventory.InventoryScreen
 import com.fossscout.feature.inventory.InventoryViewModel
+import com.fossscout.feature.matching.MatchScreen
+import com.fossscout.feature.matching.MatchingViewModel
 import com.fossscout.feature.settings.FeatureSettingsScreen
 import com.fossscout.feature.settings.FeatureSettingsViewModel
 import com.fossscout.feature.stores.StoreExportRequest
@@ -337,24 +339,65 @@ fun FossScoutApp(
                 val inventoryState by
                     inventoryViewModel.uiState.collectAsStateWithLifecycle()
 
-                InventoryScreen(
-                    state = inventoryState,
-                    onQueryChange = inventoryViewModel::onQueryChange,
-                    onSearch = inventoryViewModel::search,
-                    onCheck = inventoryViewModel::checkInput,
-                    onSelectCandidate = inventoryViewModel::selectCandidate,
-                    onFullScan = inventoryViewModel::startFullScan,
-                    onCancelScan = inventoryViewModel::cancelScan,
-                    onIncludeSystemChange = inventoryViewModel::setIncludeSystemApps,
-                    onIncludeDisabledChange = inventoryViewModel::setIncludeDisabledApps,
-                    onIncludeWorkProfileChange =
-                        inventoryViewModel::setIncludeWorkProfileApps,
-                    onIncludeHiddenChange = inventoryViewModel::setIncludeHiddenApps,
-                    onHide = inventoryViewModel::hide,
-                    onUnhide = inventoryViewModel::unhide,
-                    onDismissError = inventoryViewModel::dismissError,
-                    modifier = screenModifier,
+                var showMatch by remember { mutableStateOf(false) }
+                val alternativesEnabled = FeatureId.ALTERNATIVES in enabledFeatures
+                val matchingViewModel: MatchingViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer {
+                            MatchingViewModel(
+                                repository = container.matchingRepository,
+                                appSource = container.installedAppSource,
+                                includeAlternatives = alternativesEnabled,
+                            )
+                        }
+                    },
                 )
+                LaunchedEffect(alternativesEnabled) {
+                    matchingViewModel.setIncludeAlternatives(alternativesEnabled)
+                }
+                val matchingState by
+                    matchingViewModel.uiState.collectAsStateWithLifecycle()
+
+                if (showMatch) {
+                    MatchScreen(
+                        state = matchingState,
+                        onQueryChange = matchingViewModel::onQueryChange,
+                        onCheck = matchingViewModel::checkInput,
+                        onSelectCandidate = matchingViewModel::selectCandidate,
+                        onOpenSource = { url -> context.openWebsite(url) },
+                        onHideAlternative = matchingViewModel::hideAlternative,
+                        onUndoHide = matchingViewModel::undoHide,
+                        onDismissError = matchingViewModel::dismissError,
+                        onBack = { showMatch = false },
+                        modifier = screenModifier,
+                        showCoverage = FeatureId.COVERAGE in enabledFeatures,
+                        showAlternatives = alternativesEnabled,
+                    )
+                } else {
+                    InventoryScreen(
+                        state = inventoryState,
+                        onQueryChange = inventoryViewModel::onQueryChange,
+                        onSearch = inventoryViewModel::search,
+                        onCheck = inventoryViewModel::checkInput,
+                        onSelectCandidate = inventoryViewModel::selectCandidate,
+                        onFullScan = inventoryViewModel::startFullScan,
+                        onCancelScan = inventoryViewModel::cancelScan,
+                        onIncludeSystemChange = inventoryViewModel::setIncludeSystemApps,
+                        onIncludeDisabledChange = inventoryViewModel::setIncludeDisabledApps,
+                        onIncludeWorkProfileChange =
+                            inventoryViewModel::setIncludeWorkProfileApps,
+                        onIncludeHiddenChange = inventoryViewModel::setIncludeHiddenApps,
+                        onHide = inventoryViewModel::hide,
+                        onUnhide = inventoryViewModel::unhide,
+                        onCheckMatch = { entry ->
+                            matchingViewModel.matchEntry(entry.identity, entry.app)
+                            showMatch = true
+                        },
+                        onDismissError = inventoryViewModel::dismissError,
+                        modifier = screenModifier,
+                        showMatchAction = FeatureId.MATCHING in enabledFeatures,
+                    )
+                }
             }
 
             AppDestination.ABOUT -> AboutScreen(modifier = screenModifier)

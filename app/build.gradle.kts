@@ -68,10 +68,12 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:feature"))
     implementation(project(":core:inventory"))
+    implementation(project(":core:matching"))
     implementation(project(":core:ui"))
     implementation(project(":feature:catalog"))
     implementation(project(":feature:favourites"))
     implementation(project(":feature:inventory"))
+    implementation(project(":feature:matching"))
     implementation(project(":feature:settings"))
     implementation(project(":feature:stores"))
 

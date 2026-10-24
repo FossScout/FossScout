@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="match_title">FOSS match</string>
+    <string name="match_subtitle">Package identity first — evidence and coverage when enabled.</string>
+    <string name="match_back">Back to inventory</string>
+    <string name="match_query_label">App name or package</string>
+    <string name="match_query_hint">e.g. org.example.app</string>
+    <string name="match_check">Check match</string>
+    <string name="match_checking">Checking…</string>
+    <string name="match_empty_title">Check an app against cached stores</string>
+    <string name="match_empty_body">FossScout compares the package ID first, then source URLs, and only suggests a different app when no exact or fork match exists. Matching works offline from cached indexes.</string>
+
+    <string name="match_level_l1">L1 · Exact package</string>
+    <string name="match_level_l2">L2 · Fork or variant</string>
+    <string name="match_level_l3">L3 · Different app</string>
+    <string name="match_level_l0">L0 · Unknown</string>
+
+    <string name="match_confidence_high">High confidence</string>
+    <string name="match_confidence_medium">Medium confidence</string>
+    <string name="match_confidence_low">Low confidence</string>
+    <string name="match_confidence_unknown">Confidence unknown</string>
+    <string name="match_confidence">Confidence: %1$s</string>
+
+    <string name="match_outcome_exact_title">Exact FOSS match</string>
+    <string name="match_outcome_exact_body">The same package is available from a checked FOSS store.</string>
+    <string name="match_outcome_variant_title">Related variant found</string>
+    <string name="match_outcome_variant_body">A fork or variant was found. It is not the same app as the package you checked.</string>
+    <string name="match_outcome_alternatives_title">No exact FOSS match</string>
+    <string name="match_outcome_alternatives_body">No exact or fork match was found. The suggestions below are different apps, not replacements.</string>
+    <string name="match_outcome_not_found_title">No FOSS match found</string>
+    <string name="match_outcome_not_found_body">Every enabled, supported store was checked with fresh enough data.</string>
+    <string name="match_outcome_incomplete_title">Not enough coverage</string>
+    <string name="match_outcome_incomplete_body">A store could not be checked, or its data is stale. A FOSS version cannot be ruled out.</string>
+    <string name="match_outcome_unknown_title">Match unknown</string>
+    <string name="match_outcome_unknown_body">A package was found, but license or source evidence is missing, so it cannot be called FOSS.</string>
+
+    <string name="match_same_app">Same app</string>
+    <string name="match_different_app">Different app</string>
+    <string name="match_fork_variant">Fork or variant — not the same app</string>
+    <string name="match_metadata_missing">License or source missing</string>
+    <string name="match_evidence_title">Match evidence</string>
+    <string name="match_why_title">Why this match</string>
+    <string name="match_store">Store: %1$s</string>
+    <string name="match_package">Package: %1$s</string>
+    <string name="match_version">Version: %1$s</string>
+    <string name="match_license">License: %1$s</string>
+    <string name="match_license_unknown">License: unknown</string>
+    <string name="match_source">Source: %1$s</string>
+    <string name="match_source_unknown">Source: unknown</string>
+    <string name="match_signer">Signer: %1$s</string>
+    <string name="match_signer_unknown">Signer: unknown</string>
+    <string name="match_open_source">Open source page</string>
+    <string name="match_other_matches">Also found in</string>
+    <string name="match_other_match_line">%1$s · %2$s (%3$s)</string>
+
+    <string name="match_coverage_title">Coverage</string>
+    <string name="match_coverage_complete">Complete</string>
+    <string name="match_coverage_incomplete">Incomplete</string>
+    <plurals name="match_coverage_summary">
+        <item quantity="one">Checked %1$d of %2$d required store.</item>
+        <item quantity="other">Checked %1$d of %2$d required stores.</item>
+    </plurals>
+    <plurals name="match_coverage_window">
+        <item quantity="one">A store counts as fresh for %1$d hour.</item>
+        <item quantity="other">A store counts as fresh for %1$d hours.</item>
+    </plurals>
+    <string name="match_coverage_last_sync">Last sync: %1$s</string>
+    <string name="match_coverage_never_synced">Never synced</string>
+    <plurals name="match_coverage_packages">
+        <item quantity="one">%1$d package</item>
+        <item quantity="other">%1$d packages</item>
+    </plurals>
+    <string name="match_coverage_status_checked">Checked</string>
+    <string name="match_coverage_status_stale">Stale</string>
+    <string name="match_coverage_status_failed">Failed</string>
+    <string name="match_coverage_status_skipped">Skipped</string>
+    <string name="match_coverage_reason_none">No gap</string>
+    <string name="match_coverage_reason_disabled">Disabled</string>
+    <string name="match_coverage_reason_unsupported">Unsupported by this build</string>
+    <string name="match_coverage_reason_never_synced">Never synced</string>
+    <string name="match_coverage_reason_stale">Stale data</string>
+    <string name="match_coverage_reason_missing_payload">Cached index missing</string>
+    <string name="match_coverage_reason_read_error">Index could not be read</string>
+
+    <string name="match_alternatives_title">Different apps that might help</string>
+    <string name="match_alternatives_body">These are functional alternatives, not the same app. They are shown only because no exact or fork match exists.</string>
+    <string name="match_alternative_score">Relevance score: %1$d</string>
+    <string name="match_hide_alternative">Hide %1$s</string>
+    <string name="match_undo_hide">Undo hide</string>
+    <string name="match_hidden_notice">Hidden %1$s from this result.</string>
+
+    <string name="match_candidates_title">Pick an app</string>
+    <string name="match_candidates_body">Several installed apps match. Choose the one you meant.</string>
+
+    <string name="match_error_query">Type an app name or package first.</string>
+    <string name="match_error_match">Couldn\'t complete the match. Cached indexes were left unchanged.</string>
+    <string name="match_error_search">Couldn\'t search installed apps.</string>
+    <string name="match_dismiss">Dismiss</string>
+</resources>

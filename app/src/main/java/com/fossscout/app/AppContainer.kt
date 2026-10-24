@@ -26,6 +26,8 @@ import com.fossscout.core.index.IndexSyncRepository
 import com.fossscout.core.index.UrlConnectionHttpFetcher
 import com.fossscout.core.inventory.InstalledAppStateProvider
 import com.fossscout.core.inventory.InventoryRepository
+import com.fossscout.core.matching.MatchingRepository
+import com.fossscout.core.matching.SnapshotCatalogSource
 import java.io.File
 import kotlinx.coroutines.flow.first
 
@@ -66,11 +68,13 @@ class AppContainer(context: Context) {
         DataStoreStoreRegistryStore(context.storeRegistryDataStore),
     )
 
+    private val snapshotPayloadStore = FileSnapshotPayloadStore(
+        File(context.filesDir, "index-snapshots"),
+    )
+
     val indexSyncRepository = IndexSyncRepository(
         metadataStore = DataStoreSnapshotMetadataStore(context.indexStateDataStore),
-        payloadStore = FileSnapshotPayloadStore(
-            File(context.filesDir, "index-snapshots"),
-        ),
+        payloadStore = snapshotPayloadStore,
         httpFetcher = UrlConnectionHttpFetcher(),
         tempDir = File(context.cacheDir, "index-sync"),
         storageBudgetBytes = {
@@ -89,16 +93,23 @@ class AppContainer(context: Context) {
     private val broadPackageVisibility =
         Capability.BROAD_PACKAGE_VISIBILITY in ProfileFeatures.profile.capabilities
 
-    private val installedAppSource = PackageManagerInstalledAppSource(
+    val installedAppSource = PackageManagerInstalledAppSource(
         context = context.applicationContext,
         supportsFullScan = broadPackageVisibility,
     )
 
     val installedStateProvider = InstalledAppStateProvider(installedAppSource)
 
+    val matchingRepository = MatchingRepository(
+        storeEntries = storeRegistryRepository.entries,
+        snapshots = indexSyncRepository.snapshots,
+        catalog = SnapshotCatalogSource(snapshotPayloadStore),
+    )
+
     val inventoryRepository = InventoryRepository(
         store = DataStoreInventoryStore(context.inventoryDataStore),
         source = installedAppSource,
+        classifier = matchingRepository,
         allowFullScan = broadPackageVisibility,
     )
 }
