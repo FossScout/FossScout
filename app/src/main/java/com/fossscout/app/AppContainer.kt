@@ -2,11 +2,13 @@ package com.fossscout.app
 
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
+import com.fossscout.app.handoff.InventoryCompanionStoreDetector
 import com.fossscout.app.inventory.PackageManagerInstalledAppSource
 import com.fossscout.app.profile.ProfileFeatures
 import com.fossscout.core.data.DataStoreFeatureSettingsStore
 import com.fossscout.core.data.DataStoreCollectionsStore
 import com.fossscout.core.data.DataStoreFavouritesStore
+import com.fossscout.core.data.DataStoreHandoffPreferencesStore
 import com.fossscout.core.data.DataStoreInventoryStore
 import com.fossscout.core.data.DataStoreStoreRegistryStore
 import com.fossscout.core.data.DataStoreSnapshotMetadataStore
@@ -21,6 +23,7 @@ import com.fossscout.core.feature.FeatureCatalog
 import com.fossscout.core.feature.FeatureId
 import com.fossscout.core.feature.FeatureSettingValue
 import com.fossscout.core.feature.IndexCacheSettings
+import com.fossscout.core.handoff.HandoffPreferencesRepository
 import com.fossscout.core.index.FileSnapshotPayloadStore
 import com.fossscout.core.index.IndexSyncRepository
 import com.fossscout.core.index.UrlConnectionHttpFetcher
@@ -37,6 +40,7 @@ private val Context.featureSettingsDataStore by preferencesDataStore(name = "fea
 private val Context.storeRegistryDataStore by preferencesDataStore(name = "store_registry")
 private val Context.inventoryDataStore by preferencesDataStore(name = "inventory")
 private val Context.indexStateDataStore by preferencesDataStore(name = "index_state")
+private val Context.handoffDataStore by preferencesDataStore(name = "handoff")
 
 /**
  * Composition root for app-wide dependencies. Android framework objects are
@@ -68,6 +72,10 @@ class AppContainer(context: Context) {
         DataStoreStoreRegistryStore(context.storeRegistryDataStore),
     )
 
+    val handoffPreferencesRepository = HandoffPreferencesRepository(
+        DataStoreHandoffPreferencesStore(context.handoffDataStore),
+    )
+
     private val snapshotPayloadStore = FileSnapshotPayloadStore(
         File(context.filesDir, "index-snapshots"),
     )
@@ -97,6 +105,8 @@ class AppContainer(context: Context) {
         context = context.applicationContext,
         supportsFullScan = broadPackageVisibility,
     )
+
+    val companionStoreDetector = InventoryCompanionStoreDetector(installedAppSource)
 
     val installedStateProvider = InstalledAppStateProvider(installedAppSource)
 

@@ -1,8 +1,11 @@
 package com.fossscout.app.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -41,10 +44,14 @@ import com.fossscout.app.AppContainer
 import com.fossscout.app.R
 import com.fossscout.app.ui.about.AboutScreen
 import com.fossscout.core.feature.FeatureId
+import com.fossscout.core.handoff.AppHandoff
+import com.fossscout.core.matching.MatchDecision
 import com.fossscout.feature.catalog.data.Project
 import com.fossscout.feature.catalog.data.ProjectRepository
 import com.fossscout.feature.catalog.discover.DiscoverScreen
 import com.fossscout.feature.catalog.discover.DiscoverViewModel
+import com.fossscout.feature.companion.CompanionScreen
+import com.fossscout.feature.companion.CompanionViewModel
 import com.fossscout.feature.favourites.CollectionsScreen
 import com.fossscout.feature.favourites.CollectionsViewModel
 import com.fossscout.feature.favourites.FavouritesScreen
@@ -340,7 +347,13 @@ fun FossScoutApp(
                     inventoryViewModel.uiState.collectAsStateWithLifecycle()
 
                 var showMatch by remember { mutableStateOf(false) }
+                var showCompanion by remember { mutableStateOf(false) }
                 val alternativesEnabled = FeatureId.ALTERNATIVES in enabledFeatures
+                val replacementGuidanceEnabled =
+                    FeatureId.REPLACEMENT_GUIDANCE in enabledFeatures
+                val companionHandoffEnabled = FeatureId.COMPANION_HANDOFF in enabledFeatures
+                val companionEnabled =
+                    replacementGuidanceEnabled || companionHandoffEnabled
                 val matchingViewModel: MatchingViewModel = viewModel(
                     factory = viewModelFactory {
                         initializer {
@@ -358,21 +371,71 @@ fun FossScoutApp(
                 val matchingState by
                     matchingViewModel.uiState.collectAsStateWithLifecycle()
 
-                if (showMatch) {
-                    MatchScreen(
-                        state = matchingState,
-                        onQueryChange = matchingViewModel::onQueryChange,
-                        onCheck = matchingViewModel::checkInput,
-                        onSelectCandidate = matchingViewModel::selectCandidate,
-                        onOpenSource = { url -> context.openWebsite(url) },
-                        onHideAlternative = matchingViewModel::hideAlternative,
-                        onUndoHide = matchingViewModel::undoHide,
-                        onDismissError = matchingViewModel::dismissError,
-                        onBack = { showMatch = false },
-                        modifier = screenModifier,
-                        showCoverage = FeatureId.COVERAGE in enabledFeatures,
-                        showAlternatives = alternativesEnabled,
+                val companionViewModel: CompanionViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer {
+                            CompanionViewModel(
+                                appSource = container.installedAppSource,
+                                stores = container.storeRegistryRepository.entries,
+                                detector = container.companionStoreDetector,
+                                preferences = container.handoffPreferencesRepository,
+                                showReplacementGuidance = replacementGuidanceEnabled,
+                                showHandoff = companionHandoffEnabled,
+                            )
+                        }
+                    },
+                )
+                LaunchedEffect(replacementGuidanceEnabled, companionHandoffEnabled) {
+                    companionViewModel.setFeatureVisibility(
+                        showReplacementGuidance = replacementGuidanceEnabled,
+                        showHandoff = companionHandoffEnabled,
                     )
+                }
+                val companionState by
+                    companionViewModel.uiState.collectAsStateWithLifecycle()
+
+                if (showMatch) {
+                    if (showCompanion) {
+                        CompanionScreen(
+                            state = companionState,
+                            onBack = { showCompanion = false },
+                            onSelectClient = companionViewModel::selectClient,
+                            onConfirmReplace = companionViewModel::setReplaceConfirmed,
+                            onToggleQr = companionViewModel::toggleQr,
+                            onOpenStoreApp = context::openCompanionStore,
+                            onOpenRepository = context::openCompanionUri,
+                            onOpenBrowser = { url -> context.openCompanionUri(url, null) },
+                            onCopy = context::copyCompanionText,
+                            onDismissError = companionViewModel::dismissError,
+                            modifier = screenModifier,
+                        )
+                    } else {
+                        MatchScreen(
+                            state = matchingState,
+                            onQueryChange = matchingViewModel::onQueryChange,
+                            onCheck = matchingViewModel::checkInput,
+                            onSelectCandidate = matchingViewModel::selectCandidate,
+                            onOpenSource = { url -> context.openWebsite(url) },
+                            onHideAlternative = matchingViewModel::hideAlternative,
+                            onUndoHide = matchingViewModel::undoHide,
+                            onDismissError = matchingViewModel::dismissError,
+                            onBack = {
+                                showMatch = false
+                                showCompanion = false
+                            },
+                            onOpenCompanion = if (companionEnabled) {
+                                { decision: MatchDecision ->
+                                    companionViewModel.open(decision)
+                                    showCompanion = true
+                                }
+                            } else {
+                                null
+                            },
+                            modifier = screenModifier,
+                            showCoverage = FeatureId.COVERAGE in enabledFeatures,
+                            showAlternatives = alternativesEnabled,
+                        )
+                    }
                 } else {
                     InventoryScreen(
                         state = inventoryState,
@@ -391,6 +454,7 @@ fun FossScoutApp(
                         onUnhide = inventoryViewModel::unhide,
                         onCheckMatch = { entry ->
                             matchingViewModel.matchEntry(entry.identity, entry.app)
+                            showCompanion = false
                             showMatch = true
                         },
                         onDismissError = inventoryViewModel::dismissError,
@@ -492,6 +556,35 @@ private fun Context.openWebsite(url: String) {
     runCatching {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
+}
+
+private fun Context.openCompanionStore(handoff: AppHandoff) {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(handoff.marketUri))
+        .setPackage(handoff.client.packageName)
+    if (!runCatching { startActivity(intent) }.isSuccess) {
+        openCompanionUri(handoff.browserUri, null)
+    }
+}
+
+private fun Context.openCompanionUri(uri: String, packageName: String?) {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri)).apply {
+        if (packageName != null) setPackage(packageName)
+    }
+    if (!runCatching { startActivity(intent) }.isSuccess) {
+        Toast.makeText(this, R.string.companion_open_failed, Toast.LENGTH_SHORT).show()
+    }
+}
+
+private fun Context.copyCompanionText(text: String) {
+    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+    if (clipboard == null) {
+        Toast.makeText(this, R.string.companion_open_failed, Toast.LENGTH_SHORT).show()
+        return
+    }
+    clipboard.setPrimaryClip(
+        ClipData.newPlainText(getString(R.string.companion_repository_link_label), text),
+    )
+    Toast.makeText(this, R.string.companion_copied, Toast.LENGTH_SHORT).show()
 }
 
 private fun Context.shareStoreDescriptor(request: StoreExportRequest) {

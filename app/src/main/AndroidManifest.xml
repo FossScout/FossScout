@@ -3,6 +3,16 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!--
+      Explicit companion-store visibility for F08. These package queries keep
+      store detection working on API 30+ without broad package visibility.
+    -->
+    <queries>
+        <package android:name="org.fdroid.fdroid" />
+        <package android:name="com.looker.droidify" />
+        <package android:name="com.machiav3lli.fdroid" />
+    </queries>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

@@ -10,4 +10,7 @@
     <string name="share_store_descriptor">Share store descriptor</string>
     <string name="share_store_subject">FossScout store: %1$s</string>
     <string name="share_export_chooser">Share list</string>
+    <string name="companion_open_failed">No app can open this link.</string>
+    <string name="companion_copied">Copied.</string>
+    <string name="companion_repository_link_label">FossScout handoff</string>
 </resources>

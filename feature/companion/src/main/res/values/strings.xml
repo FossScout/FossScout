@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="companion_title">Next step</string>
+    <string name="companion_subtitle">Check whether the FOSS build is an update, a replacement, or a different app.</string>
+    <string name="companion_back">Back to match</string>
+    <string name="companion_loading">Reading the installed app and store clients…</string>
+    <string name="companion_empty_title">No store candidate</string>
+    <string name="companion_empty_body">Open this screen from a match result that has a primary store candidate.</string>
+    <string name="companion_disabled_title">Next steps are disabled</string>
+    <string name="companion_disabled_body">Enable replacement guidance or companion handoff in Settings.</string>
+
+    <string name="companion_replacement_title">Replacement guidance</string>
+    <string name="companion_handoff_title">Store handoff</string>
+
+    <string name="companion_verdict_update">Update</string>
+    <string name="companion_verdict_replace">Replace</string>
+    <string name="companion_verdict_alternative">Alternative</string>
+    <string name="companion_verdict_no_update">No update</string>
+    <string name="companion_verdict_cannot_verify">Can\'t verify</string>
+    <string name="companion_verdict_not_installed">Not installed</string>
+
+    <string name="companion_installed">Installed: %1$s</string>
+    <string name="companion_candidate">Store build: %1$s</string>
+    <string name="companion_version_line">%1$s (version code %2$d)</string>
+    <string name="companion_version_code_only">version code %1$d</string>
+    <string name="companion_version_unknown">Version unknown</string>
+    <string name="companion_signer_same">Signer: matches</string>
+    <string name="companion_signer_different">Signer: differs</string>
+    <string name="companion_signer_unknown">Signer: unknown</string>
+    <string name="companion_signer_not_applicable">Signer: different app</string>
+    <string name="companion_installer">Installer: %1$s</string>
+
+    <string name="companion_warning_data_loss">Uninstalling can delete local app data.</string>
+    <string name="companion_warning_uninstall_required">Android requires uninstalling the current app first.</string>
+    <string name="companion_warning_system_app">This is a system app. Replacement may be blocked or unsafe.</string>
+    <string name="companion_warning_other_store">Installed from another store; update ownership may conflict.</string>
+    <string name="companion_warning_cross_store_keys">Play and F-Droid builds may use different signing keys.</string>
+    <string name="companion_warning_downgrade">The store build is older than the installed app.</string>
+    <string name="companion_warning_version_unknown">Version metadata is missing.</string>
+    <string name="companion_warning_signer_unknown">Signer metadata is missing.</string>
+    <string name="companion_warning_work_profile">This app is in a work profile.</string>
+    <string name="companion_warning_disabled_app">The installed app is disabled.</string>
+    <string name="companion_warning_installer_unknown">The installer source is unknown.</string>
+
+    <string name="companion_confirm_replace">I understand the current app may be uninstalled and its local data lost.</string>
+    <string name="companion_no_uninstall_note">FossScout only opens the store or browser. It never installs, uninstalls, or deletes apps.</string>
+
+    <string name="companion_installed_clients">Detected store clients</string>
+    <string name="companion_client_disabled">%1$s (disabled)</string>
+    <string name="companion_open_in">Open in %1$s</string>
+    <string name="companion_app_not_listed">This app isn\'t listed in %1$s. Add its repository or use the browser page.</string>
+    <string name="companion_need_confirmation">Confirm the data-loss warning before opening the store.</string>
+
+    <string name="companion_repository_title">%1$s repository</string>
+    <string name="companion_repository_url">Repository URL: %1$s</string>
+    <string name="companion_repository_fingerprint">Fingerprint: %1$s</string>
+    <string name="companion_copy_repository">Copy repository link</string>
+    <string name="companion_copy_url">Copy URL</string>
+    <string name="companion_copy_fingerprint">Copy fingerprint</string>
+    <string name="companion_show_qr">Show QR</string>
+    <string name="companion_hide_qr">Hide QR</string>
+    <string name="companion_qr_description">Repository QR code</string>
+    <string name="companion_qr_unavailable">QR code unavailable.</string>
+    <string name="companion_add_repository">Add repository in %1$s</string>
+    <string name="companion_repository_unsupported">This store does not expose an F-Droid-compatible repository descriptor.</string>
+
+    <string name="companion_no_store_title">No store client installed</string>
+    <string name="companion_no_store_body">Install F-Droid or open the package page in a browser. FossScout still works without a store.</string>
+    <string name="companion_get_fdroid">Get F-Droid</string>
+    <string name="companion_open_browser">Open in browser</string>
+    <string name="companion_browser_fallback">Open the store page in a browser</string>
+    <string name="companion_all_disabled">Installed clients are disabled in Android settings.</string>
+
+    <string name="companion_error_no_candidate">Open this screen from a match result with a primary candidate.</string>
+    <string name="companion_error_lookup">Couldn\'t read the installed app. No replacement recommendation is shown.</string>
+    <string name="companion_error_detection">Couldn\'t check installed store clients. Browser fallback is still available.</string>
+    <string name="companion_error_store">Couldn\'t read the store descriptor. Browser fallback is still available.</string>
+    <string name="companion_error_pref_read">Couldn\'t read the preferred store.</string>
+    <string name="companion_error_pref_write">Couldn\'t save the preferred store.</string>
+    <string name="companion_dismiss">Dismiss</string>
+</resources>

@@ -141,6 +141,7 @@ data class MatchCandidate(
     val license: String? = null,
     val sourceUrl: String? = null,
     val versionName: String? = null,
+    val versionCode: Long? = null,
     val signerSha256: List<String> = emptyList(),
     val confidence: ConfidenceLabel = ConfidenceLabel.UNKNOWN,
     val reasons: List<String> = emptyList(),

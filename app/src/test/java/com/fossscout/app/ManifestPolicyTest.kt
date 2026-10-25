@@ -34,6 +34,25 @@ class ManifestPolicyTest {
     }
 
     @Test
+    fun `main manifest declares explicit companion store queries`() {
+        val (name, contents) = manifest("src/main/AndroidManifest.xml")
+            ?: error("Main manifest is missing")
+
+        assertTrue("$name must declare a queries block", contents.contains("<queries>"))
+        listOf(
+            "org.fdroid.fdroid",
+            "com.looker.droidify",
+            "com.machiav3lli.fdroid",
+        ).forEach { packageName ->
+            assertTrue(
+                "$name must query $packageName explicitly",
+                contents.contains("android:name=\"$packageName\""),
+            )
+        }
+        assertFalse("$name must not request broad visibility", contents.contains("QUERY_ALL_PACKAGES"))
+    }
+
+    @Test
     fun `fdroid manifest declares broad package visibility`() {
         val (_, contents) = manifest("src/fdroid/AndroidManifest.xml")
             ?: error("F-Droid manifest is missing")

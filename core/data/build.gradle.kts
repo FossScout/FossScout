@@ -28,6 +28,7 @@ dependencies {
     api(project(":core:inventory"))
     api(project(":core:store-api"))
     api(project(":core:index"))
+    api(project(":core:handoff"))
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.serialization.json)
 

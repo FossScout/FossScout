@@ -20,6 +20,7 @@ data class CatalogEntry(
     val license: String? = null,
     val sourceCode: String? = null,
     val versionName: String? = null,
+    val versionCode: Long? = null,
     val signerSha256: List<String> = emptyList(),
 ) {
     init {
@@ -105,6 +106,7 @@ internal fun StorePackage.toCatalogEntry(): CatalogEntry {
         license = license?.trim()?.takeIf(String::isNotEmpty),
         sourceCode = sourceCode?.trim()?.takeIf(String::isNotEmpty),
         versionName = latest?.versionName?.trim()?.takeIf(String::isNotEmpty),
+        versionCode = latest?.versionCode?.takeIf { it > 0L },
         signerSha256 = latest?.signerSha256?.map { it.trim().lowercase() }
             ?.filter(String::isNotEmpty)
             .orEmpty(),

@@ -43,6 +43,10 @@
     <string name="match_store">Store: %1$s</string>
     <string name="match_package">Package: %1$s</string>
     <string name="match_version">Version: %1$s</string>
+    <string name="match_version_code">Version code: %1$d</string>
+    <string name="match_next_step">What happens next?</string>
+    <string name="match_next_step_body">See whether the store build is an update, a replacement, or a different app, then open it in a store or browser.</string>
+    <string name="match_next_step_action">Check replacement and handoff</string>
     <string name="match_license">License: %1$s</string>
     <string name="match_license_unknown">License: unknown</string>
     <string name="match_source">Source: %1$s</string>

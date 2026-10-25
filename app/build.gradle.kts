@@ -67,10 +67,12 @@ android {
 dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:feature"))
+    implementation(project(":core:handoff"))
     implementation(project(":core:inventory"))
     implementation(project(":core:matching"))
     implementation(project(":core:ui"))
     implementation(project(":feature:catalog"))
+    implementation(project(":feature:companion"))
     implementation(project(":feature:favourites"))
     implementation(project(":feature:inventory"))
     implementation(project(":feature:matching"))

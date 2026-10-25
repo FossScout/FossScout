@@ -31,6 +31,7 @@ class SnapshotCatalogSourceTest {
         assertEquals("https://example.org/src", entry.sourceCode)
         assertEquals(listOf("Tools"), entry.categories)
         assertEquals("1.2.3", entry.versionName)
+        assertEquals(2L, entry.versionCode)
         assertEquals(listOf("aaaa"), entry.signerSha256)
         assertTrue(entry.hasLicense)
         assertTrue(entry.hasSource)

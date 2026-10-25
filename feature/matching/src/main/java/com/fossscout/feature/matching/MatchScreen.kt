@@ -69,6 +69,7 @@ fun MatchScreen(
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
+    onOpenCompanion: ((MatchDecision) -> Unit)? = null,
     showCoverage: Boolean = true,
     showAlternatives: Boolean = true,
 ) {
@@ -169,6 +170,13 @@ fun MatchScreen(
                                 candidate = primary,
                                 onOpenSource = onOpenSource,
                             )
+                        }
+                        if (onOpenCompanion != null) {
+                            item(key = "next_step") {
+                                NextStepCard(
+                                    onOpen = { onOpenCompanion(decision) },
+                                )
+                            }
                         }
                     }
                     if (decision.otherMatches.isNotEmpty()) {
@@ -343,6 +351,35 @@ private fun OutcomeCard(decision: MatchDecision, showCoverage: Boolean) {
 }
 
 @Composable
+private fun NextStepCard(onOpen: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.match_next_step),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.match_next_step_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = onOpen) {
+                Text(stringResource(R.string.match_next_step_action))
+            }
+        }
+    }
+}
+
+@Composable
 private fun PrimaryEvidenceCard(
     candidate: MatchCandidate,
     onOpenSource: (String) -> Unit,
@@ -378,6 +415,13 @@ private fun PrimaryEvidenceCard(
             candidate.versionName?.let { version ->
                 Text(
                     text = stringResource(R.string.match_version, version),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            candidate.versionCode?.let { versionCode ->
+                Text(
+                    text = stringResource(R.string.match_version_code, versionCode),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

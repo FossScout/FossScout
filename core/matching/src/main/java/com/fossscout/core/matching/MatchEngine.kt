@@ -138,6 +138,7 @@ object MatchEngine {
                 license = entry.license,
                 sourceUrl = entry.sourceCode,
                 versionName = entry.versionName,
+                versionCode = entry.versionCode,
                 signerSha256 = entry.signerSha256,
                 confidence = ConfidenceLabel.UNKNOWN,
                 reasons = listOf("Package ID matches exactly.") +
@@ -186,6 +187,7 @@ object MatchEngine {
             license = entry.license,
             sourceUrl = entry.sourceCode,
             versionName = entry.versionName,
+            versionCode = entry.versionCode,
             signerSha256 = entry.signerSha256,
             confidence = confidence,
             reasons = reasons,
@@ -237,6 +239,7 @@ object MatchEngine {
                         license = entry.license,
                         sourceUrl = entry.sourceCode,
                         versionName = entry.versionName,
+                        versionCode = entry.versionCode,
                         signerSha256 = entry.signerSha256,
                         confidence = when {
                             level == MatchLevel.L0 -> ConfidenceLabel.UNKNOWN
