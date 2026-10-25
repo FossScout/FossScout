@@ -13,6 +13,7 @@ import com.fossscout.core.data.DataStoreInventoryStore
 import com.fossscout.core.data.DataStoreStoreRegistryStore
 import com.fossscout.core.data.DataStoreSnapshotMetadataStore
 import com.fossscout.core.data.CollectionsRepository
+import com.fossscout.core.data.DefaultBackupService
 import com.fossscout.core.data.FavouritesRepository
 import com.fossscout.core.data.FeatureSettingsRepository
 import com.fossscout.core.data.ShareExportFactory
@@ -74,6 +75,19 @@ class AppContainer(context: Context) {
 
     val handoffPreferencesRepository = HandoffPreferencesRepository(
         DataStoreHandoffPreferencesStore(context.handoffDataStore),
+    )
+
+    val backupService = DefaultBackupService(
+        favouritesRepository = favouritesRepository,
+        collectionsRepository = collectionsRepository,
+        storeRegistryRepository = storeRegistryRepository,
+        featureSettingsRepository = featureSettingsRepository,
+        handoffPreferencesRepository = handoffPreferencesRepository,
+        appVersion = {
+            runCatching {
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName
+            }.getOrNull() ?: "unknown"
+        },
     )
 
     private val snapshotPayloadStore = FileSnapshotPayloadStore(

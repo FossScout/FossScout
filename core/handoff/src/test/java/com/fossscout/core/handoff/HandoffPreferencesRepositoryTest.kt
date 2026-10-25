@@ -46,6 +46,26 @@ class HandoffPreferencesRepositoryTest {
     }
 
     @Test
+    fun `replace restores known clients and drops unknown ones`() = runTest {
+        val repository = HandoffPreferencesRepository(store)
+
+        repository.replace(
+            HandoffPreferences(
+                preferredStores = mapOf(
+                    " org.example.app " to CompanionStores.fdroid.id,
+                    "org.example.other" to "unknown-client",
+                ),
+            ),
+        )
+
+        assertEquals(
+            CompanionStores.fdroid.id,
+            repository.preferredStore("org.example.app"),
+        )
+        assertNull(repository.preferredStore("org.example.other"))
+    }
+
+    @Test
     fun `unchanged preference does not write again`() = runTest {
         val repository = HandoffPreferencesRepository(store)
         repository.setPreferredStore("org.example.app", CompanionStores.fdroid.id)

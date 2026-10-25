@@ -2,6 +2,7 @@ package com.fossscout.core.data
 
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
+import com.fossscout.core.store.BuiltInStores
 import com.fossscout.core.store.StoreAdapterSupport
 import com.fossscout.core.store.StoreDescriptor
 import com.fossscout.core.store.StoreDraft
@@ -126,6 +127,28 @@ class StoreRegistryRepository(
             throw NoSuchElementException("Unknown store: ${id.value}")
         }
         save(current.stores.filterNot { it.id == id })
+    }
+
+    /**
+     * Restores only the custom portion of a backup. Built-in descriptors stay
+     * under the app's control, so a backup cannot downgrade their endpoint or
+     * pinned fingerprint.
+     */
+    suspend fun replaceCustom(stores: List<StoreDescriptor>) = mutex.withLock {
+        val current = currentRegistry()
+        val builtIns = current.stores.filter(StoreDescriptor::builtIn)
+        val builtInIds = BuiltInStores.registry().stores.map { it.id }.toSet()
+        require(stores.none(StoreDescriptor::builtIn)) {
+            "Restored stores must be custom stores"
+        }
+        require(stores.none { it.id in builtInIds }) {
+            "A custom store cannot reuse a built-in store id"
+        }
+        require(stores.map { it.id }.distinct().size == stores.size) {
+            "Duplicate store IDs"
+        }
+        stores.forEach(StoreValidation::requireValid)
+        save(builtIns + stores)
     }
 
     suspend fun exportDescriptor(id: StoreId): String = mutex.withLock {

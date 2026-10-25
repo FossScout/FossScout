@@ -240,6 +240,52 @@ class StoreRegistryRepositoryTest {
     }
 
     @Test
+    fun `replace custom keeps built-ins and restores a pinned fingerprint`() = runTest {
+        val repository = repository()
+        val custom = StoreDescriptor(
+            id = StoreId("custom-backup"),
+            name = "Restored repo",
+            homepage = "https://example.org",
+            adapterType = AdapterType.FDROID_V2,
+            indexUrl = "https://example.org/repo",
+            fingerprint = "f".repeat(64),
+            trustNote = "Restored trust note",
+            priority = 2,
+        )
+
+        repository.replaceCustom(listOf(custom))
+
+        val entries = repository.entries.first()
+        assertEquals(
+            listOf(BuiltInStores.FDROID_ID, BuiltInStores.IZZY_ON_DROID_ID),
+            entries.take(2).map { it.descriptor.id.value },
+        )
+        assertEquals("f".repeat(64), entries.last().descriptor.fingerprint)
+        assertEquals("Restored trust note", entries.last().descriptor.trustNote)
+    }
+
+    @Test
+    fun `replace custom rejects a built-in id`() = runTest {
+        val repository = repository()
+
+        val result = runCatching {
+            repository.replaceCustom(
+                listOf(
+                    StoreDescriptor(
+                        id = StoreId(BuiltInStores.FDROID_ID),
+                        name = "Fake",
+                        homepage = "https://example.org",
+                        adapterType = AdapterType.FDROID_V2,
+                        indexUrl = "https://example.org/repo",
+                    ),
+                ),
+            )
+        }
+
+        assertTrue(result.exceptionOrNull() is IllegalArgumentException)
+    }
+
+    @Test
     fun `read failure is surfaced without writing a replacement registry`() = runTest {
         val store = FakeStoreRegistryStore(readError = IOException("unreadable"))
         val repository = repository(store)

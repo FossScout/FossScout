@@ -106,6 +106,16 @@ class FeatureSettingsRepository(
         if (defaults != current) store.save(defaults)
     }
 
+    /**
+     * Restores a validated backup snapshot. Unknown IDs and invalid values are
+     * dropped using the same rules as normal reads, so a backup cannot bypass
+     * this build's feature declarations.
+     */
+    suspend fun replaceSnapshot(settings: FeatureSettings) = mutex.withLock {
+        val sanitized = sanitize(settings)
+        if (sanitized != currentSettings()) store.save(sanitized)
+    }
+
     private suspend fun currentSettings(): FeatureSettings =
         sanitize(store.settings.first())
 

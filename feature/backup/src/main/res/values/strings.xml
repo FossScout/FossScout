@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">Backup and restore</string>
+    <string name="backup_subtitle">Move your local FossScout profile without an account.</string>
+    <string name="backup_back">Back to settings</string>
+    <string name="backup_loading">Reading your local profile…</string>
+    <string name="backup_retry">Retry</string>
+
+    <string name="backup_export_title">Export</string>
+    <string name="backup_export_body">Create one portable file with your favourites, notes, collections, custom stores, fingerprints, feature settings, and preferred store clients.</string>
+    <string name="backup_manifest_included_title">Included</string>
+    <string name="backup_manifest_excluded_title">Not included</string>
+    <string name="backup_included_favourites">Favourites</string>
+    <string name="backup_included_notes">Private notes</string>
+    <string name="backup_included_collections">Collections and their order</string>
+    <string name="backup_included_stores">Custom stores, pinned fingerprints, and trust notes</string>
+    <string name="backup_included_settings">Feature settings and disabled features</string>
+    <string name="backup_included_handoff">Preferred store clients</string>
+    <string name="backup_excluded_index">Index snapshots and cached store data</string>
+    <string name="backup_excluded_apk">APK files or installable apps</string>
+    <string name="backup_excluded_inventory">Installed-app inventory</string>
+    <string name="backup_excluded_overrides">Match overrides</string>
+    <string name="backup_excluded_secrets">Secrets (FossScout collects none)</string>
+
+    <string name="backup_encrypt">Protect with a passphrase</string>
+    <string name="backup_encrypt_body">Optional AES-256-GCM encryption with PBKDF2-HMAC-SHA256. Without the passphrase the backup cannot be restored.</string>
+    <string name="backup_passphrase">Passphrase</string>
+    <string name="backup_passphrase_confirm">Confirm passphrase</string>
+    <string name="backup_passphrase_hint">Minimum length: %1$d</string>
+    <string name="backup_export_action">Export backup</string>
+    <string name="backup_export_working">Preparing backup…</string>
+
+    <string name="backup_import_title">Restore</string>
+    <string name="backup_import_body">Choose a FossScout backup file. Nothing changes until you review the preview and confirm.</string>
+    <string name="backup_choose_file">Choose backup file</string>
+    <string name="backup_unlock_title">Passphrase required</string>
+    <string name="backup_unlock_body">This backup is encrypted. Enter its passphrase to preview it.</string>
+    <string name="backup_unlock_action">Unlock preview</string>
+    <string name="backup_preview_working">Checking backup…</string>
+
+    <string name="backup_preview_title">Restore preview</string>
+    <string name="backup_preview_file">File: %1$s</string>
+    <string name="backup_preview_summary">Favourites — added: %1$d, merged: %2$d, replaced: %3$d, skipped: %4$d. Collections — added: %5$d, replaced: %6$d. Custom stores — added: %7$d, replaced: %8$d.</string>
+    <string name="backup_preview_removed">Replace removes local-only entries — favourites: %1$d, collections: %2$d, custom stores: %3$d.</string>
+    <string name="backup_preview_notes">Private notes included: %1$d</string>
+    <string name="backup_preview_manifest">This file contains:</string>
+    <string name="backup_preview_conflicts">Favourite conflicts: %1$d. Custom-store conflicts: %2$d. The selected mode handles them.</string>
+    <string name="backup_preview_settings_changed">Feature settings or preferred store clients will also change.</string>
+    <string name="backup_mode">Conflict handling</string>
+    <string name="backup_mode_merge">Merge</string>
+    <string name="backup_mode_merge_desc">Add missing items, combine tags and collection items, and keep existing settings on conflict.</string>
+    <string name="backup_mode_replace">Replace</string>
+    <string name="backup_mode_replace_desc">Replace favourites, collections, custom stores, settings, and preferred store clients with the backup.</string>
+    <string name="backup_mode_skip">Skip</string>
+    <string name="backup_mode_skip_desc">Only add missing favourites, collections, and custom stores. Leave conflicts and settings unchanged.</string>
+    <string name="backup_restore_action">Restore backup</string>
+    <string name="backup_restore_working">Restoring…</string>
+    <string name="backup_restore_done">Backup restored.</string>
+    <string name="backup_dismiss_preview">Cancel</string>
+    <string name="backup_dismiss">Dismiss</string>
+
+    <string name="backup_auto_title">Android backup</string>
+    <string name="backup_auto_body">When Android system backup is enabled on your device, it can include FossScout\'s local app data. FossScout backups never include index snapshots, cached store data, or APK files.</string>
+
+    <string name="backup_error_malformed">That file is not a valid FossScout backup.</string>
+    <string name="backup_error_unsupported">That backup uses a newer or unsupported format.</string>
+    <string name="backup_error_checksum">That backup is damaged or was modified.</string>
+    <string name="backup_error_wrong_passphrase">Wrong passphrase, or the backup was modified.</string>
+    <string name="backup_error_passphrase_required">Enter the backup passphrase first.</string>
+    <string name="backup_error_read">Couldn\'t read your local profile.</string>
+    <string name="backup_error_export">Couldn\'t create the backup.</string>
+    <string name="backup_error_import_read">Couldn\'t read that file.</string>
+    <string name="backup_error_apply">Couldn\'t restore the backup. Local data was rolled back where possible.</string>
+    <string name="backup_error_passphrase_short">Passphrase minimum length: %1$d</string>
+    <string name="backup_error_passphrase_mismatch">The passphrases don\'t match.</string>
+</resources>

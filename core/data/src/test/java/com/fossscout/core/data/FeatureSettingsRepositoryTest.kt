@@ -216,6 +216,31 @@ class FeatureSettingsRepositoryTest {
     }
 
     @Test
+    fun `replace snapshot drops stale settings and saves the rest`() = runTest {
+        val store = FakeFeatureSettingsStore()
+        val repository = repository(store = store)
+
+        repository.replaceSnapshot(
+            FeatureSettings(
+                disabledFeatureIds = setOf(FeatureId.SHARING),
+                values = mapOf(
+                    FeatureId.FAVOURITES to mapOf(
+                        notePrefix.key to FeatureSettingValue.TextValue("ok"),
+                        "removed_setting" to FeatureSettingValue.TextValue("old"),
+                    ),
+                ),
+            ),
+        )
+
+        assertEquals(setOf(FeatureId.SHARING), store.state.value.disabledFeatureIds)
+        assertEquals(
+            FeatureSettingValue.TextValue("ok"),
+            store.state.value.values[FeatureId.FAVOURITES]?.get(notePrefix.key),
+        )
+        assertNull(store.state.value.values[FeatureId.FAVOURITES]?.get("removed_setting"))
+    }
+
+    @Test
     fun `stored state survives profile drift while availability stays authoritative`() = runTest {
         val store = FakeFeatureSettingsStore(
             FeatureSettings(disabledFeatureIds = setOf(FeatureId.SHARING)),

@@ -46,6 +46,9 @@ import com.fossscout.app.ui.about.AboutScreen
 import com.fossscout.core.feature.FeatureId
 import com.fossscout.core.handoff.AppHandoff
 import com.fossscout.core.matching.MatchDecision
+import com.fossscout.feature.backup.BackupExportRequest
+import com.fossscout.feature.backup.BackupScreen
+import com.fossscout.feature.backup.BackupViewModel
 import com.fossscout.feature.catalog.data.Project
 import com.fossscout.feature.catalog.data.ProjectRepository
 import com.fossscout.feature.catalog.discover.DiscoverScreen
@@ -72,6 +75,7 @@ import com.fossscout.feature.stores.StoreExportRequest
 import com.fossscout.feature.stores.StoresScreen
 import com.fossscout.feature.stores.StoresViewModel
 import java.io.File
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -150,6 +154,15 @@ fun FossScoutApp(
     )
     val sharingState by sharingViewModel.uiState.collectAsStateWithLifecycle()
 
+    val backupViewModel: BackupViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                BackupViewModel(service = container.backupService)
+            }
+        },
+    )
+    val backupState by backupViewModel.uiState.collectAsStateWithLifecycle()
+
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
@@ -176,10 +189,46 @@ fun FossScoutApp(
         )
     }
 
+    val backupImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val text = withContext(Dispatchers.IO) {
+                    try {
+                        context.contentResolver.openInputStream(uri)
+                            ?.bufferedReader()
+                            ?.use { reader -> reader.readText() }
+                    } catch (cancellation: CancellationException) {
+                        throw cancellation
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
+                if (text.isNullOrBlank()) {
+                    backupViewModel.reportReadFailure()
+                } else {
+                    backupViewModel.startImport(text, uri.lastPathSegment)
+                }
+            }
+        }
+    }
+    val pickBackupFile: () -> Unit = {
+        backupImportLauncher.launch(
+            arrayOf("application/json", "text/plain", "application/octet-stream"),
+        )
+    }
+
     LaunchedEffect(sharingState.exportRequest) {
         val request = sharingState.exportRequest ?: return@LaunchedEffect
         context.shareExport(request)
         sharingViewModel.consumeExportRequest()
+    }
+
+    LaunchedEffect(backupState.exportRequest) {
+        val request = backupState.exportRequest ?: return@LaunchedEffect
+        context.shareBackup(request)
+        backupViewModel.consumeExportRequest()
     }
 
     val destinations = remember(enabledFeatures) {
@@ -190,9 +239,17 @@ fun FossScoutApp(
 
     var selectedDestination by rememberSaveable { mutableStateOf(AppDestination.DISCOVER.name) }
     var showCollections by rememberSaveable { mutableStateOf(false) }
+    var showBackup by rememberSaveable { mutableStateOf(false) }
     val destination = destinations.firstOrNull { it.name == selectedDestination }
         ?: destinations.first()
     val inventoryEnabled = FeatureId.INVENTORY in enabledFeatures
+    val backupEnabled = FeatureId.BACKUP in enabledFeatures
+    LaunchedEffect(backupEnabled) {
+        if (!backupEnabled) showBackup = false
+    }
+    LaunchedEffect(showBackup) {
+        if (showBackup) backupViewModel.refreshExport()
+    }
     var handledSharedQuery by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(initialInventoryQuery, inventoryEnabled) {
@@ -505,16 +562,52 @@ fun FossScoutApp(
                 )
             }
 
-            AppDestination.SETTINGS -> FeatureSettingsScreen(
-                uiState = featureSettingsState,
-                onToggle = featureSettingsViewModel::setEnabled,
-                onSettingValueChange = featureSettingsViewModel::setSettingValue,
-                onResetFeature = featureSettingsViewModel::resetFeature,
-                onResetAll = featureSettingsViewModel::resetAll,
-                onToggleAdvanced = featureSettingsViewModel::toggleAdvanced,
-                onDismissError = featureSettingsViewModel::dismissError,
-                modifier = screenModifier,
-            )
+            AppDestination.SETTINGS -> {
+                if (showBackup && backupEnabled) {
+                    BackupScreen(
+                        state = backupState,
+                        onBack = {
+                            if (!backupState.isApplying) {
+                                backupViewModel.dismissImport()
+                                showBackup = false
+                            }
+                        },
+                        onToggleEncryption = backupViewModel::setEncryption,
+                        onPassphraseChange = backupViewModel::setPassphrase,
+                        onConfirmPassphraseChange =
+                            backupViewModel::setConfirmPassphrase,
+                        onExport = backupViewModel::exportBackup,
+                        onChooseFile = pickBackupFile,
+                        onImportPassphraseChange =
+                            backupViewModel::setImportPassphrase,
+                        onUnlockImport = backupViewModel::unlockImport,
+                        onModeChange = backupViewModel::setImportMode,
+                        onRestore = backupViewModel::applyImport,
+                        onDismissImport = backupViewModel::dismissImport,
+                        onDismissError = backupViewModel::dismissError,
+                        onAcknowledgeRestore =
+                            backupViewModel::acknowledgeRestoreCompleted,
+                        onRetryExport = backupViewModel::refreshExport,
+                        modifier = screenModifier,
+                    )
+                } else {
+                    FeatureSettingsScreen(
+                        uiState = featureSettingsState,
+                        onToggle = featureSettingsViewModel::setEnabled,
+                        onSettingValueChange = featureSettingsViewModel::setSettingValue,
+                        onResetFeature = featureSettingsViewModel::resetFeature,
+                        onResetAll = featureSettingsViewModel::resetAll,
+                        onToggleAdvanced = featureSettingsViewModel::toggleAdvanced,
+                        onDismissError = featureSettingsViewModel::dismissError,
+                        onOpenBackup = if (backupEnabled) {
+                            { showBackup = true }
+                        } else {
+                            null
+                        },
+                        modifier = screenModifier,
+                    )
+                }
+            }
         }
     }
 
@@ -606,16 +699,39 @@ private fun Context.shareStoreDescriptor(request: StoreExportRequest) {
  * or broad URI grant is requested.
  */
 private fun Context.shareExport(request: ShareExportRequest) {
+    shareExportContent(
+        subject = request.subject,
+        fileName = request.fileName,
+        mimeType = request.mimeType,
+        content = request.content,
+    )
+}
+
+private fun Context.shareBackup(request: BackupExportRequest) {
+    shareExportContent(
+        subject = request.subject,
+        fileName = request.fileName,
+        mimeType = request.mimeType,
+        content = request.content,
+    )
+}
+
+private fun Context.shareExportContent(
+    subject: String,
+    fileName: String,
+    mimeType: String,
+    content: String,
+) {
     val exportDir = File(cacheDir, "exports").apply { mkdirs() }
-    val file = File(exportDir, request.fileName)
-    file.writeText(request.content)
+    val file = File(exportDir, fileName)
+    file.writeText(content)
     val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
     val send = Intent(Intent.ACTION_SEND).apply {
-        type = request.mimeType
-        putExtra(Intent.EXTRA_SUBJECT, request.subject)
+        type = mimeType
+        putExtra(Intent.EXTRA_SUBJECT, subject)
         putExtra(Intent.EXTRA_STREAM, uri)
-        if (request.mimeType.startsWith("text/")) {
-            putExtra(Intent.EXTRA_TEXT, request.content)
+        if (mimeType.startsWith("text/")) {
+            putExtra(Intent.EXTRA_TEXT, content)
         }
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }

@@ -71,6 +71,7 @@ dependencies {
     implementation(project(":core:inventory"))
     implementation(project(":core:matching"))
     implementation(project(":core:ui"))
+    implementation(project(":feature:backup"))
     implementation(project(":feature:catalog"))
     implementation(project(":feature:companion"))
     implementation(project(":feature:favourites"))

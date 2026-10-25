@@ -2,6 +2,7 @@ package com.fossscout.feature.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -50,6 +51,7 @@ fun FeatureSettingsScreen(
     onToggleAdvanced: () -> Unit,
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenBackup: (() -> Unit)? = null,
 ) {
     var showResetConfirmation by rememberSaveable { mutableStateOf(false) }
 
@@ -138,6 +140,31 @@ fun FeatureSettingsScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                if (onOpenBackup != null) {
+                    item(key = "backup_entry") {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onOpenBackup),
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.settings_backup_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                                Text(
+                                    text = stringResource(R.string.settings_backup_body),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+
                 if (uiState.basicItems.isNotEmpty()) {
                     item(key = "header_basic") {
                         SettingsSectionHeader(stringResource(R.string.settings_section_basic))

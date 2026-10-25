@@ -69,4 +69,21 @@ class HandoffPreferencesRepository(
             current.copy(preferredStores = current.preferredStores - key),
         )
     }
+
+    /**
+     * Restores a backup snapshot. Unknown client ids and blank keys are dropped
+     * so a restore cannot select a client this build cannot open.
+     */
+    suspend fun replace(preferences: HandoffPreferences) = mutex.withLock {
+        val sanitized = preferences.preferredStores.entries
+            .map { (appKey, clientId) -> appKey.trim() to clientId.trim() }
+            .filter { (appKey, clientId) ->
+                appKey.isNotEmpty() && CompanionStores.byId(clientId) != null
+            }
+            .toMap()
+        val current = store.preferences.first()
+        if (current.preferredStores != sanitized) {
+            store.save(preferences.copy(preferredStores = sanitized))
+        }
+    }
 }

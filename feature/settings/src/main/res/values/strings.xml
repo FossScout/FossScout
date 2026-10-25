@@ -25,6 +25,8 @@
     <string name="settings_setting_invalid">Invalid value</string>
     <string name="settings_setting_save">Save</string>
     <string name="settings_storage_budget_title">Index storage budget (MB)</string>
+    <string name="settings_backup_title">Backup and restore</string>
+    <string name="settings_backup_body">Move favourites, notes, collections, custom stores, and settings to a new device.</string>
 
     <string name="feature_inventory_title">Installed apps</string>
     <string name="feature_matching_title">Find open-source matches</string>
