@@ -73,6 +73,7 @@ class IndexSyncRepositoryTest {
         assertEquals(signer.fingerprint, trust.signerFingerprint)
         assertEquals(1_000L, trust.indexTimestamp)
         assertTrue(trust.sourceUrl.endsWith("/entry.jar"))
+        assertEquals(listOf(trust), state.trustAudit)
 
         val packages = decodedPackages(harness.payloads, snapshot)
         assertEquals(
@@ -131,6 +132,10 @@ class IndexSyncRepositoryTest {
             harness.metadata.mutableState.value.trustRecords[harness.descriptor.id.value]
                 ?.signatureStatus,
         )
+        val audit = harness.metadata.mutableState.value.trustAudit
+        assertEquals(2, audit.size)
+        assertEquals(SignatureStatus.INVALID, audit.last().signatureStatus)
+        assertEquals(VerificationFailure.TAMPERED, audit.last().failure)
     }
 
     @Test
@@ -601,6 +606,77 @@ class IndexSyncRepositoryTest {
         assertEquals(1_234L, artifact.sizeBytes)
         assertEquals(TestIndexFixtures.VERSION_HASH_A, artifact.sha256)
         assertEquals("https://repo.example/repo/alpha-1.apk", artifact.downloadUrl)
+    }
+
+    @Test
+    fun `verification audit is bounded to the newest entries`() = runTest {
+        val oldAudit = (1..MAX_TRUST_AUDIT_ENTRIES).map { index ->
+            TrustRecord(
+                storeId = "test-store",
+                checkedAtEpochMillis = index.toLong(),
+                signatureStatus = SignatureStatus.VERIFIED,
+                sourceUrl = "https://old.example/entry.jar",
+            )
+        }
+        val harness = harness(initial = IndexState(trustAudit = oldAudit))
+        harness.serveFullIndex(1_000, TestIndexFixtures.indexJson())
+
+        val result = harness.repository.sync(harness.descriptor)
+
+        assertEquals(SyncState.SUCCEEDED, result.job.state)
+        val audit = harness.metadata.mutableState.value.trustAudit
+        assertEquals(MAX_TRUST_AUDIT_ENTRIES, audit.size)
+        assertEquals(signer.fingerprint, audit.last().signerFingerprint)
+        assertFalse(audit.any { it.checkedAtEpochMillis == 1L })
+    }
+
+    @Test
+    fun `rotation approval clears active trust and payload but keeps audit history`() = runTest {
+        val harness = harness()
+        harness.serveFullIndex(1_000, TestIndexFixtures.indexJson())
+        val snapshot = requireNotNull(harness.repository.sync(harness.descriptor).snapshot)
+        val auditBefore = harness.metadata.mutableState.value.trustAudit
+
+        harness.repository.clearStoreTrustForRotation(harness.descriptor.id.value)
+
+        val state = harness.metadata.mutableState.value
+        assertNull(state.snapshots[harness.descriptor.id.value])
+        assertNull(state.trustRecords[harness.descriptor.id.value])
+        assertNull(state.jobs[harness.descriptor.id.value])
+        assertEquals(auditBefore, state.trustAudit)
+        assertFalse(harness.payloads.exists(snapshot.payloadPath))
+    }
+
+    @Test
+    fun `sync resumes with a new pin after rotation approval`() = runTest {
+        val previousPin = "a".repeat(64)
+        val previousSnapshot = StoreSnapshot(
+            storeId = "test-store",
+            fetchedAtEpochMillis = 500,
+            indexTimestamp = 1_000,
+            indexSha256 = "b".repeat(64),
+            packageCount = 1,
+            payloadPath = "old.ndjson",
+            payloadSizeBytes = 10,
+            signatureStatus = SignatureStatus.VERIFIED,
+            sourceUrl = "https://repo.example/repo/index-v2.json",
+            expectedFingerprint = previousPin,
+            signerFingerprint = previousPin,
+        )
+        val harness = harness(
+            initial = IndexState(snapshots = mapOf("test-store" to previousSnapshot)),
+        )
+        harness.serveFullIndex(1_000, TestIndexFixtures.indexJson())
+
+        val blocked = harness.repository.sync(harness.descriptor)
+        assertEquals(SyncState.BLOCKED, blocked.job.state)
+        assertEquals(SyncFailureKind.FINGERPRINT_CHANGED, blocked.job.error?.kind)
+
+        harness.repository.clearStoreTrustForRotation(harness.descriptor.id.value)
+        val approved = harness.repository.sync(harness.descriptor)
+
+        assertEquals(SyncState.SUCCEEDED, approved.job.state)
+        assertEquals(signer.fingerprint, approved.snapshot?.expectedFingerprint)
     }
 
     private fun signedEntry(

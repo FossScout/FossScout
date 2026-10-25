@@ -38,6 +38,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.inventory.InstalledApp
 import com.fossscout.core.matching.AlternativeSuggestion
 import com.fossscout.core.matching.ConfidenceLabel
@@ -412,6 +413,24 @@ private fun PrimaryEvidenceCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Text(
+                text = stringResource(
+                    candidate.signatureStatus?.matchLabelRes()
+                        ?: R.string.match_index_trust_unknown,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = when (candidate.signatureStatus) {
+                    SignatureStatus.VERIFIED -> MaterialTheme.colorScheme.primary
+                    SignatureStatus.INVALID,
+                    SignatureStatus.UNSIGNED,
+                    -> MaterialTheme.colorScheme.error
+
+                    SignatureStatus.UNVERIFIED,
+                    SignatureStatus.NOT_CHECKED,
+                    null,
+                    -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
             candidate.versionName?.let { version ->
                 Text(
                     text = stringResource(R.string.match_version, version),
@@ -449,6 +468,11 @@ private fun PrimaryEvidenceCard(
                         candidate.signerSha256.joinToString(", "),
                     )
                 },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.match_apk_not_verified),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -502,6 +526,14 @@ private fun OtherMatchesCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
+                )
+                Text(
+                    text = stringResource(
+                        match.signatureStatus?.matchLabelRes()
+                            ?: R.string.match_index_trust_unknown,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 val license = match.license
                 if (license != null) {
@@ -621,6 +653,16 @@ private fun CoverageRow(store: StoreCoverage) {
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        store.signatureStatus?.let { signature ->
+            Text(
+                text = stringResource(
+                    R.string.match_coverage_index,
+                    stringResource(signature.matchLabelRes()),
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         store.detail?.let { detail ->
             Text(
                 text = detail,
@@ -889,6 +931,16 @@ private fun MatchError.messageRes(): Int = when (this) {
     MatchError.QUERY_REQUIRED -> R.string.match_error_query
     MatchError.MATCH_FAILED -> R.string.match_error_match
     MatchError.SEARCH_FAILED -> R.string.match_error_search
+}
+
+private fun SignatureStatus.matchLabelRes(): Int = when (this) {
+    SignatureStatus.VERIFIED -> R.string.match_index_trust_verified
+    SignatureStatus.UNVERIFIED -> R.string.match_index_trust_unverified
+    SignatureStatus.INVALID,
+    SignatureStatus.UNSIGNED,
+    -> R.string.match_index_trust_failed
+
+    SignatureStatus.NOT_CHECKED -> R.string.match_index_trust_not_checked
 }
 
 private fun formatTimestamp(epochMillis: Long): String =

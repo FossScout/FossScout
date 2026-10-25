@@ -51,8 +51,14 @@
     <string name="match_license_unknown">License: unknown</string>
     <string name="match_source">Source: %1$s</string>
     <string name="match_source_unknown">Source: unknown</string>
-    <string name="match_signer">Signer: %1$s</string>
-    <string name="match_signer_unknown">Signer: unknown</string>
+    <string name="match_signer">Signer from index (not verified): %1$s</string>
+    <string name="match_signer_unknown">Signer from index: unknown</string>
+    <string name="match_index_trust_verified">Index: verified against the pinned fingerprint</string>
+    <string name="match_index_trust_unverified">Index: signature valid, fingerprint not pinned</string>
+    <string name="match_index_trust_failed">Index: verification failed</string>
+    <string name="match_index_trust_not_checked">Index: verification not checked</string>
+    <string name="match_index_trust_unknown">Index: trust unknown</string>
+    <string name="match_apk_not_verified">APK hash and signer continuity are not checked in v1.</string>
     <string name="match_open_source">Open source page</string>
     <string name="match_other_matches">Also found in</string>
     <string name="match_other_match_line">%1$s · %2$s (%3$s)</string>
@@ -69,6 +75,7 @@
         <item quantity="other">A store counts as fresh for %1$d hours.</item>
     </plurals>
     <string name="match_coverage_last_sync">Last sync: %1$s</string>
+    <string name="match_coverage_index">Index: %1$s</string>
     <string name="match_coverage_never_synced">Never synced</string>
     <plurals name="match_coverage_packages">
         <item quantity="one">%1$d package</item>

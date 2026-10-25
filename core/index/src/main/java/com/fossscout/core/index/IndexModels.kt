@@ -9,6 +9,9 @@ const val STORE_SNAPSHOT_SCHEMA_VERSION = 1
 const val SYNC_JOB_SCHEMA_VERSION = 1
 const val TRUST_RECORD_SCHEMA_VERSION = 1
 
+/** Bound for the local verification audit trail; oldest entries are dropped. */
+const val MAX_TRUST_AUDIT_ENTRIES = 100
+
 /** Index formats understood by this build. */
 @Serializable
 enum class IndexFormat { FDROID_V2 }
@@ -199,6 +202,8 @@ data class IndexState(
     val snapshots: Map<String, StoreSnapshot> = emptyMap(),
     val trustRecords: Map<String, TrustRecord> = emptyMap(),
     val jobs: Map<String, SyncJob> = emptyMap(),
+    /** Bounded, append-only local verification history. */
+    val trustAudit: List<TrustRecord> = emptyList(),
 )
 
 /** First line of every normalized payload file. */

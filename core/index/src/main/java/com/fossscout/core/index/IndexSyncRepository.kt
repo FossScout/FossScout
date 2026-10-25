@@ -76,6 +76,7 @@ class IndexSyncRepository(
     val state: Flow<IndexState> = metadataStore.state
     val snapshots: Flow<Map<String, StoreSnapshot>> = state.map { it.snapshots }
     val trustRecords: Flow<Map<String, TrustRecord>> = state.map { it.trustRecords }
+    val trustAudit: Flow<List<TrustRecord>> = state.map { it.trustAudit }
     val jobs: Flow<Map<String, SyncJob>> = state.map { it.jobs }
 
     fun freshness(snapshot: StoreSnapshot?): SnapshotFreshness =
@@ -92,6 +93,26 @@ class IndexSyncRepository(
             it.payloadPath
         })
         StorageCleanupResult(freed, storageStatus())
+    }
+
+    /**
+     * Removes the active snapshot and current trust record after the user
+     * approves a fingerprint change. The audit trail is deliberately retained:
+     * it is history, not a trust grant. The next sync starts from the newly
+     * approved pin and must verify the store again.
+     */
+    suspend fun clearStoreTrustForRotation(storeId: String) = syncMutex.withLock {
+        require(storeId.isNotBlank()) { "Store id is blank" }
+        val current = metadataStore.state.first()
+        current.snapshots[storeId]?.let { payloadStore.delete(it.payloadPath) }
+        updateState { state ->
+            state.copy(
+                snapshots = state.snapshots - storeId,
+                trustRecords = state.trustRecords - storeId,
+                jobs = state.jobs - storeId,
+            )
+        }
+        payloadStore.cleanup(activePayloadPaths())
     }
 
     suspend fun sync(descriptor: StoreDescriptor): IndexSyncResult = syncMutex.withLock {
@@ -184,10 +205,11 @@ class IndexSyncRepository(
                     expectedFingerprint = pinnedFingerprint,
                 ),
             )
+            val checkedAt = now()
             persistTrust(
                 TrustRecord(
                     storeId = storeId,
-                    checkedAtEpochMillis = now(),
+                    checkedAtEpochMillis = checkedAt,
                     signatureStatus = verification.status,
                     expectedFingerprint = verification.expectedFingerprint,
                     signerFingerprint = verification.signerFingerprint,
@@ -216,7 +238,7 @@ class IndexSyncRepository(
             persistTrust(
                 TrustRecord(
                     storeId = storeId,
-                    checkedAtEpochMillis = now(),
+                    checkedAtEpochMillis = checkedAt,
                     signatureStatus = verification.status,
                     expectedFingerprint = verification.expectedFingerprint,
                     signerFingerprint = verification.signerFingerprint,
@@ -702,9 +724,28 @@ class IndexSyncRepository(
 
     private suspend fun persistTrust(record: TrustRecord) {
         updateState { current ->
-            current.copy(trustRecords = current.trustRecords + (record.storeId to record))
+            val audit = if (current.trustAudit.lastOrNull()?.sameCheckAs(record) == true) {
+                // Entry verification and index activation happen in one sync.
+                // Keep one audit entry and enrich it with the parsed index
+                // metadata instead of recording the same check twice.
+                current.trustAudit.dropLast(1) + record
+            } else {
+                current.trustAudit + record
+            }.takeLast(MAX_TRUST_AUDIT_ENTRIES)
+            current.copy(
+                trustRecords = current.trustRecords + (record.storeId to record),
+                trustAudit = audit,
+            )
         }
     }
+
+    private fun TrustRecord.sameCheckAs(other: TrustRecord): Boolean =
+        storeId == other.storeId &&
+            checkedAtEpochMillis == other.checkedAtEpochMillis &&
+            signatureStatus == other.signatureStatus &&
+            expectedFingerprint == other.expectedFingerprint &&
+            signerFingerprint == other.signerFingerprint &&
+            sourceUrl == other.sourceUrl
 
     private suspend fun persistCompletion(snapshot: StoreSnapshot, job: SyncJob) {
         updateState { current ->

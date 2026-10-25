@@ -267,6 +267,91 @@ class StoresViewModelTest {
         assertFalse(requireNotNull(state.storage).overBudget)
     }
 
+    @Test
+    fun `approving a signer rotation clears old trust and starts a fresh sync`() =
+        runTest(dispatcher) {
+            val oldPin = "a".repeat(64)
+            val newPin = "b".repeat(64)
+            val custom = StoreDescriptor(
+                id = StoreId("custom-rotation"),
+                name = "Rotation store",
+                homepage = "https://repo.example",
+                adapterType = AdapterType.FDROID_V2,
+                indexUrl = "https://repo.example/repo",
+                fingerprint = oldPin,
+                priority = 10,
+            )
+            val registry = BuiltInStores.registry().copy(
+                stores = BuiltInStores.registry().stores + custom,
+            )
+            val snapshot = StoreSnapshot(
+                storeId = custom.id.value,
+                fetchedAtEpochMillis = 1_000,
+                indexTimestamp = 900,
+                indexSha256 = "c".repeat(64),
+                packageCount = 1,
+                payloadPath = "old.ndjson",
+                payloadSizeBytes = 10,
+                signatureStatus = SignatureStatus.VERIFIED,
+                sourceUrl = "https://repo.example/repo/index-v2.json",
+                expectedFingerprint = oldPin,
+                signerFingerprint = oldPin,
+            )
+            val trust = TrustRecord(
+                storeId = custom.id.value,
+                checkedAtEpochMillis = 1_000,
+                signatureStatus = SignatureStatus.INVALID,
+                expectedFingerprint = oldPin,
+                signerFingerprint = newPin,
+                sourceUrl = "https://repo.example/repo/entry.jar",
+                failure = com.fossscout.core.index.VerificationFailure.SIGNER_MISMATCH,
+            )
+            val indexRepository = IndexSyncRepository(
+                metadataStore = FakeSnapshotMetadataStore(
+                    IndexState(
+                        snapshots = mapOf(custom.id.value to snapshot),
+                        trustRecords = mapOf(custom.id.value to trust),
+                        jobs = mapOf(
+                            custom.id.value to SyncJob(
+                                storeId = custom.id.value,
+                                state = SyncState.BLOCKED,
+                            ),
+                        ),
+                        trustAudit = listOf(trust),
+                    ),
+                ),
+                payloadStore = UnusedPayloadStore(usageBytes = 10),
+                httpFetcher = UnusedHttpFetcher,
+                tempDir = Files.createTempDirectory("fossscout-rotation-vm").toFile(),
+                storageBudgetBytes = { 16L * 1024L * 1024L },
+                now = { 2_000_000L },
+            )
+            val viewModel = StoresViewModel(
+                StoreRegistryRepository(store = FakeStoreRegistryStore(registry)),
+                indexRepository,
+            )
+            advanceUntilIdle()
+
+            viewModel.openSecurityDetails(custom.id)
+            advanceUntilIdle()
+            val details = requireNotNull(viewModel.uiState.value.securityDetails)
+            assertEquals(StoreTrustState.ROTATION_REQUIRED, details.trustState)
+            assertEquals(newPin, details.rotation?.newFingerprint)
+
+            viewModel.approveFingerprintRotation(custom.id, newPin)
+            advanceUntilIdle()
+
+            val state = viewModel.uiState.value
+            val descriptor = state.entries.first { it.descriptor.id == custom.id }.descriptor
+            assertEquals(newPin, descriptor.fingerprint)
+            assertNull(state.securityDetailsId)
+            val status = requireNotNull(state.syncStatuses[custom.id.value])
+            assertNull(status.snapshot)
+            assertNull(status.trust)
+            assertEquals(1, status.audit.size)
+            assertEquals(SyncState.FAILED, status.job?.state)
+        }
+
     private fun viewModel(
         store: FakeStoreRegistryStore = FakeStoreRegistryStore(),
     ): StoresViewModel {

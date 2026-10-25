@@ -2,6 +2,7 @@ package com.fossscout.core.data
 
 import com.fossscout.core.index.INDEX_STATE_SCHEMA_VERSION
 import com.fossscout.core.index.IndexState
+import com.fossscout.core.index.MAX_TRUST_AUDIT_ENTRIES
 import com.fossscout.core.index.StoreSnapshot
 import com.fossscout.core.index.SyncJob
 import com.fossscout.core.index.TrustRecord
@@ -56,6 +57,12 @@ class IndexStateCodec(
         requireSnapshotKeys(state.snapshots)
         requireKeys(state.trustRecords, "trust record") { it.storeId }
         requireKeys(state.jobs, "sync job") { it.storeId }
+        if (state.trustAudit.size > MAX_TRUST_AUDIT_ENTRIES) {
+            throw IndexStateFormatException(
+                "Trust audit has ${state.trustAudit.size} entries; " +
+                    "the maximum is $MAX_TRUST_AUDIT_ENTRIES",
+            )
+        }
     }
 
     private fun requireSnapshotKeys(snapshots: Map<String, StoreSnapshot>) {

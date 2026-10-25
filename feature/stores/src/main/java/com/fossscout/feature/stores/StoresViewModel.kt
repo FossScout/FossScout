@@ -100,6 +100,7 @@ data class StoreSyncStatus(
     val trust: TrustRecord? = null,
     val job: SyncJob? = null,
     val freshness: SnapshotFreshness = SnapshotFreshness.NEVER_SYNCED,
+    val audit: List<TrustRecord> = emptyList(),
 ) {
     val isSyncing: Boolean
         get() = job?.state == SyncState.RUNNING || job?.state == SyncState.QUEUED
@@ -117,7 +118,16 @@ data class StoresUiState(
     val exportRequest: StoreExportRequest? = null,
     val syncStatuses: Map<String, StoreSyncStatus> = emptyMap(),
     val storage: StorageStatus? = null,
-)
+    val securityDetailsId: StoreId? = null,
+) {
+    val securityDetails: StoreSecurityDetails?
+        get() {
+            val id = securityDetailsId ?: return null
+            val descriptor = entries.firstOrNull { it.descriptor.id == id }?.descriptor
+                ?: return null
+            return StoreSecurityDetails.from(descriptor, syncStatuses[id.value])
+        }
+}
 
 class StoresViewModel(
     private val repository: StoreRegistryRepository,
@@ -224,7 +234,13 @@ class StoresViewModel(
         val request = _uiState.value.deleteRequest ?: return
         write {
             repository.delete(request.id)
-            _uiState.update { state -> state.copy(deleteRequest = null) }
+            _uiState.update { state ->
+                state.copy(
+                    deleteRequest = null,
+                    securityDetailsId = state.securityDetailsId
+                        ?.takeUnless { it == request.id },
+                )
+            }
         }
     }
 
@@ -250,6 +266,60 @@ class StoresViewModel(
 
     fun dismissError() {
         _uiState.update { state -> state.copy(error = null) }
+    }
+
+    fun openSecurityDetails(id: StoreId) {
+        _uiState.update { state -> state.copy(securityDetailsId = id) }
+    }
+
+    fun dismissSecurityDetails() {
+        _uiState.update { state -> state.copy(securityDetailsId = null) }
+    }
+
+    /**
+     * Applies a reviewed fingerprint and forgets the old active trust record.
+     * The audit trail stays, then a fresh sync verifies the store against the
+     * new pin. A failed sync leaves no old snapshot pretending to be current.
+     */
+    fun approveFingerprintRotation(id: StoreId, newFingerprint: String) {
+        val syncRepository = indexSyncRepository ?: run {
+            _uiState.update { state -> state.copy(error = StoresError.SYNC_UNAVAILABLE) }
+            return
+        }
+        viewModelScope.launch {
+            try {
+                // A sync started with the old pin must not race the approval and
+                // leave the new pin without a fresh verification.
+                syncJobs.remove(id)?.cancel()
+                val descriptor = repository.entries.first()
+                    .firstOrNull { it.descriptor.id == id }
+                    ?.descriptor
+                    ?: throw NoSuchElementException("Unknown store: ${id.value}")
+                val updated = StoreEditor.from(descriptor)
+                    .copy(fingerprint = newFingerprint)
+                    .toDraft()
+                repository.update(id, updated)
+                syncRepository.clearStoreTrustForRotation(id.value)
+                runCatching {
+                    repository.updateHealth(
+                        id,
+                        StoreHealth(status = StoreHealthStatus.UNKNOWN),
+                    )
+                }
+                _uiState.update { state -> state.copy(securityDetailsId = null) }
+                sync(id)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                if (throwable is IllegalArgumentException) {
+                    Log.e(TAG, "Rejected fingerprint rotation", throwable)
+                    _uiState.update { state -> state.copy(error = StoresError.INVALID_STORE) }
+                } else {
+                    Log.e(TAG, "Failed to approve fingerprint rotation", throwable)
+                    _uiState.update { state -> state.copy(error = StoresError.WRITE_FAILED) }
+                }
+            }
+        }
     }
 
     /** Starts or reuses a sync job for one store. */
@@ -345,6 +415,7 @@ class StoresViewModel(
     ): Map<String, StoreSyncStatus> = snapshots.keys
         .union(trustRecords.keys)
         .union(jobs.keys)
+        .union(trustAudit.map(TrustRecord::storeId))
         .associateWith { storeId ->
             val snapshot = snapshots[storeId]
             StoreSyncStatus(
@@ -352,6 +423,9 @@ class StoresViewModel(
                 trust = trustRecords[storeId],
                 job = jobs[storeId],
                 freshness = syncRepository.freshness(snapshot),
+                audit = trustAudit
+                    .filter { it.storeId == storeId }
+                    .sortedBy(TrustRecord::checkedAtEpochMillis),
             )
         }
 

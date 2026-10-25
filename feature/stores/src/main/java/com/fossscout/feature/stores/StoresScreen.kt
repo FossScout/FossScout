@@ -59,6 +59,8 @@ import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.index.SnapshotFreshness
 import com.fossscout.core.index.StorageStatus
 import com.fossscout.core.index.SyncFailureKind
+import com.fossscout.core.index.TrustRecord
+import com.fossscout.core.index.VerificationFailure
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.BuiltInStores
@@ -66,6 +68,9 @@ import com.fossscout.core.store.LinkOnlyReason
 import com.fossscout.core.store.StoreDescriptor
 import com.fossscout.core.store.StoreEntry
 import com.fossscout.core.store.StoreHealthStatus
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun StoresScreen(
@@ -87,6 +92,9 @@ fun StoresScreen(
     onOpenHomepage: (String) -> Unit,
     onSync: (StoreId) -> Unit,
     onCancelSync: (StoreId) -> Unit,
+    onOpenSecurityDetails: (StoreId) -> Unit,
+    onDismissSecurityDetails: () -> Unit,
+    onApproveFingerprint: (StoreId, String) -> Unit,
     onCleanupStorage: () -> Unit,
     onRetry: () -> Unit,
     onDismissError: () -> Unit,
@@ -190,6 +198,7 @@ fun StoresScreen(
                         onOpenHomepage = onOpenHomepage,
                         onSync = onSync,
                         onCancelSync = onCancelSync,
+                        onOpenSecurityDetails = onOpenSecurityDetails,
                     )
                 }
             }
@@ -259,6 +268,23 @@ fun StoresScreen(
                     Text(stringResource(R.string.stores_export_close))
                 }
             },
+        )
+    }
+
+    state.securityDetails?.let { details ->
+        StoreSecurityDetailsDialog(
+            details = details,
+            onApproveFingerprint = { fingerprint ->
+                onApproveFingerprint(details.storeId, fingerprint)
+            },
+            onRemoveStore = {
+                state.entries
+                    .firstOrNull { it.descriptor.id == details.storeId }
+                    ?.descriptor
+                    ?.let(onRequestDelete)
+                onDismissSecurityDetails()
+            },
+            onDismiss = onDismissSecurityDetails,
         )
     }
 }
@@ -379,10 +405,12 @@ private fun StoreCard(
     onOpenHomepage: (String) -> Unit,
     onSync: (StoreId) -> Unit,
     onCancelSync: (StoreId) -> Unit,
+    onOpenSecurityDetails: (StoreId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val descriptor = entry.descriptor
     val name = descriptor.name
+    val security = StoreSecurityDetails.from(descriptor, syncStatus)
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -437,6 +465,20 @@ private fun StoreCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            if (security.httpInsecure) {
+                Text(
+                    text = stringResource(
+                        if (security.httpOptIn) {
+                            R.string.stores_http_opt_in
+                        } else {
+                            R.string.stores_http_blocked
+                        },
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
 
             descriptor.fingerprint?.let { fingerprint ->
                 Text(
@@ -493,9 +535,11 @@ private fun StoreCard(
                 Spacer(modifier = Modifier.height(8.dp))
                 StoreSyncBlock(
                     status = syncStatus,
+                    security = security,
                     storeId = descriptor.id,
                     onSync = onSync,
                     onCancelSync = onCancelSync,
+                    onOpenSecurityDetails = onOpenSecurityDetails,
                 )
             }
             if (linkOnlyReason != null) {
@@ -582,16 +626,17 @@ private fun StoreCard(
 @Composable
 private fun StoreSyncBlock(
     status: StoreSyncStatus?,
+    security: StoreSecurityDetails,
     storeId: StoreId,
     onSync: (StoreId) -> Unit,
     onCancelSync: (StoreId) -> Unit,
+    onOpenSecurityDetails: (StoreId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snapshot = status?.snapshot
     val job = status?.job
     val syncing = status?.isSyncing == true
     val freshness = status?.freshness ?: SnapshotFreshness.NEVER_SYNCED
-    val signature = status?.trust?.signatureStatus ?: snapshot?.signatureStatus
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -646,26 +691,40 @@ private fun StoreSyncBlock(
                 }
             }
 
-            signature?.let { signatureStatus ->
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(signatureStatus.labelRes()),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (signatureStatus == SignatureStatus.VERIFIED) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                )
-            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(security.trustState.labelRes()),
+                style = MaterialTheme.typography.bodySmall,
+                color = when (security.trustState) {
+                    StoreTrustState.VERIFIED -> MaterialTheme.colorScheme.primary
+                    StoreTrustState.FAILED,
+                    StoreTrustState.ROTATION_REQUIRED,
+                    -> MaterialTheme.colorScheme.error
 
-            status?.trust?.signerFingerprint?.let { signer ->
-                if (status.trust.signatureStatus == SignatureStatus.VERIFIED) {
+                    StoreTrustState.UNVERIFIED,
+                    StoreTrustState.NOT_CHECKED,
+                    -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+
+            security.signerFingerprint?.let { signer ->
+                if (security.trustState == StoreTrustState.VERIFIED) {
                     Text(
                         text = stringResource(R.string.stores_signer_fingerprint, signer),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+            }
+
+            if (security.rotation != null) {
+                Text(
+                    text = stringResource(R.string.stores_trust_rotation_body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                TextButton(onClick = { onOpenSecurityDetails(storeId) }) {
+                    Text(stringResource(R.string.stores_security_details_action))
                 }
             }
 
@@ -691,6 +750,12 @@ private fun StoreSyncBlock(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
+            }
+
+            if (security.rotation == null) {
+                TextButton(onClick = { onOpenSecurityDetails(storeId) }) {
+                    Text(stringResource(R.string.stores_security_details_action))
+                }
             }
         }
     }
@@ -727,6 +792,356 @@ private fun SyncFailureKind.messageRes(): Int = when (this) {
     SyncFailureKind.IO -> R.string.stores_sync_error_io
     SyncFailureKind.CANCELLED -> R.string.stores_sync_error_cancelled
     SyncFailureKind.UNKNOWN -> R.string.stores_sync_error_unknown
+}
+
+@Composable
+private fun StoreSecurityDetailsDialog(
+    details: StoreSecurityDetails,
+    onApproveFingerprint: (String) -> Unit,
+    onRemoveStore: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column {
+                Text(details.storeName)
+                Text(
+                    text = stringResource(R.string.stores_security_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 520.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                Text(
+                    text = stringResource(R.string.stores_security_state),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Text(
+                    text = stringResource(details.trustState.labelRes()),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = when (details.trustState) {
+                        StoreTrustState.VERIFIED -> MaterialTheme.colorScheme.primary
+                        StoreTrustState.FAILED,
+                        StoreTrustState.ROTATION_REQUIRED,
+                        -> MaterialTheme.colorScheme.error
+
+                        StoreTrustState.UNVERIFIED,
+                        StoreTrustState.NOT_CHECKED,
+                        -> MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+                Text(
+                    text = stringResource(details.trustState.bodyRes()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                details.rotation?.let { rotation ->
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.errorContainer,
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = stringResource(R.string.stores_security_rotation_title),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
+                            val newFingerprint = rotation.newFingerprint
+                            Text(
+                                text = if (newFingerprint == null) {
+                                    stringResource(
+                                        R.string.stores_security_rotation_no_new,
+                                        rotation.currentFingerprint.orEmpty(),
+                                    )
+                                } else {
+                                    stringResource(
+                                        R.string.stores_security_rotation_body,
+                                        rotation.currentFingerprint.orEmpty(),
+                                        newFingerprint,
+                                    )
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
+                            if (newFingerprint != null) {
+                                Button(onClick = { onApproveFingerprint(newFingerprint) }) {
+                                    Text(
+                                        stringResource(
+                                            R.string.stores_security_rotation_approve,
+                                        ),
+                                    )
+                                }
+                            }
+                            TextButton(onClick = onRemoveStore) {
+                                Text(stringResource(R.string.stores_security_rotation_remove))
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                if (details.pinnedFingerprint == null) {
+                    Text(
+                        text = stringResource(R.string.stores_security_pinned_none),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                } else {
+                    SelectionContainer {
+                        Text(
+                            text = stringResource(
+                                R.string.stores_security_pinned,
+                                details.pinnedFingerprint,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+                details.expectedFingerprint?.let { expected ->
+                    SelectionContainer {
+                        Text(
+                            text = stringResource(R.string.stores_security_expected, expected),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                SelectionContainer {
+                    Text(
+                        text = details.signerFingerprint?.let { signer ->
+                            stringResource(R.string.stores_security_signer, signer)
+                        } ?: stringResource(R.string.stores_security_signer_none),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Text(
+                    text = details.signatureStatus?.let { status ->
+                        stringResource(
+                            R.string.stores_security_signature,
+                            stringResource(status.labelRes()),
+                        )
+                    } ?: stringResource(
+                        R.string.stores_security_signature,
+                        stringResource(R.string.stores_security_signature_not_checked),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = details.verificationCheckedAtEpochMillis?.let { checkedAt ->
+                        stringResource(
+                            R.string.stores_security_verified_at,
+                            formatRelativeTime(checkedAt),
+                        )
+                    } ?: stringResource(R.string.stores_security_never_verified),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = details.lastSuccessfulSyncEpochMillis?.let { lastSync ->
+                        stringResource(
+                            R.string.stores_security_last_sync,
+                            formatRelativeTime(lastSync),
+                        )
+                    } ?: stringResource(R.string.stores_security_never_synced),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = details.verificationSourceUrl?.let { source ->
+                        stringResource(R.string.stores_security_source, source)
+                    } ?: stringResource(R.string.stores_security_source_none),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                details.indexSourceUrl?.let { source ->
+                    Text(
+                        text = stringResource(R.string.stores_security_index_source, source),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                details.indexVersion?.let { version ->
+                    Text(
+                        text = stringResource(R.string.stores_security_index_version, version),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                details.indexTimestamp?.let { timestamp ->
+                    Text(
+                        text = stringResource(
+                            R.string.stores_security_index_timestamp,
+                            formatTimestamp(timestamp),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                details.indexSha256?.let { hash ->
+                    SelectionContainer {
+                        Text(
+                            text = stringResource(R.string.stores_security_index_hash, hash),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                Text(
+                    text = when {
+                        !details.httpInsecure -> stringResource(R.string.stores_security_https)
+                        details.httpOptIn -> stringResource(R.string.stores_security_http_opt_in)
+                        else -> stringResource(R.string.stores_security_http_blocked)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (details.httpInsecure && !details.httpOptIn) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+
+                details.verificationFailure?.let { failure ->
+                    Text(
+                        text = stringResource(
+                            R.string.stores_security_failure,
+                            stringResource(failure.labelRes()),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                details.syncFailure?.let { failure ->
+                    Text(
+                        text = stringResource(
+                            R.string.stores_security_sync_failure,
+                            stringResource(failure.messageRes()),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    text = stringResource(R.string.stores_security_audit_title),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                if (details.audit.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.stores_security_audit_empty),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    val recent = details.audit.takeLast(5).reversed()
+                    Text(
+                        text = pluralStringResource(
+                            R.plurals.stores_security_audit_count,
+                            details.audit.size,
+                            recent.size,
+                            details.audit.size,
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    recent.forEach { record ->
+                        AuditRow(record)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = stringResource(R.string.stores_security_apk_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.stores_security_close))
+            }
+        },
+    )
+}
+
+@Composable
+private fun AuditRow(record: TrustRecord) {
+    val status = stringResource(record.signatureStatus.labelRes())
+    val failure = record.failure?.let { stringResource(it.labelRes()) }
+    Text(
+        text = if (failure == null) {
+            stringResource(
+                R.string.stores_security_audit_line,
+                formatRelativeTime(record.checkedAtEpochMillis),
+                status,
+            )
+        } else {
+            stringResource(
+                R.string.stores_security_audit_failure,
+                formatRelativeTime(record.checkedAtEpochMillis),
+                status,
+                failure,
+            )
+        },
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+private fun formatRelativeTime(epochMillis: Long): String =
+    DateUtils.getRelativeTimeSpanString(
+        epochMillis,
+        System.currentTimeMillis(),
+        DateUtils.MINUTE_IN_MILLIS,
+    ).toString()
+
+private fun formatTimestamp(epochMillis: Long): String =
+    SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(epochMillis))
+
+@StringRes
+private fun StoreTrustState.labelRes(): Int = when (this) {
+    StoreTrustState.VERIFIED -> R.string.stores_trust_verified
+    StoreTrustState.UNVERIFIED -> R.string.stores_trust_unverified
+    StoreTrustState.FAILED -> R.string.stores_trust_failed
+    StoreTrustState.ROTATION_REQUIRED -> R.string.stores_trust_rotation_required
+    StoreTrustState.NOT_CHECKED -> R.string.stores_trust_not_checked
+}
+
+@StringRes
+private fun StoreTrustState.bodyRes(): Int = when (this) {
+    StoreTrustState.VERIFIED -> R.string.stores_trust_verified_body
+    StoreTrustState.UNVERIFIED -> R.string.stores_trust_unverified_body
+    StoreTrustState.FAILED -> R.string.stores_trust_failed_body
+    StoreTrustState.ROTATION_REQUIRED -> R.string.stores_trust_rotation_body
+    StoreTrustState.NOT_CHECKED -> R.string.stores_trust_not_checked_body
+}
+
+@StringRes
+private fun VerificationFailure.labelRes(): Int = when (this) {
+    VerificationFailure.ENTRY_MISSING -> R.string.stores_verification_failure_entry_missing
+    VerificationFailure.ENTRY_MALFORMED -> R.string.stores_verification_failure_entry_malformed
+    VerificationFailure.NO_SIGNATURE -> R.string.stores_verification_failure_no_signature
+    VerificationFailure.TAMPERED -> R.string.stores_verification_failure_tampered
+    VerificationFailure.SIGNER_MISMATCH -> R.string.stores_verification_failure_signer_mismatch
+    VerificationFailure.HASH_MISMATCH -> R.string.stores_verification_failure_hash_mismatch
+    VerificationFailure.SIZE_MISMATCH -> R.string.stores_verification_failure_size_mismatch
+    VerificationFailure.NO_PINNED_FINGERPRINT ->
+        R.string.stores_verification_failure_no_pinned_fingerprint
+
+    VerificationFailure.UNSUPPORTED -> R.string.stores_verification_failure_unsupported
 }
 
 @Composable

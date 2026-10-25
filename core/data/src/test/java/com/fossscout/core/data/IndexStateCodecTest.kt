@@ -2,6 +2,7 @@ package com.fossscout.core.data
 
 import com.fossscout.core.index.INDEX_STATE_SCHEMA_VERSION
 import com.fossscout.core.index.IndexState
+import com.fossscout.core.index.MAX_TRUST_AUDIT_ENTRIES
 import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.index.StoreSnapshot
 import com.fossscout.core.index.SyncFailure
@@ -23,6 +24,7 @@ class IndexStateCodecTest {
             snapshots = mapOf(SNAPSHOT.storeId to SNAPSHOT),
             trustRecords = mapOf(TRUST.storeId to TRUST),
             jobs = mapOf(JOB.storeId to JOB),
+            trustAudit = listOf(TRUST),
         )
 
         val decoded = codec.decode(codec.encode(state))
@@ -102,6 +104,25 @@ class IndexStateCodecTest {
     @Test
     fun `encoding a mismatched snapshot key is rejected`() {
         val state = IndexState(snapshots = mapOf("wrong-key" to SNAPSHOT))
+
+        assertThrows(IndexStateFormatException::class.java) {
+            codec.encode(state)
+        }
+    }
+
+    @Test
+    fun `state without an audit trail decodes with an empty history`() {
+        val decoded = codec.decode("""{"schemaVersion":1,"snapshots":{}}""")
+
+        assertTrue(decoded.trustAudit.isEmpty())
+    }
+
+    @Test
+    fun `oversized audit trail is rejected`() {
+        val audit = (1..MAX_TRUST_AUDIT_ENTRIES + 1).map { index ->
+            TRUST.copy(checkedAtEpochMillis = index.toLong())
+        }
+        val state = IndexState(trustAudit = audit)
 
         assertThrows(IndexStateFormatException::class.java) {
             codec.encode(state)
