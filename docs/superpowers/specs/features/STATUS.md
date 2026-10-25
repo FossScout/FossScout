@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
 Last updated: **2026-10-25**
-Baseline: `main` after S10 docs commit (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, S08 replacement guidance/companion handoff, S09 backup/migration, and S10 security details/trust audit merged)
+Baseline: `main` after S10 docs commit `fc077ae` (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, S08 replacement guidance/companion handoff, S09 backup/migration, and S10 security details/trust audit merged)
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
 
