@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
-Last updated: **2026-10-24**
-Baseline: `main` after S05 implementation `b9fa0da` (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, and S07 collections/sharing merged)
+Last updated: **2026-10-25**
+Baseline: `feat/s08-replacement-handoff` implementation `b1e36c0` (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, and S08 replacement guidance/companion handoff; merge to `main` follows the docs commit)
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
 
@@ -31,12 +31,12 @@ file after every feature session with the new commit, test result, and status.
 | Store registry and installed inventory | **Partial** |
 | Index sync and offline cache | **Done** (live network/device verification pending) |
 | Matching, alternatives, coverage | **Done** (device/index verification pending) |
+| Replacement guidance and companion handoff | **Done** (device/store-client verification pending) |
 | Security details and trust audit | **Not implemented** (S10) |
 | Sharing, backup, contribution | **Partial** (sharing/import done; backup S09, contribution S11) |
-| Feature completion | **7 of 21 fully done; 3 partial; 4 registered; 3 deferred; 4 spec-only** |
+| Feature completion | **9 of 21 fully done; 3 partial; 2 registered; 3 deferred; 4 spec-only** |
 
-**Recommended next sessions:** [S08](../../sessions/S08-replacement-handoff.md),
-[S09](../../sessions/S09-backup-migration.md),
+**Recommended next sessions:** [S09](../../sessions/S09-backup-migration.md),
 [S10](../../sessions/S10-security-trust.md), and
 [S11](../../sessions/S11-contribution-hooks.md) can run in parallel now.
 
@@ -74,16 +74,24 @@ file after every feature session with the new commit, test result, and status.
   store was checked, and explicit “incomplete” results otherwise.
 - Alternative suggestions with visible category/tag/description reasons, a cap
   of five, relevance ranking, and session-only hide/undo.
+- Guidance-only replacement comparison: package/signer/version/installer
+  checks, update/replace/alternative/no-update/cannot-verify labels, explicit
+  data-loss/uninstall/system/other-store/cross-store warnings, and a required
+  confirmation for signer-mismatch replacements.
+- Companion handoff: explicit F-Droid/Droid-ify/Neo Store detection, an explicit
+  `market://` app page, one canonical repository descriptor for add/QR/copy,
+  separate URL and fingerprint copy, per-app preferred-client persistence, and a
+  browser fallback with no install or uninstall path.
 - Favourites tags, local search across names/notes/tags, optional preferred
   store, a read-time installed badge with an explanation, versioned collections,
   and local JSON/text/file sharing and import with notes excluded by default.
 - Policy-safe “unavailable in this build” explanations and capability labels for
   restricted features.
 - Play-safe manifest: no install-packages permission, broad package visibility,
-  or accessibility service. Broad package visibility is confined to the F-Droid
-  flavor.
+  or accessibility service. Explicit package queries cover the supported store
+  clients; broad package visibility is confined to the F-Droid flavor.
 - Material 3 UI, light/dark theme, About screen, and unit tests for the current
-  data/domain/settings/store/inventory/favourites/index/matching/share
+  data/domain/settings/store/inventory/favourites/index/matching/share/handoff
   behaviour.
 
 ## Feature status
@@ -96,8 +104,8 @@ file after every feature session with the new commit, test result, and status.
 | F04 | Store registry and adapters | **Partial** | Pure-Kotlin store/adapter contracts, verified built-in F-Droid and IzzyOnDroid descriptors, versioned registry persistence, custom-store CRUD, link-only fallback, HTTP opt-in, descriptor export, Stores UI, real cached-index adapter, and F04-R2 post-sync usability exist. Health history and import preview remain. | S02, S03 |
 | F05 | Index sync and offline cache | **Done** | Signed F-Droid v2 sync, signer/hash/size verification, HTTPS policy, ETag/diff reuse, streaming parse, atomic snapshot replacement, cancellation safety, freshness/last-sync state, and bounded storage with a real integer setting. Live network and device/UI verification remain outstanding. | S03 |
 | F06 | Coverage and confidence | **Done** | Per-store coverage snapshot with checked/stale/failed/skipped reasons, 24-hour freshness, explicit incomplete results, a checked-vs-required summary, and label-first confidence. “Not found” is blocked by any enabled non-disabled store that was not checked. Shared-report coverage (R4) waits for S09; targeted refresh (R5) is not implemented. | S05 |
-| F07 | Replacement guidance | **Registered** | Descriptor only. No signer/package comparison, update/replace/alternative labels, or warning UI. | S08 |
-| F08 | Companion store handoff | **Registered** | Descriptor only. No store detection, app-page intent, repository-add flow, or no-store fallback. | S08 |
+| F07 | Replacement guidance | **Done** | Pure-JVM assessment compares package, signer, version code, and installer. UI shows update/replace/alternative/no-update/cannot-verify, installed and candidate versions, installer, data-loss/uninstall/system/other-store/cross-store/work-profile/disabled warnings, and requires explicit confirmation for `REPLACE`. Missing signer/version metadata fails closed. There is no install, uninstall, or delete path. Reminder/watchlist (R7 MAY) remains deferred. | S08 |
+| F08 | Companion store handoff | **Done** | Explicit package queries detect F-Droid, Droid-ify, and Neo Store without broad Play visibility. The selected enabled client opens `market://details?id=<package>` with an explicit package; one canonical `fdroidrepos://` descriptor drives add, QR, combined copy, URL copy, and fingerprint copy. Preferred client per app persists locally; missing/disabled clients get install and browser fallbacks. Other-store deep links (R6 MAY) remain deferred. Real intent/package-visibility checks are device-pending. | S08 |
 | F09 | Standalone store client | **Deferred** | Excluded from both v1 profiles. Requires F05, F14, and `DIRECT_APK_INSTALL`. | S12 |
 | F10 | Install-time suggestion | **Deferred** | Excluded from both v1 profiles. Requires matching, handoff, and the accessibility module. | S12 |
 | F11 | Favourites and notes | **Done** | Add/remove, private notes, persistence, duplicate handling, note limit, tags, local search across names/notes/tags, optional preferred store, installed-state badge, error states, and versioned collection integration work. The badge is advisory and does not refresh live while the Saved screen stays foregrounded; real package-manager transitions still need device verification. | S06, S07 |
@@ -114,18 +122,18 @@ file after every feature session with the new commit, test result, and status.
 
 ## Verification snapshot
 
-Commands run on `main` at `b9fa0da` on 2026-10-24 after merging S01–S07:
+Commands run on `feat/s08-replacement-handoff` at `b1e36c0` on 2026-10-25 after S01–S08:
 
 | Check | Result |
 | --- | --- |
-| `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint` | **Passed** (1m 32s, 683 actionable tasks) |
-| Unit tests | **563 test executions across 85 suites; 0 failures, 0 errors, 0 skipped** (debug and release variants counted separately) |
+| `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint` | **Passed** (11m 50s, 753 actionable tasks) |
+| Unit tests | **618 test executions across 93 suites; 0 failures, 0 errors, 0 skipped** (debug and release variants counted separately) |
 | `assemblePlaystoreDebug` | **Passed** |
 | `assembleFdroidDebug` | **Passed** |
-| Play restricted manifest scan | **Passed**: only `INTERNET` and the framework dynamic-receiver permission are present; no `REQUEST_INSTALL_PACKAGES`, `QUERY_ALL_PACKAGES`, `AccessibilityService`, or `BIND_ACCESSIBILITY_SERVICE` |
-| F-Droid manifest scan | **Expected**: contains `QUERY_ALL_PACKAGES` and a launcher-intent `<queries>` block for the full inventory scan |
+| Play restricted manifest scan | **Passed**: only `INTERNET` and the framework dynamic-receiver permission are present; no `REQUEST_INSTALL_PACKAGES`, `QUERY_ALL_PACKAGES`, `AccessibilityService`, or `BIND_ACCESSIBILITY_SERVICE`. The merged manifest contains explicit `<package>` queries for `org.fdroid.fdroid`, `com.looker.droidify`, and `com.machiav3lli.fdroid`. |
+| F-Droid manifest scan | **Expected**: contains `QUERY_ALL_PACKAGES`, the explicit companion-store queries, and a launcher-intent `<queries>` block for the full inventory scan |
 | Share provider | **Passed**: non-exported `FileProvider` at `${applicationId}.fileprovider`; no new permission |
-| `./gradlew lint` | **Passed**: 0 errors, 40 warnings in the app report; the new matching modules add no warnings. The previously reported Maven resolution block did not recur. |
+| `./gradlew lint` | **Passed**: 0 errors. Warnings: app 40, `feature:favourites` 13, `feature:inventory` 4. The new handoff/companion modules and matching changes add no warnings. |
 
 Debug builds may warn that native symbols for `libandroidx.graphics.path.so`
 and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build
@@ -140,8 +148,9 @@ warning, not a failing check.
   assumptions used until the user confirms or changes them.
 - The master design's candidate numbering (`F1`–`F24`) does **not** match the
   feature files (`F01`–`F21`). Sessions and code must use the `F01`–`F21` files.
-- F07 is listed in v1 but depends on F09, which is deferred. The planned v1
-  scope is guidance and handoff only.
+- F07 is listed in v1 but depends on F09, which is deferred. S08 implements the
+  planned v1 scope: guidance and handoff only, with no in-app install or
+  uninstall.
 - F14 contains MUSTs for APK hash and signer checks that need F09. The planned
   v1 scope is repository/index verification, HTTPS, fingerprint pinning, and
   trust details.
@@ -157,8 +166,9 @@ warning, not a failing check.
 - F01/F02, F02/F06, F04/F05, and F05/F14 have circular dependencies in the
   specs. Shared contracts must be defined before the dependent features.
 - Store registry, installed inventory, verified index sync/cache, matching,
-  coverage, alternatives, collections, and local sharing exist. Security
-  details/trust audit (S10), backup (S09), and contribution (S11) do not.
+  coverage, alternatives, replacement guidance, companion handoff, collections,
+  and local sharing exist. Security details/trust audit (S10), backup (S09), and
+  contribution (S11) do not.
 - F01's production classifier now calls the matching engine and selects `FOSS`
   only for an exact package with license and source evidence. It still never
   selects `PROPRIETARY` because no proprietary evidence source is implemented;
@@ -171,6 +181,10 @@ warning, not a failing check.
   payloads); no network request is made during matching.
 - F02-R7 report-wrong-match, F02-R8 pinned source, F06-R4 shared-report
   coverage, F06-R5 targeted refresh, and F03-R7 comparison are not implemented.
+- F07-R7 reminder/watchlist and F08-R6 other-store deep links are not
+  implemented. F07's signature-lineage/key-rotation, split-APK, and ABI/SDK
+  compatibility checks remain post-v1. F08's last-handoff history is not
+  persisted; only the preferred client per app is stored.
 - F04's cached-index adapter is real, but health history and import preview
   remain. Live sync against the upstream F-Droid/IzzyOnDroid indexes has not
   been exercised from a device or emulator.
@@ -181,6 +195,10 @@ warning, not a failing check.
   enumeration, package visibility, installer/signer/work-profile values,
   shared-link handling, stale rendering, and hide-list survival across process
   restart still need device/emulator verification.
+- Companion handoff has not been exercised on a device: real store-client
+  intent resolution, explicit package visibility, disabled-client behavior,
+  `fdroidrepos://` handling, QR scanning, clipboard overlays, and browser
+  fallback remain to be checked.
 - F11's installed badge is advisory and does not refresh live while the Saved
   screen stays foregrounded through an external install/uninstall.
 - The app now exposes six bottom-navigation destinations. Matching opens from an
@@ -196,9 +214,10 @@ warning, not a failing check.
 - Settings import/export UI remains part of F13/S09. S01 only exposes the
   read-only snapshot.
 - F17-R8 development availability overrides (MAY) are not implemented.
-- Toggles for features that are still unimplemented (replacement guidance,
-  backup, contribution, security details) have no observable effect yet. The
-  matching, alternatives, and coverage toggles now gate their real UI behavior.
+- Toggles for features that are still unimplemented (backup, contribution,
+  security details) have no observable effect yet. The matching, alternatives,
+  coverage, replacement-guidance, and companion-handoff toggles gate their real
+  UI behavior.
 
 ## Status update protocol
 

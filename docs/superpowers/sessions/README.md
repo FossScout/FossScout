@@ -23,7 +23,7 @@ Start here:
 | [S05](S05-matching-alternatives-coverage.md) | F02/F03/F06 matching, alternatives, coverage | **Done** (S05 scope) | S02, S03, S04 | S07 | 3 |
 | [S06](S06-favourites-completion.md) | F11 favourites completion | **Done** (S06 scope) | Foundation; S02/S04 contracts available | S03 | 2 |
 | [S07](S07-collections-sharing.md) | F12 collections, sharing, import | **Done** (S07 scope) | S06 | S05 | 3 |
-| [S08](S08-replacement-handoff.md) | F08 handoff + F07 guidance-only replacement | **Ready** | S02, S05 | S09, S10, S11 | 4 |
+| [S08](S08-replacement-handoff.md) | F08 handoff + F07 guidance-only replacement | **Done** (S08 scope) | S02, S05 | S09, S10, S11 | 4 |
 | [S09](S09-backup-migration.md) | F13 backup and migration | **Ready** | S01, S02, S03, S06, S07 | S08, S10, S11 | 4 |
 | [S10](S10-security-trust.md) | F14 security details and trust audit UI | **Ready** | S03, S05 | S08, S09, S11 | 4 |
 | [S11](S11-contribution-hooks.md) | F16 contribution reports and redaction | **Ready** | S02, S05 | S08, S09, S10 | 4 |

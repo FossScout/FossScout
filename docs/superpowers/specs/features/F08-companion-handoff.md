@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft |
+| Status | Draft (v1 handoff implemented in S08; other-store deep links remain deferred) |
 | Availability | **General** |
 | Profiles | `playstore`, `fdroid`, `direct`, `custom` |
 | Required capabilities | `MANUAL_PACKAGE_SELECTION`; no install permission required |
