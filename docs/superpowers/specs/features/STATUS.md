@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
 Last updated: **2026-10-25**
-Baseline: `feat/s08-replacement-handoff` implementation `b1e36c0` (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, and S08 replacement guidance/companion handoff; merge to `main` follows the docs commit)
+Baseline: `main` after S08 docs commit `6ca4c50` (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, and S08 replacement guidance/companion handoff merged)
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
 
