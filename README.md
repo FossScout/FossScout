@@ -19,9 +19,9 @@ Remaining feature work is split into independent sessions:
 
 Installed-app inventory, the store registry, verified offline index caching,
 FOSS matching, coverage reporting, alternative suggestions, replacement
-guidance, companion-store handoff, collections, and local sharing/import are
-implemented. Backup, security details, and contribution reports remain scheduled
-sessions.
+guidance, companion-store handoff, collections, local sharing/import, and
+backup/migration are implemented. Security details and contribution reports
+remain scheduled sessions.
 
 **v1 does not download or install APKs, and it has no AccessibilityService.**
 Direct APK install and the install-time accessibility prompt are deferred.
@@ -34,6 +34,9 @@ Direct APK install and the install-time accessibility prompt are deferred.
 - Favourite projects and keep a private note on each one; favourites persist
   across app restarts
 - Build local collections and share/import them as JSON, plain text, or files
+- Export and restore a complete local profile with a visible included/excluded
+  manifest, merge/replace/skip preview, preserved store fingerprints, and
+  optional passphrase encryption
 - Inspect installed apps on the device and match them against verified F-Droid
   and IzzyOnDroid indexes, with coverage gaps and clearly labelled alternatives
 - See whether a store build is an update, a replacement, or a different app,
@@ -124,6 +127,8 @@ FossScout/
 │   ├── store-api/              # Store/adapter contracts and registry models
 │   ├── index/                  # Signed F-Droid index sync, verification, and snapshots
 │   ├── matching/               # Pure-JVM matching, alternatives, and coverage engine
+│   ├── handoff/                # Replacement assessment, companion stores, handoff planning
+│   ├── backup/                 # Versioned full-profile backup, checksum, planner, encryption
 │   ├── data/                   # Favourites, collections, settings, and DataStore stores
 │   └── ui/                     # Shared Compose theme (colors, typography, theming)
 ├── feature/
@@ -131,6 +136,8 @@ FossScout/
 │   ├── favourites/             # Saved-projects screen, notes and validation
 │   ├── inventory/              # Installed-app inventory and scan UI
 │   ├── matching/               # Match result, evidence, coverage, and alternatives UI
+│   ├── companion/              # Replacement guidance, handoff, and QR UI
+│   ├── backup/                 # Backup export/import and restore preview UI
 │   ├── stores/                 # Store registry, sync, and trust evidence UI
 │   └── settings/               # Feature toggle screen and labels
 ├── docs/                       # Design specs and implementation plans
@@ -146,8 +153,6 @@ depend on `:app` or on each other.
 
 ## Roadmap
 
-- Implement replacement guidance and companion store handoff
-- Add backup and migration for favourites, collections, and settings
 - Add security/trust details and contribution hooks
 - Add project detail screens
 - Expand device/emulator verification and set up CI for builds and tests

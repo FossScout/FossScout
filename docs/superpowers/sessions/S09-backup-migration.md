@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Blocked by S07** |
+| Status | **Done** (S09 scope) |
 | Features | F13 |
 | Depends on | S01, S02, S03 (trust records), S06, S07 |
 | Can run in parallel with | S08, S10, S11 |
@@ -100,10 +100,19 @@ preservation. Manually verify the document picker/share flow if possible.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
-
-- commit:
-- encryption/default decision:
-- tests:
-- F13 criteria completed:
-- remaining F13 gaps:
+- **Implementation commit:** `8b112b6` — `feat(backup): add S09 full-profile backup and migration` on `feat/s09-backup-migration`.
+- **Docs commit:** `PENDING` — `docs(s09): record backup and migration completion`.
+- **Merge state:** pending local fast-forward merge into `main` on 2026-10-25.
+- **Modules:** new pure-JVM `core:backup` (versioned envelope/manifest, canonical SHA-256 codec, PBKDF2/AES-GCM encryption, merge/replace/skip planner, backup service contract) and Compose `feature:backup` (export manifest, encryption controls, document-picker import, encrypted unlock, restore preview, conflict-mode selection, completion/error states). `core:data` adds `DefaultBackupService` plus snapshot replacement methods on the feature-settings, store-registry, and handoff repositories. Wired through `AppContainer`, the Settings entry, app navigation, share-sheet export, and document-picker import.
+- **Encryption/default decision:** unencrypted by default with an explicit opt-in passphrase. PBKDF2-HMAC-SHA256 (210,000 iterations), AES-256-GCM, 16-byte salt, 12-byte nonce, 128-bit tag, versioned outer envelope, and fixed KDF/cipher parameters.
+- **Tests:** `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint :app:lintPlaystoreDebug --console=plain` passed on 2026-10-25 (2m 43s, 832 actionable tasks). **669 test executions across 100 suites; 0 failures, 0 errors, 0 skipped**. Lint: 0 errors; warnings were app Play 42, app F-Droid 40, `feature:favourites` 13, and `feature:inventory` 4. The new `core:backup`/`feature:backup` modules and the Settings entry add no lint warnings. The Play merged manifest scan passed with only `INTERNET` and the framework dynamic-receiver permission; F-Droid retains `QUERY_ALL_PACKAGES`. Both merged manifests contain the DataStore-aware backup/data-extraction rules and the non-exported FileProvider.
+- **F13 criteria completed:**
+  - **F13-R1 — complete:** full-profile export includes favourites, notes, collections, custom stores with fingerprints/trust notes, feature settings/disabled state, and preferred store clients; clean-install restore is covered at the codec/planner/repository boundary.
+  - **F13-R2 — complete:** the export and restore preview show the included/excluded manifest before writing or applying.
+  - **F13-R3 — complete:** schema, format, checksum, and payload validation run before planning; invalid/unsupported/tampered files leave repositories untouched.
+  - **F13-R4 — complete:** encrypted files require the passphrase; wrong passphrase and tampering surface as an error and no repository write occurs.
+  - **F13-R5 — complete:** custom-store fingerprints and trust notes survive restore; built-in descriptors are preserved from the current app so a backup cannot downgrade them.
+  - **F13-R6 — deferred SHOULD:** restore uses global merge/replace/skip modes with per-item conflict flags in the plan and aggregate counts in the UI. Per-item keep-local/use-backup selection is not implemented.
+  - **F13-R7 — complete:** Android backup rules include DataStore files and legacy shared preferences; in-app text and `STATUS.md` describe the actual behavior.
+  - **F13-R8 — complete:** export is delivered through the Android share sheet with a non-exported FileProvider URI.
+- **Remaining F13 gaps:** per-item conflict resolution (R6); device/emulator verification of the share sheet, document picker, FileProvider reads, and large-profile behavior; cross-DataStore rollback is best-effort rather than transactional.
