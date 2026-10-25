@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft |
+| Status | Draft (v1 index trust UI/audit implemented; post-v1 APK checks deferred) |
 | Availability | **General** for verification; **Restricted** for direct install |
 | Profiles | `playstore` (verify/handoff), `fdroid` (verify/install), `direct` (verify/install), `custom` |
 | Required capabilities | `STORE_INDEX_NETWORK`; `DIRECT_APK_INSTALL` only for install |
@@ -55,6 +55,23 @@ must make those checks visible and must fail closed.
 | F14-R7 | SHOULD | Key rotation has a review flow rather than silent acceptance. | Old and new fingerprints are shown; user approves or removes. |
 | F14-R8 | SHOULD | Verification failures are logged locally with a timestamp. | The audit trail can be exported without personal data. |
 | F14-R9 | MAY | F-Droid binary transparency / reproducibility metadata is displayed. | Available evidence is linked, not overstated. |
+
+## 5a. v1 implementation status (S10)
+
+| Requirement | v1 status |
+| --- | --- |
+| F14-R1 | **Done.** Unpinned repositories activate only as `UNVERIFIED` and are visibly marked unverified. |
+| F14-R2 | **Done.** Signed entry/index verification, signer-fingerprint matching, and index hash/size checks run before activation. Verification time and signature status are inspectable. |
+| F14-R3 | **Deferred with F09.** v1 does not download APKs, so APK hash/size checks are not performed. |
+| F14-R4 | **Deferred with F09.** v1 has no install path; signer continuity against installed apps is not enforced. |
+| F14-R5 | **Done.** HTTPS is required by default; plain HTTP is blocked unless the user explicitly opts in, and the opt-in state is visible. |
+| F14-R6 | **Done.** Security details show the pinned/expected fingerprint, index signer, signature status, verification source, index SHA-256/version, HTTP state, last successful sync, and failure reason. |
+| F14-R7 | **Done.** A changed or removed pin, or a signer mismatch, requires review. Old and new fingerprints are shown; the user can approve the new fingerprint (which clears old active trust and re-syncs) or remove the store. |
+| F14-R8 | **Partial.** Verification results are kept in a local, timestamped, bounded audit trail (100 entries) visible in the security details panel. Export is deferred to F16. |
+| F14-R9 | **Not implemented.** Binary-transparency/reproducibility metadata is not displayed. |
+
+The UI explicitly states that APK hash and signer continuity are not checked in
+v1. There is no single opaque security score.
 
 ## 6. Data
 

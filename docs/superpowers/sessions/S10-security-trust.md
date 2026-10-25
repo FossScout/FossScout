@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Blocked by S05** |
+| Status | **Done** (S10 scope; APK checks deferred with F09) |
 | Features | F14 (verification UI/audit; core is S03) |
 | Depends on | S03, S05 |
 | Can run in parallel with | S08, S09, S11 |
@@ -79,9 +79,7 @@ states. Add a test that the audit trail is local and bounded.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
-
-- commit:
-- tests:
-- F14 UI criteria completed:
-- post-F09 gaps:
+- commit: `692f530` (implementation); documentation commit follows.
+- tests: `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint :app:lintPlaystoreDebug` passed (3m 28s, 832 actionable tasks). **696 test executions across 102 suites; 0 failures, 0 errors, 0 skipped.** Both debug assemblies passed. Lint reported **0 errors**; warnings were app Play 42, app F-Droid 40, `feature:favourites` 13, and `feature:inventory` 4. `feature:stores` and `feature:matching` report no issues.
+- F14 UI criteria completed: F14-R1 (unpinned repositories are visibly unverified), F14-R2 (signature status and verification time are inspectable), F14-R5 (HTTP opt-in is visible and not trusted by default), F14-R6 (fingerprint, signature, source, signer, index hash, and failure reason are inspectable), and F14-R7 (old/new fingerprints require approval or removal before sync resumes). “Not verified” and “verification failed” are distinct states. Match/detail surfaces show index trust and explicitly state that APK hash and signer continuity are not checked in v1.
+- post-F09 gaps: F14-R3/R4 (APK hash/size and signer-continuity enforcement) remain deferred with F09. F14-R8 audit export is not exposed yet; the local audit is bounded to 100 entries and visible in the security details panel. F14-R9 binary-transparency metadata is not implemented.

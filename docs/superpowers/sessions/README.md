@@ -25,7 +25,7 @@ Start here:
 | [S07](S07-collections-sharing.md) | F12 collections, sharing, import | **Done** (S07 scope) | S06 | S05 | 3 |
 | [S08](S08-replacement-handoff.md) | F08 handoff + F07 guidance-only replacement | **Done** (S08 scope) | S02, S05 | S09, S10, S11 | 4 |
 | [S09](S09-backup-migration.md) | F13 backup and migration | **Done** (S09 scope) | S01, S02, S03, S06, S07 | S08, S10, S11 | 4 |
-| [S10](S10-security-trust.md) | F14 security details and trust audit UI | **Ready** | S03, S05 | S08, S09, S11 | 4 |
+| [S10](S10-security-trust.md) | F14 security details and trust audit UI | **Done** (S10 scope) | S03, S05 | S08, S09, S11 | 4 |
 | [S11](S11-contribution-hooks.md) | F16 contribution reports and redaction | **Ready** | S02, S05 | S08, S09, S10 | 4 |
 | [S12](S12-post-v1-backlog.md) | F09/F10/F15/F18–F21 | **Post-v1** | Separate decisions | None | 5 |
 
@@ -38,10 +38,10 @@ S01 → S06 → S07 ─┘       S07 → S09
 S12 remains post-v1.
 ```
 
-Completed: **S01, S02, S03, S04, S05, S06, S07, S08, S09**. The next parallel
-wave is **S10 + S11**.
+Completed: **S01, S02, S03, S04, S05, S06, S07, S08, S09, S10**. The next
+session is **S11**.
 
-The remaining single-agent order is **S10 → S11**. If multiple sessions run in
+The remaining single-agent order is **S11**. If multiple sessions run in
 parallel, use the wave table and avoid editing the same app wiring files without
 coordinating.
 

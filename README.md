@@ -19,9 +19,9 @@ Remaining feature work is split into independent sessions:
 
 Installed-app inventory, the store registry, verified offline index caching,
 FOSS matching, coverage reporting, alternative suggestions, replacement
-guidance, companion-store handoff, collections, local sharing/import, and
-backup/migration are implemented. Security details and contribution reports
-remain scheduled sessions.
+guidance, companion-store handoff, collections, local sharing/import,
+backup/migration, and store security details/trust audit are implemented.
+Contribution reports remain scheduled.
 
 **v1 does not download or install APKs, and it has no AccessibilityService.**
 Direct APK install and the install-time accessibility prompt are deferred.
@@ -37,6 +37,10 @@ Direct APK install and the install-time accessibility prompt are deferred.
 - Export and restore a complete local profile with a visible included/excluded
   manifest, merge/replace/skip preview, preserved store fingerprints, and
   optional passphrase encryption
+- Inspect store security details: pinned/expected fingerprints, index signature
+  and signer, index SHA-256/version, verification time, HTTPS/HTTP opt-in state,
+  failure reason, and a bounded local verification history; review fingerprint
+  changes before sync resumes
 - Inspect installed apps on the device and match them against verified F-Droid
   and IzzyOnDroid indexes, with coverage gaps and clearly labelled alternatives
 - See whether a store build is an update, a replacement, or a different app,
