@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
 Last updated: **2026-10-25**
-Baseline: `feat/s09-backup-migration` at `8b112b6` plus the S09 docs commit (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, S08 replacement guidance/companion handoff, and S09 backup/migration)
+Baseline: `main` after S09 docs commit `f541323` (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, S08 replacement guidance/companion handoff, and S09 backup/migration merged)
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
 

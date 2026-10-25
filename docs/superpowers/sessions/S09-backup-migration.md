@@ -101,8 +101,8 @@ preservation. Manually verify the document picker/share flow if possible.
 ## Completion record
 
 - **Implementation commit:** `8b112b6` — `feat(backup): add S09 full-profile backup and migration` on `feat/s09-backup-migration`.
-- **Docs commit:** `PENDING` — `docs(s09): record backup and migration completion`.
-- **Merge state:** pending local fast-forward merge into `main` on 2026-10-25.
+- **Docs commit:** `f541323` — `docs(s09): record backup and migration completion`.
+- **Merge state:** merged into local `main` by fast-forward (`1c388b2..f541323`) on 2026-10-25.
 - **Modules:** new pure-JVM `core:backup` (versioned envelope/manifest, canonical SHA-256 codec, PBKDF2/AES-GCM encryption, merge/replace/skip planner, backup service contract) and Compose `feature:backup` (export manifest, encryption controls, document-picker import, encrypted unlock, restore preview, conflict-mode selection, completion/error states). `core:data` adds `DefaultBackupService` plus snapshot replacement methods on the feature-settings, store-registry, and handoff repositories. Wired through `AppContainer`, the Settings entry, app navigation, share-sheet export, and document-picker import.
 - **Encryption/default decision:** unencrypted by default with an explicit opt-in passphrase. PBKDF2-HMAC-SHA256 (210,000 iterations), AES-256-GCM, 16-byte salt, 12-byte nonce, 128-bit tag, versioned outer envelope, and fixed KDF/cipher parameters.
 - **Tests:** `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint :app:lintPlaystoreDebug --console=plain` passed on 2026-10-25 (2m 43s, 832 actionable tasks). **669 test executions across 100 suites; 0 failures, 0 errors, 0 skipped**. Lint: 0 errors; warnings were app Play 42, app F-Droid 40, `feature:favourites` 13, and `feature:inventory` 4. The new `core:backup`/`feature:backup` modules and the Settings entry add no lint warnings. The Play merged manifest scan passed with only `INTERNET` and the framework dynamic-receiver permission; F-Droid retains `QUERY_ALL_PACKAGES`. Both merged manifests contain the DataStore-aware backup/data-extraction rules and the non-exported FileProvider.
