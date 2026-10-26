@@ -71,6 +71,7 @@ fun MatchScreen(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     onOpenCompanion: ((MatchDecision) -> Unit)? = null,
+    onReportWrongMatch: ((MatchDecision) -> Unit)? = null,
     showCoverage: Boolean = true,
     showAlternatives: Boolean = true,
 ) {
@@ -164,6 +165,13 @@ fun MatchScreen(
                 state.decision?.let { decision ->
                     item(key = "outcome") {
                         OutcomeCard(decision = decision, showCoverage = showCoverage)
+                    }
+                    if (onReportWrongMatch != null) {
+                        item(key = "report_wrong_match") {
+                            ReportWrongMatchCard(
+                                onReport = { onReportWrongMatch(decision) },
+                            )
+                        }
                     }
                     decision.primary?.let { primary ->
                         item(key = "primary") {
@@ -375,6 +383,34 @@ private fun NextStepCard(onOpen: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = onOpen) {
                 Text(stringResource(R.string.match_next_step_action))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReportWrongMatchCard(onReport: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.match_report_wrong_title),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.match_report_wrong_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(onClick = onReport) {
+                Text(stringResource(R.string.match_report_wrong_action))
             }
         }
     }

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="contribution_title">Contribute</string>
+    <string name="contribution_subtitle">Report a store, adapter, or match problem with a reviewable diagnostic.</string>
+    <string name="contribution_back">Back</string>
+    <string name="contribution_privacy_title">Nothing leaves your device automatically</string>
+    <string name="contribution_privacy_body">Only the fields shown in the review preview are included. Installed apps, notes, account data, device identifiers, credentials, query tokens, and local paths are excluded.</string>
+    <string name="contribution_kind_label">What are you reporting?</string>
+    <string name="contribution_kind_missing_store">Missing store</string>
+    <string name="contribution_kind_missing_store_body">A store URL or adapter could not be added.</string>
+    <string name="contribution_kind_wrong_match">Wrong match</string>
+    <string name="contribution_kind_wrong_match_body">A package was matched to the wrong app or store.</string>
+    <string name="contribution_kind_adapter">Adapter request</string>
+    <string name="contribution_kind_adapter_body">A store uses a format this build cannot read.</string>
+
+    <string name="contribution_store_section">Store details</string>
+    <string name="contribution_match_section">Match details</string>
+    <string name="contribution_error_section">Error details</string>
+    <string name="contribution_store_name">Store name</string>
+    <string name="contribution_store_name_hint">For example: Example F-Droid repository</string>
+    <string name="contribution_store_url">Store URL</string>
+    <string name="contribution_store_url_hint">https://example.com/repo</string>
+    <string name="contribution_index_url">Index URL (optional)</string>
+    <string name="contribution_index_url_hint">https://example.com/repo</string>
+    <string name="contribution_adapter">Adapter guess</string>
+    <string name="contribution_adapter_none">Not sure</string>
+    <string name="contribution_error_class">Error type</string>
+    <string name="contribution_error_details">Error or format details</string>
+    <string name="contribution_error_details_hint">Do not paste notes or private data. Local paths, tokens, and device identifiers are removed automatically.</string>
+    <string name="contribution_package_name">Package name</string>
+    <string name="contribution_package_name_hint">org.example.app</string>
+    <string name="contribution_expected_store">Expected store (optional)</string>
+    <string name="contribution_observed_result">Observed result (optional)</string>
+    <string name="contribution_coverage_note">Coverage statuses from this match are included. Package counts, timestamps, and detail text are not.</string>
+
+    <string name="contribution_include_debug_title">Include debug details</string>
+    <string name="contribution_include_debug_body">Adds app version code, profile, feature, adapter, and coverage status. No logcat, installed apps, notes, device IDs, or tokens.</string>
+    <string name="contribution_preview_action">Preview report</string>
+    <string name="contribution_preview_title">Review before sharing</string>
+    <string name="contribution_preview_body">Review the report below. Nothing is sent or opened until you choose an action. Copy and share use this exact text; only a very long issue link is shortened.</string>
+    <string name="contribution_preview_debug_note">Debug details are included and still redacted.</string>
+    <string name="contribution_copy">Copy report</string>
+    <string name="contribution_share">Share report</string>
+    <string name="contribution_open_issue">Open issue tracker</string>
+    <string name="contribution_copy_json">Copy debug JSON</string>
+    <string name="contribution_share_json">Share debug JSON</string>
+    <string name="contribution_back_to_edit">Back to edit</string>
+    <string name="contribution_error_invalid">Add the details needed for this report.</string>
+    <string name="contribution_error_preview">Couldn\'t prepare the report.</string>
+    <string name="contribution_dismiss">Dismiss</string>
+
+    <string name="contribution_error_store_validation">Store validation</string>
+    <string name="contribution_error_store_sync">Store sync</string>
+    <string name="contribution_error_match">Match</string>
+    <string name="contribution_error_adapter">Adapter unsupported</string>
+    <string name="contribution_error_other">Other</string>
+
+    <string name="contribution_adapter_fdroid_v2">F-Droid v2 index</string>
+    <string name="contribution_adapter_fdroid_v1">F-Droid v1 index</string>
+    <string name="contribution_adapter_live_api">Live API</string>
+    <string name="contribution_adapter_generic_json">Generic JSON</string>
+    <string name="contribution_adapter_source_repository">Source repository</string>
+    <string name="contribution_adapter_deep_link">Deep link only</string>
+</resources>

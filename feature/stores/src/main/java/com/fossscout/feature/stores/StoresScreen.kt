@@ -99,6 +99,7 @@ fun StoresScreen(
     onRetry: () -> Unit,
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
+    onReportProblem: ((StoreEditor?) -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
@@ -121,6 +122,11 @@ fun StoresScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            if (onReportProblem != null) {
+                TextButton(onClick = { onReportProblem(null) }) {
+                    Text(stringResource(R.string.stores_report_problem))
+                }
             }
             Button(onClick = onAdd) {
                 Text(stringResource(R.string.stores_add))
@@ -211,6 +217,7 @@ fun StoresScreen(
             onChange = onEditorChange,
             onSave = onSaveEditor,
             onDismiss = onDismissEditor,
+            onReportProblem = onReportProblem,
         )
     }
 
@@ -1150,6 +1157,7 @@ private fun StoreEditorDialog(
     onChange: (StoreEditor) -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
+    onReportProblem: ((StoreEditor) -> Unit)? = null,
 ) {
     val usesHttp = editor.usesInsecureHttp()
     val canSave = editor.name.isNotBlank() &&
@@ -1269,8 +1277,15 @@ private fun StoreEditorDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.stores_editor_cancel))
+            Row {
+                if (onReportProblem != null) {
+                    TextButton(onClick = { onReportProblem(editor) }) {
+                        Text(stringResource(R.string.stores_report_problem))
+                    }
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.stores_editor_cancel))
+                }
             }
         },
     )

@@ -52,6 +52,7 @@ fun FeatureSettingsScreen(
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenBackup: (() -> Unit)? = null,
+    onOpenContribution: (() -> Unit)? = null,
 ) {
     var showResetConfirmation by rememberSaveable { mutableStateOf(false) }
 
@@ -157,6 +158,35 @@ fun FeatureSettingsScreen(
                                 )
                                 Text(
                                     text = stringResource(R.string.settings_backup_body),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (onOpenContribution != null) {
+                    item(key = "contribution_entry") {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onOpenContribution),
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(
+                                        R.string.settings_contribution_title,
+                                    ),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                                Text(
+                                    text = stringResource(
+                                        R.string.settings_contribution_body,
+                                    ),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )

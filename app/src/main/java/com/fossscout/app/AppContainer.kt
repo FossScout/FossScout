@@ -1,10 +1,13 @@
 package com.fossscout.app
 
 import android.content.Context
+import android.os.Build
 import androidx.datastore.preferences.preferencesDataStore
 import com.fossscout.app.handoff.InventoryCompanionStoreDetector
 import com.fossscout.app.inventory.PackageManagerInstalledAppSource
 import com.fossscout.app.profile.ProfileFeatures
+import com.fossscout.core.contribution.ContributionEnvironment
+import com.fossscout.core.contribution.ContributionReportBuilder
 import com.fossscout.core.data.DataStoreFeatureSettingsStore
 import com.fossscout.core.data.DataStoreCollectionsStore
 import com.fossscout.core.data.DataStoreFavouritesStore
@@ -48,6 +51,32 @@ private val Context.handoffDataStore by preferencesDataStore(name = "handoff")
  * provisioned here and passed into view models by the UI layer.
  */
 class AppContainer(context: Context) {
+    private val packageInfo = runCatching {
+        context.packageManager.getPackageInfo(context.packageName, 0)
+    }.getOrNull()
+
+    val appVersionName: String =
+        packageInfo?.versionName?.takeIf(String::isNotBlank) ?: "unknown"
+
+    @Suppress("DEPRECATION")
+    private val legacyVersionCode: Long? = packageInfo?.versionCode?.toLong()
+
+    val appVersionCode: Long? = (
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo?.longVersionCode
+        } else {
+            legacyVersionCode
+        }
+    )?.takeIf { it >= 0 }
+
+    val contributionEnvironment = ContributionEnvironment(
+        appVersionName = appVersionName,
+        appVersionCode = appVersionCode,
+        profile = ProfileFeatures.profile.name,
+    )
+
+    val contributionReportBuilder = ContributionReportBuilder()
+
     val favouritesRepository = FavouritesRepository(
         DataStoreFavouritesStore(context.favouritesDataStore),
     )
@@ -83,11 +112,7 @@ class AppContainer(context: Context) {
         storeRegistryRepository = storeRegistryRepository,
         featureSettingsRepository = featureSettingsRepository,
         handoffPreferencesRepository = handoffPreferencesRepository,
-        appVersion = {
-            runCatching {
-                context.packageManager.getPackageInfo(context.packageName, 0).versionName
-            }.getOrNull() ?: "unknown"
-        },
+        appVersion = { appVersionName },
     )
 
     private val snapshotPayloadStore = FileSnapshotPayloadStore(

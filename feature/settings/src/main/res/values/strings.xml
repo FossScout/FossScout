@@ -27,6 +27,8 @@
     <string name="settings_storage_budget_title">Index storage budget (MB)</string>
     <string name="settings_backup_title">Backup and restore</string>
     <string name="settings_backup_body">Move favourites, notes, collections, custom stores, and settings to a new device.</string>
+    <string name="settings_contribution_title">Contribute a report</string>
+    <string name="settings_contribution_body">Report a missing store, wrong match, or unsupported adapter with a redacted preview.</string>
 
     <string name="feature_inventory_title">Installed apps</string>
     <string name="feature_matching_title">Find open-source matches</string>
