@@ -76,8 +76,8 @@ cannot leak into the payload. Add a preview/no-share-before-confirm test.
 ## Completion record
 
 - **Implementation commit:** `160db61` — `feat(contribution): add S11 reviewed redacted reports` on `feat/s11-contribution-hooks`.
-- **Docs commit:** `PENDING` — `docs(s11): record contribution hooks completion`.
-- **Merge state:** pending local fast-forward merge into `main` on 2026-10-26.
+- **Docs commit:** `1bc04a9` — `docs(s11): record contribution hooks completion`.
+- **Merge state:** merged into local `main` by fast-forward (`3401981..1bc04a9`) on 2026-10-26.
 - **Modules:** new pure-JVM `core:contribution` (payload schema v1, redactor, context builders, configurable issue URL, report builder) and Compose `feature:contribution` (draft state, preview gate, copy/share/issue/debug actions, Compose screen). Wired through `AppContainer`, Settings, Stores (header and editor), Match, and the app overlay/back flow.
 - **Tests:** `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint :app:lintPlaystoreDebug --console=plain` passed on 2026-10-26 (3m 43s, 902 actionable tasks). **729 test executions across 106 suites; 0 failures, 0 errors, 0 skipped.** Both debug assemblies passed. Lint reported **0 errors**; warnings were app Play 42, app F-Droid 40, `feature:favourites` 13, and `feature:inventory` 4. `core:contribution` and `feature:contribution` add no lint warnings.
 - **F16 criteria completed:**
