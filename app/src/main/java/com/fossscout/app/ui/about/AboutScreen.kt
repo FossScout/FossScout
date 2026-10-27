@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,10 +25,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.fossscout.app.R
 
 @Composable
-fun AboutScreen(modifier: Modifier = Modifier) {
+fun AboutScreen(
+    modifier: Modifier = Modifier,
+    onOpenDonation: ((String) -> Unit)? = null,
+) {
+    val donationUrl = SupportLinks.liberapayUrlOrNull()
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -90,6 +97,26 @@ fun AboutScreen(modifier: Modifier = Modifier) {
             title = "No trackers",
             description = "No analytics, no ads, and no hidden telemetry.",
         )
+
+        if (donationUrl != null && onOpenDonation != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = stringResource(R.string.about_support_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.about_support_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            FilledTonalButton(onClick = { onOpenDonation(donationUrl) }) {
+                Text(text = stringResource(R.string.about_support_liberapay))
+            }
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
         Text(
