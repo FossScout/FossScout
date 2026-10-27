@@ -607,7 +607,10 @@ fun FossScoutApp(
                 }
             }
 
-            AppDestination.ABOUT -> AboutScreen(modifier = screenModifier)
+            AppDestination.ABOUT -> AboutScreen(
+                modifier = screenModifier,
+                onOpenDonation = context::openWebsite,
+            )
 
             AppDestination.STORES -> {
                 val storesViewModel: StoresViewModel = viewModel(
