@@ -181,6 +181,7 @@ depend on `:app` or on each other.
 ## Roadmap
 
 - Add project detail screens
+- Configure the verified Liberapay URL for the About support section
 - Complete device/emulator verification for inventory, store intents, backup,
   trust details, and contribution actions
 - Prepare Play internal testing
@@ -188,6 +189,14 @@ depend on `:app` or on each other.
 
 Direct APK download/install and the install-time accessibility prompt are
 post-v1 and restricted to builds where the platform policy allows them.
+
+## Support
+
+FossScout is free software with no ads, accounts, or paid feature tiers. Optional
+donations support development; they do not unlock features. The About screen
+contains a Liberapay entry point that stays hidden until the project's verified
+donation URL is configured. The same verified link will be published here once
+the account is ready.
 
 ## License
 

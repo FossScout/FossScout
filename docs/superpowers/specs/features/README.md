@@ -43,6 +43,7 @@ requirements, acceptance criteria, data/privacy notes, and open questions.
 | F19 | Permission and tracker diff | General | Yes | Yes | Yes | F02, F03, F06 |
 | F20 | Matching correction | General | Yes | Yes | Yes | F02 |
 | F21 | Trust badges | General | Yes | Yes | Yes | F04, F05, F14 |
+| F22 | Support and donations | General | Yes | Yes | Yes | None |
 
 ## Notes
 
@@ -57,3 +58,5 @@ requirements, acceptance criteria, data/privacy notes, and open questions.
   candidates: unified store search, permission/tracker comparison, local
   matching correction, and trust badges. They are proposed for the post-v1
   roadmap, not the first integrated foundation.
+- F22 is a post-v1 support feature. The About entry point exists, but it remains
+  hidden until a verified Liberapay URL is configured.

@@ -1,11 +1,11 @@
 # FossScout Implementation Status
 
-Last updated: **2026-11-01**
+Last updated: **2026-11-02**
 Feature baseline: `main` at `f02f9cf`; current GitHub beta `v0.1.0-beta.2` (S01–S11 and F20 are on `main`). Docs/CI changes after this baseline do not change feature status.
-Pending: F22 support-link scaffold on `feat/support-donation-links` at `037b1ac` (About section hidden until a verified Liberapay URL is configured); F20 device/UI verification; beta device smoke test.
+Pending: F22 support-link PR (verified Liberapay team URL configured); F20 device/UI verification; beta device smoke test.
 Delivery: Toolchain upgraded to Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play internal AAB workflow added; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
-Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
+Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F22`](F22-support-and-donations.md)
 
 This file is the **implementation** tracker. The feature matrix in `README.md`
 records planned availability; it does not mean a feature is built. Update this
@@ -37,10 +37,10 @@ file after every feature session with the new commit, test result, and status.
 | Replacement guidance and companion handoff | **Done** (device/store-client verification pending) |
 | Security details and trust audit | **Done** (S10; APK checks deferred with F09) |
 | Sharing, backup, contribution | **Done** (sharing/import, backup, and reviewed contribution reports; device checks pending) |
-| Support and donations | **Partial** (F22 scaffold on a separate branch; About entry point hidden until a verified Liberapay URL is configured) |
-| Feature completion | **13 of 21 fully done; 2 partial; 3 deferred; 3 spec-only** (F22 support link remains Partial outside the v1 map) |
+| Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
+| Feature completion | **13 of 21 fully done; 2 partial; 3 deferred; 3 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** run the beta device smoke test, then prepare Play internal testing. Evaluate F18 unified store search subject to approval and an approved brief. F20 matching correction is merged; F22 remains blocked on the verified Liberapay URL, and F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** run the beta device smoke test, then prepare Play internal testing. Evaluate F18 unified store search subject to approval and an approved brief. F20 matching correction is merged; F22 support link is ready for review, and F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ## What works today
 
@@ -110,6 +110,9 @@ file after every feature session with the new commit, test result, and status.
   requests: a preview gate, redacted payload and issue URL, offline clipboard
   and share actions, opt-in redacted debug JSON, and no automatic upload or new
   network permission.
+- Optional About-screen support entry point behind a single validated Liberapay
+  URL constant. The section stays hidden until the project URL is configured;
+  there is no payment SDK, new permission, account, tracking, or feature gating.
 - Policy-safe “unavailable in this build” explanations and capability labels for
   restricted features.
 - Play-safe manifest: no install-packages permission, broad package visibility,
@@ -144,6 +147,7 @@ file after every feature session with the new commit, test result, and status.
 | F19 | Permission and tracker diff | **Spec only** | Post-v1. No feature ID or code. | S12 |
 | F20 | Matching correction | **Done** | Local corrections from the match screen: cached enabled-store target search, no-suitable-match, private note, corrected badge, target-unavailable warning, undo, automatic result retained, and one override per package key. Backup schema 2 adds overrides with v1 checksum migration and merge/replace/skip preview. Store-scoped overrides (R8), shareable corrections, low-confidence prompts, and profile-scoped duplicates remain deferred. Device/UI verification pending. | S18 (post-v1) |
 | F21 | Trust badges | **Spec only** | Post-v1. No feature ID or code. | S12 |
+| F22 | Support and donations | **Partial** | About support section and URL validation exist in `9fed281`. The section is hidden because `SupportLinks.LIBERAPAY_URL` is blank; README documents the optional Liberapay path. No payment SDK, permission, account, tracking, or feature gating. | Post-v1 support |
 
 ## Verification snapshot
 
@@ -180,6 +184,11 @@ Device/UI verification is still outstanding for target search, the correction
 dialog, note entry, target-unavailable warning, undo, and backup preview/restore
 on a real device.
 
+### F22 support link (2026-11-02)
+
+Verification for the configured `https://liberapay.com/FossScout/` URL is
+recorded after the rebase and test run.
+
 Debug builds may warn that native symbols for `libandroidx.graphics.path.so`
 and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build
 warning, not a failing check.
@@ -192,7 +201,7 @@ warning, not a failing check.
   feature files are Draft/Proposed. The session plan records the planning
   assumptions used until the user confirms or changes them.
 - The master design's candidate numbering (`F1`–`F24`) does **not** match the
-  feature files (`F01`–`F21`). Sessions and code must use the `F01`–`F21` files.
+  feature files (`F01`–`F22`). Sessions and code must use the `F01`–`F22` files.
 - F07 is listed in v1 but depends on F09, which is deferred. S08 implements the
   planned v1 scope: guidance and handoff only, with no in-app install or
   uninstall.
@@ -206,11 +215,10 @@ warning, not a failing check.
   device verification are still required before release.
 - Only `playstore` and `fdroid` profiles exist. `direct` and `custom` remain
   future profiles.
-- F22's Liberapay URL is not configured. The About support section is hidden and
-  the README has no live donation link. Configure `SupportLinks.LIBERAPAY_URL`
-  with the verified profile URL before release. No in-app billing, donation
-  prompt, or store-specific donation link is planned. The scaffold remains on
-  `feat/support-donation-links`, outside this branch.
+- F22's verified Liberapay team URL is `https://liberapay.com/FossScout/`.
+  The About support section is enabled and the README links to the same URL.
+  No in-app billing, donation prompt, or store-specific donation link is
+  planned. Device verification of the About link remains pending.
 - F20 stores one override per installed package key, so work-profile duplicates
   that share a package key share a correction. Store-scoped overrides (R8),
   shareable correction files, and low-confidence prompts remain deferred.
@@ -224,9 +232,6 @@ warning, not a failing check.
   features and 60 files. PR #2 had no configured CI checks; verification was
   local. Future feature branches should be rebased onto the target branch before
   PR creation.
-- The F22 URL check on 2026-10-28 returned 404 for both
-  `https://liberapay.com/FossScout/` and the lowercase variant. Keep the support
-  section hidden and F22 Partial until a verified profile URL exists.
 
 ### Architecture and data
 
