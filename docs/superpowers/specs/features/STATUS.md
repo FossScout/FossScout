@@ -1,6 +1,6 @@
 # FossScout Implementation Status
 
-Last updated: **2026-10-26**
+Last updated: **2026-10-27**
 Baseline: `main` after S11 docs commit `1bc04a9` (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, S08 replacement guidance/companion handoff, S09 backup/migration, S10 security details/trust audit, and S11 contribution hooks merged)
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
@@ -149,6 +149,37 @@ Commands run on `feat/s11-contribution-hooks` at `160db61` on 2026-10-26 after S
 | F-Droid manifest scan | **Expected**: contains `QUERY_ALL_PACKAGES`, the explicit companion-store queries, and a launcher-intent `<queries>` block for the full inventory scan |
 | Share and backup providers | **Unchanged**: non-exported `FileProvider` at `${applicationId}.fileprovider`; contribution adds no provider or permission. Both merged manifests declare `allowBackup`, `fullBackupContent`, and `dataExtractionRules`; the rules include `sharedpref` and `file/datastore/`. |
 | `./gradlew lint` | **Passed**: 0 errors. Warnings: app Play 42, app F-Droid 40, `feature:favourites` 13, `feature:inventory` 4. `core:contribution`, `feature:contribution`, `feature:stores`, and `feature:matching` report no issues. Play has two extra `QueryPermissionsNeeded` warnings because broad package visibility is intentionally confined to F-Droid. |
+
+### Headless screenshot smoke set (2026-10-27)
+
+A temporary Compose preview screenshot harness rendered **24 screens** from the
+Play debug source set. The standard capture is 411 x 891 dp (1079 x 2339 px),
+matching the earlier set; handoff, backup, contribution, and settings captures
+use taller canvases where the content requires it. The set covers Discover
+(light, search, category, dark), inventory overview and lookup, exact match and
+coverage-gap match, companion handoff with QR, store overview/security
+details/editor, saved favourites and note editor, collections and collection
+detail, collection sharing, backup export and restore preview, contribution
+form and preview, basic/advanced settings, and About.
+
+All 24 previews rendered without layoutlib or Compose crashes. This is a
+composition smoke check with representative fake state, **not device or
+emulator verification**. Images are kept in the ignored `screenshots/`
+directory and are not committed.
+
+Visual review notes:
+
+- At 360 dp the six bottom-navigation labels wrap; the 411 dp capture width
+  matches the earlier screenshots and keeps them on one line.
+- Long package names wrap onto two lines in the Saved-project cards at 411 dp.
+  This is a layout issue to review before release, not a functional failure.
+- The restore-preview capture is intentionally tall so the preview and conflict
+  mode controls below the export/import cards are visible.
+
+Post-screenshot cleanup re-run on 2026-10-27 after restoring the temporary
+build files and removing the preview harness: `./gradlew test
+assemblePlaystoreDebug assembleFdroidDebug` passed with **729 tests across 106
+suites; 0 failures, 0 errors, 0 skipped**. Both debug APKs assembled.
 
 Debug builds may warn that native symbols for `libandroidx.graphics.path.so`
 and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build
