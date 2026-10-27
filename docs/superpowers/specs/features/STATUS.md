@@ -1,9 +1,10 @@
 # FossScout Implementation Status
 
-Last updated: **2026-10-26**
+Last updated: **2026-10-27**
 Baseline: `main` after S11 docs commit `1bc04a9` (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, S08 replacement guidance/companion handoff, S09 backup/migration, S10 security details/trust audit, and S11 contribution hooks merged)
+Pending: F22 support-link scaffold on `feat/support-donation-links` at `9fed281` (About section hidden until a verified Liberapay URL is configured).
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
-Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
+Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F22`](F22-support-and-donations.md)
 
 This file is the **implementation** tracker. The feature matrix in `README.md`
 records planned availability; it does not mean a feature is built. Update this
@@ -34,9 +35,10 @@ file after every feature session with the new commit, test result, and status.
 | Replacement guidance and companion handoff | **Done** (device/store-client verification pending) |
 | Security details and trust audit | **Done** (S10; APK checks deferred with F09) |
 | Sharing, backup, contribution | **Done** (sharing/import, backup, and reviewed contribution reports; device checks pending) |
-| Feature completion | **12 of 21 fully done; 2 partial; 3 deferred; 4 spec-only** |
+| Support and donations | **Partial** (About entry point hidden until a verified Liberapay URL is configured) |
+| Feature completion | **12 of 22 fully done; 3 partial; 3 deferred; 4 spec-only** |
 
-**Recommended next session:** No v1 implementation session remains. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** No v1 implementation session remains. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog. After the F22 support URL is configured, F20 matching correction is the recommended next substantial post-v1 feature and needs its own approved brief.
 
 ## What works today
 
@@ -100,6 +102,9 @@ file after every feature session with the new commit, test result, and status.
   requests: a preview gate, redacted payload and issue URL, offline clipboard
   and share actions, opt-in redacted debug JSON, and no automatic upload or new
   network permission.
+- Optional About-screen support entry point behind a single validated Liberapay
+  URL constant. The section stays hidden until the project URL is configured;
+  there is no payment SDK, new permission, account, tracking, or feature gating.
 - Policy-safe “unavailable in this build” explanations and capability labels for
   restricted features.
 - Play-safe manifest: no install-packages permission, broad package visibility,
@@ -134,6 +139,7 @@ file after every feature session with the new commit, test result, and status.
 | F19 | Permission and tracker diff | **Spec only** | Post-v1. No feature ID or code. | S12 |
 | F20 | Matching correction | **Spec only** | Post-v1. No feature ID or code. | S12 |
 | F21 | Trust badges | **Spec only** | Post-v1. No feature ID or code. | S12 |
+| F22 | Support and donations | **Partial** | About support section and URL validation exist in `9fed281`. The section is hidden because `SupportLinks.LIBERAPAY_URL` is blank; README documents the optional Liberapay path. No payment SDK, permission, account, tracking, or feature gating. | Post-v1 support |
 
 ## Verification snapshot
 
@@ -150,6 +156,23 @@ Commands run on `feat/s11-contribution-hooks` at `160db61` on 2026-10-26 after S
 | Share and backup providers | **Unchanged**: non-exported `FileProvider` at `${applicationId}.fileprovider`; contribution adds no provider or permission. Both merged manifests declare `allowBackup`, `fullBackupContent`, and `dataExtractionRules`; the rules include `sharedpref` and `file/datastore/`. |
 | `./gradlew lint` | **Passed**: 0 errors. Warnings: app Play 42, app F-Droid 40, `feature:favourites` 13, `feature:inventory` 4. `core:contribution`, `feature:contribution`, `feature:stores`, and `feature:matching` report no issues. Play has two extra `QueryPermissionsNeeded` warnings because broad package visibility is intentionally confined to F-Droid. |
 
+### F22 support-link scaffold (2026-10-27)
+
+Commands run on `feat/support-donation-links`:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` | **Passed** (2m 10s, 630 actionable tasks) |
+| Unit tests | **757 test executions across 110 suites; 0 failures, 0 errors, 0 skipped** |
+| `assemblePlaystoreDebug` | **Passed** |
+| `assembleFdroidDebug` | **Passed** |
+| `./gradlew lint :app:lintPlaystoreDebug` | **Passed**: 0 errors; app Play 42 warnings, app F-Droid 40 warnings (unchanged). |
+| URL guard | `SupportLinksTest` covers blank, valid, non-HTTPS, non-Liberapay, root, query/fragment, credentials, and explicit-port cases. |
+
+The support section is hidden because `SupportLinks.LIBERAPAY_URL` is blank.
+This is a composition/link-guard check, not device verification. No permission,
+provider, dependency, payment SDK, or manifest capability was added.
+
 Debug builds may warn that native symbols for `libandroidx.graphics.path.so`
 and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build
 warning, not a failing check.
@@ -162,7 +185,7 @@ warning, not a failing check.
   feature files are Draft/Proposed. The session plan records the planning
   assumptions used until the user confirms or changes them.
 - The master design's candidate numbering (`F1`–`F24`) does **not** match the
-  feature files (`F01`–`F21`). Sessions and code must use the `F01`–`F21` files.
+  feature files (`F01`–`F22`). Sessions and code must use the `F01`–`F22` files.
 - F07 is listed in v1 but depends on F09, which is deferred. S08 implements the
   planned v1 scope: guidance and handoff only, with no in-app install or
   uninstall.
@@ -176,6 +199,10 @@ warning, not a failing check.
   device verification are still required before release.
 - Only `playstore` and `fdroid` profiles exist. `direct` and `custom` remain
   future profiles.
+- F22's Liberapay URL is not configured. The About support section is hidden and
+  the README has no live donation link. Configure `SupportLinks.LIBERAPAY_URL`
+  with the verified profile URL before release. No in-app billing, donation
+  prompt, or store-specific donation link is planned.
 
 ### Architecture and data
 
