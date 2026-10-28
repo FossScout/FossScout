@@ -42,13 +42,14 @@ Completed: **S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11**. All v1
 implementation sessions are complete; **S12 remains post-v1**.
 
 The F22 support-link scaffold is tracked outside the v1 session map. It is
-partial until the verified Liberapay URL is configured. The next substantial
-post-v1 feature is F20 matching correction (suggested S18 in S12); create and
-approve its brief before implementation.
+partial until the verified Liberapay URL is configured. F20 matching correction
+is implemented as S18 on `feat/f20-matching-correction` (local, pending push/PR);
+store-scoped overrides, shareable corrections, low-confidence prompts, and
+device/UI verification remain deferred.
 
-No v1 implementation session is currently next. If multiple sessions run in
-parallel in future, use the wave table and avoid editing the same app wiring
-files without coordinating.
+No next post-v1 feature is selected. F18/F19/F21 still need approved briefs and
+product decisions. If multiple sessions run in parallel in future, use the wave
+table and avoid editing the same app wiring files without coordinating.
 
 ## Planning assumptions
 

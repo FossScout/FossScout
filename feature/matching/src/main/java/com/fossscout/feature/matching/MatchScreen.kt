@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.inventory.InstalledApp
 import com.fossscout.core.matching.AlternativeSuggestion
+import com.fossscout.core.matching.CatalogSearchResult
 import com.fossscout.core.matching.ConfidenceLabel
 import com.fossscout.core.matching.CoverageSnapshot
 import com.fossscout.core.matching.CoverageStatus
@@ -49,6 +52,7 @@ import com.fossscout.core.matching.MatchDecision
 import com.fossscout.core.matching.MatchLevel
 import com.fossscout.core.matching.MatchOutcome
 import com.fossscout.core.matching.StoreCoverage
+import com.fossscout.core.model.MAX_NOTE_LENGTH
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -72,6 +76,15 @@ fun MatchScreen(
     onBack: (() -> Unit)? = null,
     onOpenCompanion: ((MatchDecision) -> Unit)? = null,
     onReportWrongMatch: ((MatchDecision) -> Unit)? = null,
+    onStartCorrection: (() -> Unit)? = null,
+    onUndoCorrection: (() -> Unit)? = null,
+    onCorrectionQueryChange: (String) -> Unit = {},
+    onSearchCorrectionTargets: () -> Unit = {},
+    onSelectCorrectionTarget: (CatalogSearchResult) -> Unit = {},
+    onCorrectionNoteChange: (String) -> Unit = {},
+    onSaveCorrection: () -> Unit = {},
+    onSaveNoMatch: () -> Unit = {},
+    onDismissCorrection: () -> Unit = {},
     showCoverage: Boolean = true,
     showAlternatives: Boolean = true,
 ) {
@@ -163,61 +176,97 @@ fun MatchScreen(
                 }
             } else {
                 state.decision?.let { decision ->
+                    val correction = decision.correction
+                    if (correction != null) {
+                        item(key = "correction") {
+                            CorrectionSummaryCard(
+                                decision = decision,
+                                onUndo = onUndoCorrection,
+                            )
+                        }
+                        item(key = "automatic_result_header") {
+                            AutomaticResultHeader()
+                        }
+                    }
                     item(key = "outcome") {
                         OutcomeCard(decision = decision, showCoverage = showCoverage)
                     }
-                    if (onReportWrongMatch != null) {
-                        item(key = "report_wrong_match") {
-                            ReportWrongMatchCard(
-                                onReport = { onReportWrongMatch(decision) },
-                            )
+                    if (correction == null) {
+                        if (onStartCorrection != null && decision.packageName != null) {
+                            item(key = "correct_match") {
+                                CorrectMatchCard(onStart = onStartCorrection)
+                            }
                         }
-                    }
-                    decision.primary?.let { primary ->
-                        item(key = "primary") {
-                            PrimaryEvidenceCard(
-                                candidate = primary,
-                                onOpenSource = onOpenSource,
-                            )
-                        }
-                        if (onOpenCompanion != null) {
-                            item(key = "next_step") {
-                                NextStepCard(
-                                    onOpen = { onOpenCompanion(decision) },
+                        if (onReportWrongMatch != null) {
+                            item(key = "report_wrong_match") {
+                                ReportWrongMatchCard(
+                                    onReport = { onReportWrongMatch(decision) },
                                 )
                             }
                         }
-                    }
-                    if (decision.otherMatches.isNotEmpty()) {
-                        item(key = "other_matches") {
-                            OtherMatchesCard(
-                                matches = decision.otherMatches,
-                                onOpenSource = onOpenSource,
-                            )
+                        decision.primary?.let { primary ->
+                            item(key = "primary") {
+                                PrimaryEvidenceCard(
+                                    candidate = primary,
+                                    onOpenSource = onOpenSource,
+                                )
+                            }
+                            if (onOpenCompanion != null) {
+                                item(key = "next_step") {
+                                    NextStepCard(
+                                        onOpen = { onOpenCompanion(decision) },
+                                    )
+                                }
+                            }
+                        }
+                        if (decision.otherMatches.isNotEmpty()) {
+                            item(key = "other_matches") {
+                                OtherMatchesCard(
+                                    matches = decision.otherMatches,
+                                    onOpenSource = onOpenSource,
+                                )
+                            }
+                        }
+                        if (showAlternatives && state.visibleAlternatives.isNotEmpty()) {
+                            item(key = "alternatives") {
+                                AlternativesCard(
+                                    alternatives = state.visibleAlternatives,
+                                    onHide = onHideAlternative,
+                                    onOpenSource = onOpenSource,
+                                )
+                            }
+                        }
+                        state.lastHiddenAlternative?.let { hidden ->
+                            if (showAlternatives) {
+                                item(key = "undo_hidden") {
+                                    HiddenNotice(
+                                        suggestion = hidden,
+                                        onUndo = onUndoHide,
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        decision.primary?.let { primary ->
+                            item(key = "automatic_primary") {
+                                PrimaryEvidenceCard(
+                                    candidate = primary,
+                                    onOpenSource = onOpenSource,
+                                )
+                            }
+                        }
+                        if (decision.otherMatches.isNotEmpty()) {
+                            item(key = "automatic_other_matches") {
+                                OtherMatchesCard(
+                                    matches = decision.otherMatches,
+                                    onOpenSource = onOpenSource,
+                                )
+                            }
                         }
                     }
                     if (showCoverage) {
                         item(key = "coverage") {
                             CoverageCard(coverage = decision.coverage)
-                        }
-                    }
-                    if (showAlternatives && state.visibleAlternatives.isNotEmpty()) {
-                        item(key = "alternatives") {
-                            AlternativesCard(
-                                alternatives = state.visibleAlternatives,
-                                onHide = onHideAlternative,
-                                onOpenSource = onOpenSource,
-                            )
-                        }
-                    }
-                    state.lastHiddenAlternative?.let { hidden ->
-                        if (showAlternatives) {
-                            item(key = "undo_hidden") {
-                                HiddenNotice(
-                                    suggestion = hidden,
-                                    onUndo = onUndoHide,
-                                )
-                            }
                         }
                     }
                 }
@@ -233,6 +282,19 @@ fun MatchScreen(
                 }
             }
         }
+    }
+
+    state.correctionEditor?.let { editor ->
+        CorrectionDialog(
+            editor = editor,
+            onQueryChange = onCorrectionQueryChange,
+            onSearch = onSearchCorrectionTargets,
+            onSelect = onSelectCorrectionTarget,
+            onNoteChange = onCorrectionNoteChange,
+            onSave = onSaveCorrection,
+            onSaveNoMatch = onSaveNoMatch,
+            onDismiss = onDismissCorrection,
+        )
     }
 }
 
@@ -412,6 +474,336 @@ private fun ReportWrongMatchCard(onReport: () -> Unit) {
             TextButton(onClick = onReport) {
                 Text(stringResource(R.string.match_report_wrong_action))
             }
+        }
+    }
+}
+
+@Composable
+private fun CorrectMatchCard(onStart: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.match_correction_card_title),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.match_correction_card_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(onClick = onStart) {
+                Text(stringResource(R.string.match_correction_action))
+            }
+        }
+    }
+}
+
+@Composable
+private fun CorrectionSummaryCard(
+    decision: MatchDecision,
+    onUndo: (() -> Unit)?,
+) {
+    val correction = decision.correction ?: return
+    val target = correction.target
+    val container = if (target == null) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
+    }
+    val content = if (target == null) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    }
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = container,
+        contentColor = content,
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Badge(stringResource(R.string.match_correction_badge))
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            if (target == null) {
+                Text(
+                    text = stringResource(R.string.match_correction_no_match_title),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Text(
+                    text = stringResource(R.string.match_correction_no_match_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else {
+                Text(
+                    text = stringResource(
+                        R.string.match_correction_target_title,
+                        target.displayName,
+                    ),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Text(
+                    text = stringResource(R.string.match_package, target.appKey.value),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(
+                    text = stringResource(R.string.match_store, target.storeName),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                if (decision.correctionTargetAvailable == false) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.match_correction_target_missing),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+            if (correction.note.isNotBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = stringResource(R.string.match_correction_note, correction.note),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            if (onUndo != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(onClick = onUndo) {
+                    Text(stringResource(R.string.match_correction_undo))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AutomaticResultHeader() {
+    Column {
+        Text(
+            text = stringResource(R.string.match_automatic_result_title),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = stringResource(R.string.match_automatic_result_body),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun CorrectionDialog(
+    editor: MatchCorrectionUiState,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onSelect: (CatalogSearchResult) -> Unit,
+    onNoteChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onSaveNoMatch: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val noteOverLimit = editor.note.length > MAX_NOTE_LENGTH
+    AlertDialog(
+        onDismissRequest = {
+            if (!editor.isSaving) onDismiss()
+        },
+        title = { Text(stringResource(R.string.match_correction_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(
+                        R.string.match_correction_body,
+                        editor.installedLabel,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    value = editor.query,
+                    onValueChange = onQueryChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.match_correction_search_label)) },
+                    singleLine = true,
+                    enabled = !editor.isSaving,
+                )
+                Button(
+                    onClick = onSearch,
+                    enabled = editor.query.isNotBlank() && !editor.isSearching && !editor.isSaving,
+                ) {
+                    Text(
+                        stringResource(
+                            if (editor.isSearching) {
+                                R.string.match_correction_searching
+                            } else {
+                                R.string.match_correction_search_action
+                            },
+                        ),
+                    )
+                }
+                if (editor.isSearching) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.match_correction_searching),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+                editor.error?.let { error ->
+                    Text(
+                        text = stringResource(error.messageRes()),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                if (editor.results.isNotEmpty()) {
+                    Text(
+                        text = stringResource(R.string.match_correction_results_title),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    LazyColumn(
+                        modifier = Modifier.heightIn(max = 220.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        items(
+                            items = editor.results,
+                            key = { result ->
+                                "${result.storeId}:${result.entry.packageName}:" +
+                                    result.entry.name
+                            },
+                        ) { result ->
+                            CorrectionResultRow(
+                                result = result,
+                                selected = editor.selected == result,
+                                onClick = { onSelect(result) },
+                            )
+                        }
+                    }
+                } else if (editor.hasSearched && !editor.isSearching && editor.query.isNotBlank()) {
+                    Text(
+                        text = stringResource(R.string.match_correction_no_results),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                OutlinedTextField(
+                    value = editor.note,
+                    onValueChange = onNoteChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.match_correction_note_label)) },
+                    minLines = 2,
+                    maxLines = 4,
+                    enabled = !editor.isSaving,
+                    isError = noteOverLimit,
+                    supportingText = {
+                        Text(
+                            text = stringResource(
+                                R.string.match_correction_note_counter,
+                                editor.note.length,
+                                MAX_NOTE_LENGTH,
+                            ),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    },
+                )
+                if (noteOverLimit) {
+                    Text(
+                        text = pluralStringResource(
+                            R.plurals.match_correction_note_too_long,
+                            MAX_NOTE_LENGTH,
+                            MAX_NOTE_LENGTH,
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.match_correction_note_private),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onSave,
+                enabled = editor.selected != null && !editor.isSaving && !noteOverLimit,
+            ) {
+                Text(stringResource(R.string.match_correction_use_target))
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(
+                    onClick = onSaveNoMatch,
+                    enabled = !editor.isSaving && !noteOverLimit,
+                ) {
+                    Text(stringResource(R.string.match_correction_no_match))
+                }
+                TextButton(
+                    onClick = onDismiss,
+                    enabled = !editor.isSaving,
+                ) {
+                    Text(stringResource(R.string.match_correction_cancel))
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun CorrectionResultRow(
+    result: CatalogSearchResult,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+        contentColor = if (selected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = result.entry.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (selected) {
+                    Badge(stringResource(R.string.match_correction_selected))
+                }
+            }
+            Text(
+                text = result.entry.packageName,
+                style = MaterialTheme.typography.labelSmall,
+            )
+            Text(
+                text = result.storeName,
+                style = MaterialTheme.typography.labelSmall,
+            )
         }
     }
 }
@@ -967,6 +1359,14 @@ private fun MatchError.messageRes(): Int = when (this) {
     MatchError.QUERY_REQUIRED -> R.string.match_error_query
     MatchError.MATCH_FAILED -> R.string.match_error_match
     MatchError.SEARCH_FAILED -> R.string.match_error_search
+    MatchError.CORRECTION_FAILED -> R.string.match_error_correction
+}
+
+private fun MatchCorrectionError.messageRes(): Int = when (this) {
+    MatchCorrectionError.QUERY_REQUIRED -> R.string.match_correction_error_query
+    MatchCorrectionError.SEARCH_FAILED -> R.string.match_correction_error_search
+    MatchCorrectionError.TARGET_REQUIRED -> R.string.match_correction_error_target
+    MatchCorrectionError.SAVE_FAILED -> R.string.match_correction_error_save
 }
 
 private fun SignatureStatus.matchLabelRes(): Int = when (this) {

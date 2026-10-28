@@ -15,6 +15,8 @@ import com.fossscout.core.handoff.HandoffPreferencesStore
 import com.fossscout.core.model.AppCollection
 import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.Favourite
+import com.fossscout.core.model.MatchOverride
+import com.fossscout.core.model.MatchOverrideTarget
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.BuiltInStores
@@ -69,6 +71,18 @@ class DefaultBackupServiceTest {
     private val handoff = HandoffPreferences(
         preferredStores = mapOf("org.example.app" to "fdroid"),
     )
+    private val matchOverride = MatchOverride(
+        installedAppKey = AppKey("org.example.app"),
+        target = MatchOverrideTarget(
+            appKey = AppKey("org.example.alt"),
+            displayName = "Alternative",
+            storeId = StoreId("custom-repo"),
+            storeName = "Custom repo",
+        ),
+        note = "private correction",
+        createdAtEpochMillis = 10,
+        updatedAtEpochMillis = 20,
+    )
 
     @Test
     fun `clean install restore reproduces the full local profile`() = runTest {
@@ -78,6 +92,7 @@ class DefaultBackupServiceTest {
             registry = FakeBackupStoreRegistryStore(registryWithCustomStore()),
             settings = FakeBackupFeatureSettingsStore(settings),
             handoff = FakeBackupHandoffStore(handoff),
+            overrides = FakeMatchOverridesStore(listOf(matchOverride)),
         )
         val target = service()
         val envelope = source.service.prepareExport()
@@ -95,6 +110,7 @@ class DefaultBackupServiceTest {
         )
         assertEquals(settings, target.settings.snapshot.first())
         assertEquals(handoff, target.handoff.preferences.first())
+        assertEquals(listOf(matchOverride), target.overrides.overrides.first())
         assertEquals(1, plan.preview.notesItemCount)
     }
 
@@ -191,6 +207,7 @@ class DefaultBackupServiceTest {
         registry: StoreRegistryStore = FakeBackupStoreRegistryStore(),
         settings: FeatureSettingsStore = FakeBackupFeatureSettingsStore(),
         handoff: HandoffPreferencesStore = FakeBackupHandoffStore(),
+        overrides: MatchOverridesStore = FakeMatchOverridesStore(),
     ): ServiceBundle {
         val favouritesRepository = FavouritesRepository(store = favourites, now = { 100 })
         val collectionsRepository = CollectionsRepository(
@@ -204,18 +221,21 @@ class DefaultBackupServiceTest {
             descriptors = FeatureCatalog.all,
         )
         val handoffRepository = HandoffPreferencesRepository(handoff)
+        val overridesRepository = MatchOverridesRepository(overrides)
         return ServiceBundle(
             favourites = favouritesRepository,
             collections = collectionsRepository,
             stores = stores,
             settings = featureSettings,
             handoff = handoffRepository,
+            overrides = overridesRepository,
             service = DefaultBackupService(
                 favouritesRepository = favouritesRepository,
                 collectionsRepository = collectionsRepository,
                 storeRegistryRepository = stores,
                 featureSettingsRepository = featureSettings,
                 handoffPreferencesRepository = handoffRepository,
+                matchOverridesRepository = overridesRepository,
                 appVersion = { "0.1.0" },
                 now = { 1_000 },
             ),
@@ -228,6 +248,7 @@ class DefaultBackupServiceTest {
         val stores: StoreRegistryRepository,
         val settings: FeatureSettingsRepository,
         val handoff: HandoffPreferencesRepository,
+        val overrides: MatchOverridesRepository,
         val service: DefaultBackupService,
     )
 
@@ -261,6 +282,17 @@ class DefaultBackupServiceTest {
 
         override suspend fun save(preferences: HandoffPreferences) {
             state.value = preferences
+        }
+    }
+
+    private class FakeMatchOverridesStore(
+        initial: List<MatchOverride> = emptyList(),
+    ) : MatchOverridesStore {
+        private val state = MutableStateFlow(initial)
+        override val overrides: Flow<List<MatchOverride>> = state
+
+        override suspend fun save(overrides: List<MatchOverride>) {
+            state.value = overrides
         }
     }
 

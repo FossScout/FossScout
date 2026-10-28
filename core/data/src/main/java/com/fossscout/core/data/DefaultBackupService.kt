@@ -37,6 +37,7 @@ class DefaultBackupService(
     private val storeRegistryRepository: StoreRegistryRepository,
     private val featureSettingsRepository: FeatureSettingsRepository,
     private val handoffPreferencesRepository: HandoffPreferencesRepository,
+    private val matchOverridesRepository: MatchOverridesRepository,
     private val appVersion: () -> String,
     private val now: () -> Long = System::currentTimeMillis,
     private val codec: BackupCodec = BackupCodec(),
@@ -54,6 +55,7 @@ class DefaultBackupService(
             customStores = local.customStores,
             featureSettings = local.featureSettings,
             handoffPreferences = local.handoffPreferences,
+            matchOverrides = local.matchOverrides,
             codec = codec,
         )
     }
@@ -126,6 +128,12 @@ class DefaultBackupService(
                     handoffPreferencesRepository.replace(previous.handoffPreferences)
                 }
             }
+            if (target.matchOverrides != previous.matchOverrides) {
+                matchOverridesRepository.replaceAll(target.matchOverrides)
+                rollbacks += {
+                    matchOverridesRepository.replaceAll(previous.matchOverrides)
+                }
+            }
         } catch (cancellation: CancellationException) {
             withContext(NonCancellable) { rollback(rollbacks) }
             throw cancellation
@@ -147,6 +155,7 @@ class DefaultBackupService(
             .map { it.descriptor },
         featureSettings = featureSettingsRepository.snapshot.first(),
         handoffPreferences = handoffPreferencesRepository.preferences.first(),
+        matchOverrides = matchOverridesRepository.overrides.first(),
     )
 
     private suspend fun rollback(rollbacks: List<suspend () -> Unit>): Throwable? {

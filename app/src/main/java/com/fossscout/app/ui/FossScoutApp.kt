@@ -495,6 +495,18 @@ fun FossScoutApp(
                                 repository = container.matchingRepository,
                                 appSource = container.installedAppSource,
                                 includeAlternatives = alternativesEnabled,
+                                setCorrection = { appKey, target, note ->
+                                    if (target == null) {
+                                        container.matchOverridesRepository.setNoMatch(appKey, note)
+                                    } else {
+                                        container.matchOverridesRepository.setTarget(
+                                            appKey,
+                                            target,
+                                            note,
+                                        )
+                                    }
+                                },
+                                removeCorrection = container.matchOverridesRepository::remove,
                             )
                         }
                     },
@@ -574,6 +586,17 @@ fun FossScoutApp(
                             } else {
                                 null
                             },
+                            onStartCorrection = matchingViewModel::startCorrection,
+                            onUndoCorrection = matchingViewModel::undoCorrection,
+                            onCorrectionQueryChange = matchingViewModel::onCorrectionQueryChange,
+                            onSearchCorrectionTargets =
+                                matchingViewModel::searchCorrectionTargets,
+                            onSelectCorrectionTarget =
+                                matchingViewModel::selectCorrectionTarget,
+                            onCorrectionNoteChange = matchingViewModel::onCorrectionNoteChange,
+                            onSaveCorrection = matchingViewModel::saveCorrection,
+                            onSaveNoMatch = matchingViewModel::saveNoMatch,
+                            onDismissCorrection = matchingViewModel::dismissCorrection,
                             modifier = screenModifier,
                             showCoverage = FeatureId.COVERAGE in enabledFeatures,
                             showAlternatives = alternativesEnabled,

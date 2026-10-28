@@ -4,6 +4,7 @@ import com.fossscout.core.feature.FeatureSettings
 import com.fossscout.core.handoff.HandoffPreferences
 import com.fossscout.core.model.AppCollection
 import com.fossscout.core.model.Favourite
+import com.fossscout.core.model.MatchOverride
 import com.fossscout.core.store.StoreDescriptor
 import com.fossscout.core.store.StoreHealth
 
@@ -47,6 +48,7 @@ object BackupExportFactory {
         customStores: List<StoreDescriptor>,
         featureSettings: FeatureSettings,
         handoffPreferences: HandoffPreferences,
+        matchOverrides: List<MatchOverride> = emptyList(),
         codec: BackupCodec = BackupCodec(),
     ): BackupEnvelope = codec.create(
         appVersion = appVersion,
@@ -58,6 +60,7 @@ object BackupExportFactory {
             customStores = customStores.map { it.copy(health = StoreHealth()) },
             featureSettings = BackupFeatureSettings.from(featureSettings),
             handoffPreferences = BackupHandoffPreferences.from(handoffPreferences),
+            matchOverrides = matchOverrides.takeIf { it.isNotEmpty() },
         ),
     )
 }

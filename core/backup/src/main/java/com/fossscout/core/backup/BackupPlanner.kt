@@ -7,6 +7,7 @@ import com.fossscout.core.handoff.HandoffPreferences
 import com.fossscout.core.model.AppCollection
 import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.Favourite
+import com.fossscout.core.model.MatchOverride
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.StoreDescriptor
 import com.fossscout.core.store.StoreHealth
@@ -56,6 +57,15 @@ data class BackupStorePreview(
     val trustNoteChanged: Boolean = false,
 )
 
+data class BackupMatchOverridePreview(
+    val installedAppKey: AppKey,
+    val targetDisplayName: String? = null,
+    val targetPackageName: String? = null,
+    val action: BackupChangeAction,
+    val targetChanged: Boolean = false,
+    val noteChanged: Boolean = false,
+)
+
 data class BackupSettingsPreview(
     val action: BackupSettingsAction,
     val changed: Boolean = false,
@@ -76,12 +86,14 @@ data class BackupPreview(
     val favourites: List<BackupFavouritePreview> = emptyList(),
     val collections: List<BackupCollectionPreview> = emptyList(),
     val stores: List<BackupStorePreview> = emptyList(),
+    val matchOverrides: List<BackupMatchOverridePreview> = emptyList(),
     val settings: BackupSettingsPreview = BackupSettingsPreview(BackupSettingsAction.NONE),
     val handoff: BackupHandoffPreview = BackupHandoffPreview(BackupHandoffAction.NONE),
     val notesItemCount: Int = 0,
     val removedFavouriteCount: Int = 0,
     val removedCollectionCount: Int = 0,
     val removedStoreCount: Int = 0,
+    val removedMatchOverrideCount: Int = 0,
 ) {
     val addedFavouriteCount: Int get() = favourites.count { it.action == BackupChangeAction.ADD }
     val mergedFavouriteCount: Int get() = favourites.count { it.action == BackupChangeAction.MERGE }
@@ -100,10 +112,22 @@ data class BackupPreview(
     val replacedStoreCount: Int get() =
         stores.count { it.action == BackupChangeAction.REPLACE }
 
+    val addedMatchOverrideCount: Int get() =
+        matchOverrides.count { it.action == BackupChangeAction.ADD }
+    val mergedMatchOverrideCount: Int get() =
+        matchOverrides.count { it.action == BackupChangeAction.MERGE }
+    val replacedMatchOverrideCount: Int get() =
+        matchOverrides.count { it.action == BackupChangeAction.REPLACE }
+    val skippedMatchOverrideCount: Int get() =
+        matchOverrides.count { it.action == BackupChangeAction.SKIP }
+    val conflictMatchOverrideCount: Int get() =
+        matchOverrides.count { it.action != BackupChangeAction.ADD }
+
     val hasConflicts: Boolean
         get() = conflictFavouriteCount > 0 ||
             collections.any { it.action != BackupChangeAction.ADD } ||
             stores.any { it.action != BackupChangeAction.ADD } ||
+            conflictMatchOverrideCount > 0 ||
             settings.changed ||
             handoff.changed
 }
@@ -114,6 +138,7 @@ data class BackupLocalState(
     val customStores: List<StoreDescriptor> = emptyList(),
     val featureSettings: FeatureSettings = FeatureSettings(),
     val handoffPreferences: HandoffPreferences = HandoffPreferences(),
+    val matchOverrides: List<MatchOverride> = emptyList(),
 )
 
 data class BackupRestorePlan(
@@ -239,6 +264,41 @@ object BackupPlanner {
                 incomingStores.filter { it.id !in localStoresById }
         }
 
+        val incomingOverrides = incoming.matchOverrides.orEmpty()
+        val localOverridesByKey = local.matchOverrides.associateBy(MatchOverride::installedAppKey)
+        val overridePreview = incomingOverrides.map { item ->
+            val existing = localOverridesByKey[item.installedAppKey]
+            BackupMatchOverridePreview(
+                installedAppKey = item.installedAppKey,
+                targetDisplayName = item.target?.displayName,
+                targetPackageName = item.target?.appKey?.value,
+                action = actionFor(existing != null, mode),
+                targetChanged = existing != null && existing.target != item.target,
+                noteChanged = existing != null && existing.note != item.note,
+            )
+        }
+
+        val targetOverrides = when (mode) {
+            BackupConflictMode.REPLACE -> incomingOverrides
+            BackupConflictMode.MERGE -> {
+                val result = local.matchOverrides.toMutableList()
+                incomingOverrides.forEach { item ->
+                    val index = result.indexOfFirst {
+                        it.installedAppKey == item.installedAppKey
+                    }
+                    if (index < 0) {
+                        result += item
+                    } else {
+                        result[index] = mergeOverride(result[index], item)
+                    }
+                }
+                result
+            }
+
+            BackupConflictMode.SKIP -> local.matchOverrides +
+                incomingOverrides.filter { it.installedAppKey !in localOverridesByKey }
+        }
+
         val incomingSettings = incoming.featureSettings!!.toFeatureSettings()
         val targetSettings = when (mode) {
             BackupConflictMode.REPLACE -> incomingSettings
@@ -271,6 +331,7 @@ object BackupPlanner {
             favourites = favouritePreview,
             collections = collectionPreview,
             stores = storePreview,
+            matchOverrides = overridePreview,
             settings = settingsPreview,
             handoff = handoffPreview,
             notesItemCount = incomingFavourites.count { it.note.isNotBlank() },
@@ -289,6 +350,13 @@ object BackupPlanner {
             } else {
                 0
             },
+            removedMatchOverrideCount = if (mode == BackupConflictMode.REPLACE) {
+                local.matchOverrides.count {
+                    it.installedAppKey !in incomingOverrides.map(MatchOverride::installedAppKey)
+                }
+            } else {
+                0
+            },
         )
 
         return BackupRestorePlan(
@@ -299,6 +367,7 @@ object BackupPlanner {
                 customStores = targetStores,
                 featureSettings = targetSettings,
                 handoffPreferences = targetHandoff,
+                matchOverrides = targetOverrides,
             ),
             preview = preview,
         )
@@ -331,6 +400,15 @@ object BackupPlanner {
             incoming.updatedAtEpochMillis,
         ),
     )
+
+    private fun mergeOverride(
+        existing: MatchOverride,
+        incoming: MatchOverride,
+    ): MatchOverride = if (incoming.updatedAtEpochMillis >= existing.updatedAtEpochMillis) {
+        incoming
+    } else {
+        existing
+    }
 
     private fun mergeSettings(
         local: FeatureSettings,
