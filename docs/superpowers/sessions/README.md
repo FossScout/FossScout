@@ -41,9 +41,9 @@ S12 remains post-v1.
 Completed: **S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11**. All v1
 implementation sessions are complete; **S12 remains post-v1**.
 
-No v1 implementation session is currently next. F20 matching correction is
-implemented as S18 on `feat/f20-matching-correction` (rebased onto `main`; local,
-pending push/PR). The F22 support-link scaffold remains on
+No v1 implementation session is currently next. F20 matching correction was
+merged as S18 in PR #2 (`9e55acf`); that PR also carried S11 because local `main`
+was ahead of `origin/main`. The F22 support-link scaffold remains on
 `feat/support-donation-links` and is partial until the verified Liberapay URL is
 configured. Store-scoped overrides, shareable corrections, low-confidence
 prompts, and device/UI verification remain deferred.

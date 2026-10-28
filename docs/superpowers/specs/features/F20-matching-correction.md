@@ -75,6 +75,8 @@ override.
 
 ### Implementation notes (2026-10-28)
 
+- Merged in PR #2 (`9e55acf`). The PR also carried S11 because the local `main`
+  used as its base was ahead of `origin/main`.
 - The match screen hosts the correction card and editor. Search is limited to
   cached catalogs from enabled stores and works offline.
 - A correction replaces the displayed result, while the automatic result stays

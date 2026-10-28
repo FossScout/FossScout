@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Status | **Post-v1 — do not implement in a v1 session** |
-| Features | F09, F10, F15, F18, F19, F21 (F20 implemented as S18) |
+| Features | F09, F10, F15, F18, F19, F21 (F20 merged as S18) |
 | Depends on | Separate product decisions and prerequisite sessions |
 | Profiles | Depends on feature; F09/F10 are restricted builds only |
 
@@ -76,8 +76,8 @@ after a dataset/licensing decision.
 
 ## F20 — Matching correction
 
-**Status:** Implemented as S18 on `feat/f20-matching-correction` (rebased onto
-`main`; local, pending push/PR).
+**Status:** Merged as S18 in PR #2 (`9e55acf`); that PR also carried S11 because
+local `main` was ahead of `origin/main`.
 
 **Prerequisites:** F02/F06 and F12/F13 for export/backup.
 
