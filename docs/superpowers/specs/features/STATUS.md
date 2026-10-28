@@ -1,8 +1,8 @@
 # FossScout Implementation Status
 
 Last updated: **2026-10-28**
-Baseline: `main` at `def63af` after the S11 docs merge (S01 feature configuration, S02 store registry, S03 index sync/verification, S04 installed inventory, S05 matching/alternatives/coverage, S06 favourites completion, S07 collections/sharing, S08 replacement guidance/companion handoff, S09 backup/migration, S10 security details/trust audit, and S11 contribution hooks merged). F20 matching correction is implemented on `feat/f20-matching-correction` (rebased onto `main`; local, pending push/PR).
-Pending: F22 support-link scaffold on `feat/support-donation-links` at `9fed281` (About section hidden until a verified Liberapay URL is configured); F20 merge and device/UI verification.
+Baseline: `main` at `9e55acf` (PR #2 merged S11 contribution hooks and F20 matching correction; S01–S11 and F20 are on `main`).
+Pending: F22 support-link scaffold on `feat/support-donation-links` at `9fed281` (About section hidden until a verified Liberapay URL is configured); F20 device/UI verification.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
 
@@ -38,7 +38,7 @@ file after every feature session with the new commit, test result, and status.
 | Support and donations | **Partial** (F22 scaffold on a separate branch; About entry point hidden until a verified Liberapay URL is configured) |
 | Feature completion | **13 of 21 fully done; 2 partial; 3 deferred; 3 spec-only** (F22 support link remains Partial outside the v1 map) |
 
-**Recommended next session:** F18 unified store search is the recommended next candidate, subject to approval and an approved brief. F20 matching correction is implemented; F22 remains blocked on the verified Liberapay URL, and F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** F18 unified store search is the recommended next candidate, subject to approval and an approved brief. F20 matching correction is merged; F22 remains blocked on the verified Liberapay URL, and F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ## What works today
 
@@ -160,8 +160,8 @@ Commands run on `feat/s11-contribution-hooks` at `160db61` on 2026-10-26 after S
 
 ### F20 matching correction (2026-10-28)
 
-Commands run on `feat/f20-matching-correction` after rebasing onto `main`
-(`def63af`):
+Commands run on `feat/f20-matching-correction` before merge; the branch was
+merged as PR #2 into `main` (`9e55acf`):
 
 | Check | Result |
 | --- | --- |
@@ -171,8 +171,8 @@ Commands run on `feat/f20-matching-correction` after rebasing onto `main`
 | `assembleFdroidDebug` | **Passed** |
 | `./gradlew lint :app:lintPlaystoreDebug` | **Passed**: 0 errors. Warnings: app Play 42, app F-Droid 40, `feature:favourites` 13, `feature:inventory` 4; all other modules, including `feature:backup` and `feature:matching`, report no issues. |
 | New tests | `MatchOverrideTest`, `MatchOverridesCodecTest`, `MatchOverridesRepositoryTest`, `DataStoreMatchOverridesStoreTest`, matching correction/search cases, ViewModel correction actions, backup v2 round-trip and v1 migration, planner merge/replace/skip, and `DefaultBackupService` override export/restore. |
-| Boundary check | No dependency, permission, provider, Gradle-file, or manifest change. F20 uses local DataStore and existing backup/catalog code only. |
-| Branch scope | **Self-contained**: rebased onto `main`; `git diff main..HEAD` contains no F22 support-link code or tests. |
+| Boundary check | No dependency, permission, provider, Gradle-file, or manifest change in the F20 commit. F20 uses local DataStore and existing backup/catalog code only. |
+| Branch scope | **Merged as-is**: the PR also carried S11 because local `main` was ahead of `origin/main`. The F20 commit itself contains no F22 support-link code or tests. |
 
 Device/UI verification is still outstanding for target search, the correction
 dialog, note entry, target-unavailable warning, undo, and backup preview/restore
@@ -217,9 +217,11 @@ warning, not a failing check.
   Target search, the correction dialog, note limit/privacy copy,
   target-unavailable warning, undo, and backup preview/restore remain
   device-pending.
-- F20 is committed locally but not pushed: `gh` is unavailable and HTTPS push has
-  no credentials. Local `main` is three commits ahead of `origin/main` (S11), so
-  push S11/main or rebase F20 onto `origin/main` before opening the PR.
+- F20 and S11 were merged together as PR #2 (`9e55acf`). The PR was opened
+  against `origin/main` before S11 was on the remote, so its diff included both
+  features and 60 files. PR #2 had no configured CI checks; verification was
+  local. Future feature branches should be rebased onto the target branch before
+  PR creation.
 - The F22 URL check on 2026-10-28 returned 404 for both
   `https://liberapay.com/FossScout/` and the lowercase variant. Keep the support
   section hidden and F22 Partial until a verified profile URL exists.
