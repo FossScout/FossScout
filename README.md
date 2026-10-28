@@ -8,6 +8,12 @@ and reviewed contribution reports, all in a Material 3 Compose UI.
 
 ## Status
 
+[![CI](https://github.com/FossScout/FossScout/actions/workflows/ci.yml/badge.svg)](https://github.com/FossScout/FossScout/actions/workflows/ci.yml)
+
+The modular foundation for v1 is implemented. The app is split into core and
+feature modules, ships as `playstore` and `fdroid` build profiles, and persists
+favourites, collections, settings, and match corrections locally with DataStore.
+
 The modular foundation for v1 is implemented. The app is split into core and
 feature modules, ships as `playstore` and `fdroid` build profiles, and persists
 favourites, collections, settings, and match corrections locally with DataStore.
@@ -68,7 +74,7 @@ Direct APK install and the install-time accessibility prompt are deferred.
 - AndroidX Lifecycle and ViewModel with StateFlow
 - DataStore Preferences with kotlinx.serialization for local persistence
 - Gradle version catalog (`gradle/libs.versions.toml`)
-- Min SDK 24, target/compile SDK 35
+- Min SDK 24, target/compile SDK 36
 
 ## Build profiles
 
@@ -89,8 +95,8 @@ can exclude a module at the dependency boundary.
 
 Requirements:
 
-- Android Studio (or a command-line Android SDK) with **SDK 35** and
-  **Build-Tools 35.0.0**
+- Android Studio (or a command-line Android SDK) with **SDK 36** and
+  **Build-Tools 36.0.0**
 - JDK 17 or newer
 
 Build a debug APK for a specific profile:
