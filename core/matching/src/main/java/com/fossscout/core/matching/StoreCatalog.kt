@@ -32,6 +32,13 @@ data class CatalogEntry(
     val hasSource: Boolean get() = !sourceCode.isNullOrBlank()
 }
 
+/** One catalog hit with the store that supplied it. */
+data class CatalogSearchResult(
+    val entry: CatalogEntry,
+    val storeId: String,
+    val storeName: String,
+)
+
 /** One store's cached catalog with the indexes the matching engine needs. */
 data class StoreCatalogData(
     val storeId: String,

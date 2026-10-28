@@ -1,21 +1,26 @@
 package com.fossscout.app
 
 import android.content.Context
+import android.os.Build
 import androidx.datastore.preferences.preferencesDataStore
 import com.fossscout.app.handoff.InventoryCompanionStoreDetector
 import com.fossscout.app.inventory.PackageManagerInstalledAppSource
 import com.fossscout.app.profile.ProfileFeatures
+import com.fossscout.core.contribution.ContributionEnvironment
+import com.fossscout.core.contribution.ContributionReportBuilder
 import com.fossscout.core.data.DataStoreFeatureSettingsStore
 import com.fossscout.core.data.DataStoreCollectionsStore
 import com.fossscout.core.data.DataStoreFavouritesStore
 import com.fossscout.core.data.DataStoreHandoffPreferencesStore
 import com.fossscout.core.data.DataStoreInventoryStore
+import com.fossscout.core.data.DataStoreMatchOverridesStore
 import com.fossscout.core.data.DataStoreStoreRegistryStore
 import com.fossscout.core.data.DataStoreSnapshotMetadataStore
 import com.fossscout.core.data.CollectionsRepository
 import com.fossscout.core.data.DefaultBackupService
 import com.fossscout.core.data.FavouritesRepository
 import com.fossscout.core.data.FeatureSettingsRepository
+import com.fossscout.core.data.MatchOverridesRepository
 import com.fossscout.core.data.ShareExportFactory
 import com.fossscout.core.data.ShareImportService
 import com.fossscout.core.data.StoreRegistryRepository
@@ -42,18 +47,49 @@ private val Context.storeRegistryDataStore by preferencesDataStore(name = "store
 private val Context.inventoryDataStore by preferencesDataStore(name = "inventory")
 private val Context.indexStateDataStore by preferencesDataStore(name = "index_state")
 private val Context.handoffDataStore by preferencesDataStore(name = "handoff")
+private val Context.matchOverridesDataStore by preferencesDataStore(name = "match_overrides")
 
 /**
  * Composition root for app-wide dependencies. Android framework objects are
  * provisioned here and passed into view models by the UI layer.
  */
 class AppContainer(context: Context) {
+    private val packageInfo = runCatching {
+        context.packageManager.getPackageInfo(context.packageName, 0)
+    }.getOrNull()
+
+    val appVersionName: String =
+        packageInfo?.versionName?.takeIf(String::isNotBlank) ?: "unknown"
+
+    @Suppress("DEPRECATION")
+    private val legacyVersionCode: Long? = packageInfo?.versionCode?.toLong()
+
+    val appVersionCode: Long? = (
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo?.longVersionCode
+        } else {
+            legacyVersionCode
+        }
+    )?.takeIf { it >= 0 }
+
+    val contributionEnvironment = ContributionEnvironment(
+        appVersionName = appVersionName,
+        appVersionCode = appVersionCode,
+        profile = ProfileFeatures.profile.name,
+    )
+
+    val contributionReportBuilder = ContributionReportBuilder()
+
     val favouritesRepository = FavouritesRepository(
         DataStoreFavouritesStore(context.favouritesDataStore),
     )
 
     val collectionsRepository = CollectionsRepository(
         DataStoreCollectionsStore(context.collectionsDataStore),
+    )
+
+    val matchOverridesRepository = MatchOverridesRepository(
+        DataStoreMatchOverridesStore(context.matchOverridesDataStore),
     )
 
     val shareExportFactory = ShareExportFactory()
@@ -83,11 +119,8 @@ class AppContainer(context: Context) {
         storeRegistryRepository = storeRegistryRepository,
         featureSettingsRepository = featureSettingsRepository,
         handoffPreferencesRepository = handoffPreferencesRepository,
-        appVersion = {
-            runCatching {
-                context.packageManager.getPackageInfo(context.packageName, 0).versionName
-            }.getOrNull() ?: "unknown"
-        },
+        matchOverridesRepository = matchOverridesRepository,
+        appVersion = { appVersionName },
     )
 
     private val snapshotPayloadStore = FileSnapshotPayloadStore(
@@ -128,6 +161,7 @@ class AppContainer(context: Context) {
         storeEntries = storeRegistryRepository.entries,
         snapshots = indexSyncRepository.snapshots,
         catalog = SnapshotCatalogSource(snapshotPayloadStore),
+        overrides = matchOverridesRepository.overrides,
     )
 
     val inventoryRepository = InventoryRepository(

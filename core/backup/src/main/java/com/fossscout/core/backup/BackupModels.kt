@@ -12,13 +12,15 @@ import com.fossscout.core.model.AppCollection
 import com.fossscout.core.model.COLLECTION_SCHEMA_VERSION
 import com.fossscout.core.model.FAVOURITES_SCHEMA_VERSION
 import com.fossscout.core.model.Favourite
+import com.fossscout.core.model.MatchOverride
 import com.fossscout.core.store.BuiltInStores
 import com.fossscout.core.store.StoreDescriptor
 import com.fossscout.core.store.StoreValidation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-const val BACKUP_SCHEMA_VERSION = 1
+const val BACKUP_SCHEMA_VERSION = 2
+const val LEGACY_BACKUP_SCHEMA_VERSION = 1
 const val BACKUP_FORMAT = "fossscout-backup"
 const val ENCRYPTED_BACKUP_FORMAT = "fossscout-backup-encrypted"
 const val BACKUP_PASSPHRASE_MIN_LENGTH = 8
@@ -43,6 +45,9 @@ enum class BackupSection {
 
     @SerialName("preferred_store_clients")
     PREFERRED_STORE_CLIENTS,
+
+    @SerialName("match_overrides")
+    MATCH_OVERRIDES,
 }
 
 /** Data that is deliberately not part of a portable profile backup. */
@@ -57,6 +62,7 @@ enum class BackupExclusion {
     @SerialName("installed_app_inventory")
     INSTALLED_APP_INVENTORY,
 
+    /** Kept so backups created before F20 still decode. */
     @SerialName("match_overrides")
     MATCH_OVERRIDES,
 
@@ -65,20 +71,24 @@ enum class BackupExclusion {
 }
 
 /**
- * Self-describing list of what a backup does and does not contain. v1 always
- * includes every profile section so a restore on a clean install is complete.
+ * Self-describing list of what a backup does and does not contain. The current
+ * manifest includes every profile section so a restore on a clean install is
+ * complete; the legacy manifest is accepted only for v1 imports.
  */
 @Serializable
 data class BackupManifest(
     val included: List<BackupSection> = INCLUDED_SECTIONS,
     val excluded: List<BackupExclusion> = EXCLUDED_SECTIONS,
 ) {
+    val isCurrent: Boolean
+        get() = included == INCLUDED_SECTIONS && excluded == EXCLUDED_SECTIONS
+
+    val isLegacy: Boolean
+        get() = included == LEGACY_INCLUDED_SECTIONS && excluded == LEGACY_EXCLUDED_SECTIONS
+
     fun validate() {
-        require(included == INCLUDED_SECTIONS) {
-            "Backup manifest must list every v1 section"
-        }
-        require(excluded == EXCLUDED_SECTIONS) {
-            "Backup manifest must list every v1 exclusion"
+        require(isCurrent || isLegacy) {
+            "Backup manifest does not match a supported profile"
         }
     }
 
@@ -90,9 +100,26 @@ data class BackupManifest(
             BackupSection.CUSTOM_STORES,
             BackupSection.FEATURE_SETTINGS,
             BackupSection.PREFERRED_STORE_CLIENTS,
+            BackupSection.MATCH_OVERRIDES,
         )
 
         val EXCLUDED_SECTIONS: List<BackupExclusion> = listOf(
+            BackupExclusion.INDEX_SNAPSHOTS,
+            BackupExclusion.APK_FILES,
+            BackupExclusion.INSTALLED_APP_INVENTORY,
+            BackupExclusion.SECRETS,
+        )
+
+        val LEGACY_INCLUDED_SECTIONS: List<BackupSection> = listOf(
+            BackupSection.FAVOURITES,
+            BackupSection.NOTES,
+            BackupSection.COLLECTIONS,
+            BackupSection.CUSTOM_STORES,
+            BackupSection.FEATURE_SETTINGS,
+            BackupSection.PREFERRED_STORE_CLIENTS,
+        )
+
+        val LEGACY_EXCLUDED_SECTIONS: List<BackupExclusion> = listOf(
             BackupExclusion.INDEX_SNAPSHOTS,
             BackupExclusion.APK_FILES,
             BackupExclusion.INSTALLED_APP_INVENTORY,
@@ -249,8 +276,8 @@ data class BackupHandoffPreferences(
 }
 
 /**
- * The complete portable profile. There are intentionally no inventory, index,
- * APK, or match-override fields here.
+ * The complete portable profile. Inventory, index snapshots, and APKs are
+ * intentionally absent. Match overrides are optional so v1 backups still decode.
  */
 @Serializable
 data class BackupPayload(
@@ -259,6 +286,7 @@ data class BackupPayload(
     val customStores: List<StoreDescriptor> = emptyList(),
     val featureSettings: BackupFeatureSettings? = null,
     val handoffPreferences: BackupHandoffPreferences? = null,
+    val matchOverrides: List<MatchOverride>? = null,
 ) {
     fun validate() {
         require(favourites.map(Favourite::appKey).distinct().size == favourites.size) {
@@ -297,6 +325,12 @@ data class BackupPayload(
         require(handoffPreferences != null) { "Backup is missing preferred store clients" }
         featureSettings.validate()
         handoffPreferences.validate()
+
+        val overrides = matchOverrides.orEmpty()
+        require(overrides.map(MatchOverride::installedAppKey).distinct().size == overrides.size) {
+            "Duplicate match override app keys"
+        }
+        overrides.forEach(MatchOverride::validate)
     }
 }
 
@@ -325,7 +359,9 @@ data class BackupEnvelope(
         require(CHECKSUM_PATTERN.matches(checksum)) {
             "Backup checksum must be 64 lowercase hex characters"
         }
-        manifest.validate()
+        require(manifest.isCurrent) {
+            "Backup manifest must list every current profile section"
+        }
         payload.validate()
     }
 

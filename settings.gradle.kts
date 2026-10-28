@@ -31,6 +31,7 @@ include(
     ":core:matching",
     ":core:handoff",
     ":core:backup",
+    ":core:contribution",
     ":core:data",
     ":core:ui",
     ":feature:catalog",
@@ -39,6 +40,7 @@ include(
     ":feature:matching",
     ":feature:companion",
     ":feature:backup",
+    ":feature:contribution",
     ":feature:settings",
     ":feature:stores",
 )

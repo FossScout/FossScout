@@ -1,8 +1,8 @@
 # Feature Implementation Sessions
 
-This directory turns the remaining v1 feature work into **independent session
-briefs**. Each file is written so it can be pasted into a new agent session with
-minimal extra context.
+This directory turns the v1 feature work into **independent session briefs**.
+Each file is written so it can be pasted into a new agent session with minimal
+extra context. All v1 sessions are complete; S12 is the post-v1 backlog.
 
 Start here:
 
@@ -26,7 +26,7 @@ Start here:
 | [S08](S08-replacement-handoff.md) | F08 handoff + F07 guidance-only replacement | **Done** (S08 scope) | S02, S05 | S09, S10, S11 | 4 |
 | [S09](S09-backup-migration.md) | F13 backup and migration | **Done** (S09 scope) | S01, S02, S03, S06, S07 | S08, S10, S11 | 4 |
 | [S10](S10-security-trust.md) | F14 security details and trust audit UI | **Done** (S10 scope) | S03, S05 | S08, S09, S11 | 4 |
-| [S11](S11-contribution-hooks.md) | F16 contribution reports and redaction | **Ready** | S02, S05 | S08, S09, S10 | 4 |
+| [S11](S11-contribution-hooks.md) | F16 contribution reports and redaction | **Done** (S11 scope) | S02, S05 | S08, S09, S10 | 4 |
 | [S12](S12-post-v1-backlog.md) | F09/F10/F15/F18–F21 | **Post-v1** | Separate decisions | None | 5 |
 
 ## Recommended order
@@ -38,12 +38,21 @@ S01 → S06 → S07 ─┘       S07 → S09
 S12 remains post-v1.
 ```
 
-Completed: **S01, S02, S03, S04, S05, S06, S07, S08, S09, S10**. The next
-session is **S11**.
+Completed: **S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11**. All v1
+implementation sessions are complete; **S12 remains post-v1**.
 
-The remaining single-agent order is **S11**. If multiple sessions run in
-parallel, use the wave table and avoid editing the same app wiring files without
-coordinating.
+No v1 implementation session is currently next. F20 matching correction is
+implemented as S18 on `feat/f20-matching-correction` (rebased onto `main`; local,
+pending push/PR). The F22 support-link scaffold remains on
+`feat/support-donation-links` and is partial until the verified Liberapay URL is
+configured. Store-scoped overrides, shareable corrections, low-confidence
+prompts, and device/UI verification remain deferred.
+
+No next post-v1 feature is selected. F18 unified store search is the recommended
+next candidate, subject to approval and a brief. F19/F21 still need approved
+briefs and heavier dataset/evidence decisions. If multiple sessions run in
+parallel in future, use the wave table and avoid editing the same app wiring
+files without coordinating.
 
 ## Planning assumptions
 

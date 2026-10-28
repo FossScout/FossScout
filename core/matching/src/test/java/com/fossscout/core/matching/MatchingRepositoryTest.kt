@@ -4,6 +4,9 @@ import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.index.StoreSnapshot
 import com.fossscout.core.inventory.Classification
 import com.fossscout.core.inventory.InstalledApp
+import com.fossscout.core.model.AppKey
+import com.fossscout.core.model.MatchOverride
+import com.fossscout.core.model.MatchOverrideTarget
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.StoreAvailability
@@ -150,9 +153,89 @@ class MatchingRepositoryTest {
         )
     }
 
+    @Test
+    fun `correction target is attached without replacing the automatic result`() = runTest {
+        val correction = matchOverride(
+            target = MatchOverrideTarget(
+                appKey = AppKey.from("org.example.other"),
+                displayName = "Other",
+                storeId = StoreId("store-1"),
+                storeName = "Store 1",
+            ),
+        )
+        val repository = repository(
+            catalogs = mapOf(
+                "store-1" to StoreCatalogData("store-1", listOf(ENTRY, OTHER_ENTRY)),
+            ),
+            overrides = listOf(correction),
+        )
+
+        val decision = repository.match(query("org.example.app"))
+
+        assertEquals(correction, decision.correction)
+        assertEquals("org.example.app", decision.primary?.packageName)
+        assertEquals(true, decision.correctionTargetAvailable)
+    }
+
+    @Test
+    fun `missing correction target is marked unavailable`() = runTest {
+        val correction = matchOverride(
+            target = MatchOverrideTarget(
+                appKey = AppKey.from("org.example.missing"),
+                displayName = "Missing",
+                storeId = StoreId("store-1"),
+                storeName = "Store 1",
+            ),
+        )
+        val repository = repository(
+            catalogs = mapOf("store-1" to StoreCatalogData("store-1", listOf(ENTRY))),
+            overrides = listOf(correction),
+        )
+
+        val decision = repository.match(query("org.example.app"))
+
+        assertEquals(false, decision.correctionTargetAvailable)
+    }
+
+    @Test
+    fun `no-match correction keeps classification unknown`() = runTest {
+        val correction = matchOverride(target = null)
+        val repository = repository(
+            catalogs = mapOf("store-1" to StoreCatalogData("store-1", listOf(ENTRY))),
+            overrides = listOf(correction),
+        )
+
+        val decision = repository.match(query("org.example.app"))
+        val result = repository.classify(installed("org.example.app"))
+
+        assertTrue(decision.correction?.isNoMatch == true)
+        assertEquals(Classification.UNKNOWN, result.classification)
+        assertTrue(result.explanation!!.contains("no suitable match", ignoreCase = true))
+    }
+
+    @Test
+    fun `catalog search finds targets by name and package`() = runTest {
+        val repository = repository(
+            catalogs = mapOf(
+                "store-1" to StoreCatalogData("store-1", listOf(ENTRY, OTHER_ENTRY)),
+            ),
+        )
+
+        val byName = repository.searchCatalog("other")
+        val byPackage = repository.searchCatalog("org.example.")
+
+        assertEquals("org.example.other", byName.single().entry.packageName)
+        assertEquals("Store 1", byName.single().storeName)
+        assertEquals(
+            listOf("org.example.app", "org.example.other"),
+            byPackage.map { it.entry.packageName },
+        )
+    }
+
     private fun repository(
         catalogs: Map<String, StoreCatalogData>,
         snapshotFetchedAt: Long = NOW - 1_000L,
+        overrides: List<MatchOverride> = emptyList(),
     ) = MatchingRepository(
         storeEntries = flowOf(listOf(entry())),
         snapshots = flowOf(
@@ -161,6 +244,15 @@ class MatchingRepositoryTest {
         catalog = FakeCatalog(catalogs),
         now = { NOW },
         freshnessWindowMillis = FRESHNESS,
+        overrides = flowOf(overrides),
+    )
+
+    private fun matchOverride(target: MatchOverrideTarget?) = MatchOverride(
+        installedAppKey = AppKey.from("org.example.app"),
+        target = target,
+        note = "private",
+        createdAtEpochMillis = 1,
+        updatedAtEpochMillis = 2,
     )
 
     private fun query(packageName: String) = MatchQuery(
@@ -238,6 +330,17 @@ class MatchingRepositoryTest {
             sourceCode = "https://example.org/src",
             versionName = "1.0",
             signerSha256 = listOf("aaaa"),
+        )
+
+        val OTHER_ENTRY = CatalogEntry(
+            packageName = "org.example.other",
+            name = "Other",
+            summary = "Another app",
+            categories = listOf("Tools"),
+            license = "MIT",
+            sourceCode = "https://example.org/other",
+            versionName = "2.0",
+            signerSha256 = listOf("bbbb"),
         )
     }
 }

@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Blocked by S05** |
+| Status | **Done** (S11 scope) |
 | Features | F16 |
 | Depends on | S02, S05 |
 | Can run in parallel with | S08, S09, S10 |
@@ -75,9 +75,16 @@ cannot leak into the payload. Add a preview/no-share-before-confirm test.
 
 ## Completion record
 
-Update `STATUS.md` after merge:
-
-- commit:
-- tests:
-- F16 criteria completed:
-- remaining tracker/format decisions:
+- **Implementation commit:** `160db61` — `feat(contribution): add S11 reviewed redacted reports` on `feat/s11-contribution-hooks`.
+- **Docs commit:** `1bc04a9` — `docs(s11): record contribution hooks completion`.
+- **Merge state:** merged into local `main` by fast-forward (`3401981..1bc04a9`) on 2026-10-26.
+- **Modules:** new pure-JVM `core:contribution` (payload schema v1, redactor, context builders, configurable issue URL, report builder) and Compose `feature:contribution` (draft state, preview gate, copy/share/issue/debug actions, Compose screen). Wired through `AppContainer`, Settings, Stores (header and editor), Match, and the app overlay/back flow.
+- **Tests:** `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint :app:lintPlaystoreDebug --console=plain` passed on 2026-10-26 (3m 43s, 902 actionable tasks). **729 test executions across 106 suites; 0 failures, 0 errors, 0 skipped.** Both debug assemblies passed. Lint reported **0 errors**; warnings were app Play 42, app F-Droid 40, `feature:favourites` 13, and `feature:inventory` 4. `core:contribution` and `feature:contribution` add no lint warnings.
+- **F16 criteria completed:**
+  - **F16-R1 — complete:** the ViewModel enforces a preview gate; copy, share, debug export, and issue opening are no-ops until `previewReport()` succeeds. Editing invalidates the preview.
+  - **F16-R2 — complete:** the payload has no inventory, notes, account data, device identifiers, or raw error fields. Coverage keeps store status/reason only.
+  - **F16-R3 — complete:** app version/code, profile, feature, operation, adapter type (or explicit `unknown`), and error class are in the body and payload.
+  - **F16-R4 — complete:** clipboard copy works offline and uses the exact previewed text.
+  - **F16-R5 — complete:** store descriptors drop userinfo, query/fragment tokens, trust notes, health, and fingerprints while retaining `hasPinnedFingerprint`.
+  - **F16-R6 — complete:** debug details are opt-in, clearly marked, and exported as redacted plain text/JSON with no logcat or inventory.
+- **Remaining F16 gaps:** device/emulator verification of the preview, clipboard, share sheet, browser opening, and debug JSON; automatic upload/telemetry, an offline queue, screenshot attachment, and duplicate-issue detection remain out of v1. The GitHub issue URL is the default and is configurable through `ContributionReportBuilder`.

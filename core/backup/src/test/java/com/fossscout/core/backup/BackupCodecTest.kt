@@ -2,7 +2,10 @@ package com.fossscout.core.backup
 
 import com.fossscout.core.store.BuiltInStores
 import com.fossscout.core.store.StoreDescriptor
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -30,6 +33,49 @@ class BackupCodecTest {
     }
 
     @Test
+    fun `match overrides round trip in the current manifest`() {
+        val override = sampleMatchOverride()
+        val envelope = sampleEnvelope(
+            samplePayload(matchOverrides = listOf(override)),
+        )
+
+        val decoded = codec.decode(codec.encode(envelope))
+
+        assertEquals(listOf(override), decoded.payload.matchOverrides)
+        assertTrue(decoded.manifest.included.contains(BackupSection.MATCH_OVERRIDES))
+        assertFalse(decoded.manifest.excluded.contains(BackupExclusion.MATCH_OVERRIDES))
+    }
+
+    @Test
+    fun `legacy v1 backup migrates to the current manifest`() {
+        val legacy = BackupEnvelope(
+            schemaVersion = LEGACY_BACKUP_SCHEMA_VERSION,
+            appVersion = "0.1.0",
+            createdAtEpochMillis = 1_000,
+            manifest = BackupManifest(
+                included = BackupManifest.LEGACY_INCLUDED_SECTIONS,
+                excluded = BackupManifest.LEGACY_EXCLUDED_SECTIONS,
+            ),
+            payload = samplePayload(),
+            checksum = "",
+        )
+        val legacyJson = Json {
+            ignoreUnknownKeys = false
+            encodeDefaults = true
+            explicitNulls = false
+        }
+        val encoded = legacyJson.encodeToString(
+            legacy.copy(checksum = codec.checksumFor(legacy)),
+        )
+
+        val decoded = codec.decode(encoded)
+
+        assertEquals(BACKUP_SCHEMA_VERSION, decoded.schemaVersion)
+        assertTrue(decoded.manifest.isCurrent)
+        assertEquals(legacy.payload, decoded.payload)
+    }
+
+    @Test
     fun `changing the payload invalidates the checksum`() {
         val encoded = codec.encode(sampleEnvelope())
         val tampered = encoded.replace("private note", "changed note")
@@ -54,7 +100,7 @@ class BackupCodecTest {
     @Test
     fun `newer schema fails closed`() {
         val encoded = codec.encode(sampleEnvelope())
-        val tampered = encoded.replace("\"schemaVersion\":1", "\"schemaVersion\":2")
+        val tampered = encoded.replace("\"schemaVersion\":2", "\"schemaVersion\":3")
 
         val error = assertThrows(BackupFormatException::class.java) {
             codec.decode(tampered)

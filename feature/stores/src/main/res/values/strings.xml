@@ -3,6 +3,7 @@
     <string name="stores_title">Stores</string>
     <string name="stores_subtitle">Choose which stores FossScout may use for matching.</string>
     <string name="stores_add">Add store</string>
+    <string name="stores_report_problem">Report</string>
     <string name="stores_loading">Loading stores…</string>
     <string name="stores_empty">No stores yet. Add one to get started.</string>
     <string name="stores_error_read">Couldn\'t load your stores. Your saved registry was left untouched.</string>

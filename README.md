@@ -3,14 +3,14 @@
 FossScout is an Android app for discovering free and open source software. It
 combines a bundled project catalog with installed-app inventory, FOSS matching
 against verified store indexes, replacement guidance and companion-store
-handoff, favourites and collections, and local sharing/import, all in a Material
-3 Compose UI.
+handoff, favourites and collections, local sharing/import, backup/migration,
+and reviewed contribution reports, all in a Material 3 Compose UI.
 
 ## Status
 
 The modular foundation for v1 is implemented. The app is split into core and
 feature modules, ships as `playstore` and `fdroid` build profiles, and persists
-favourites, collections, and settings locally with DataStore.
+favourites, collections, settings, and match corrections locally with DataStore.
 
 Current implementation status:
 [`docs/superpowers/specs/features/STATUS.md`](docs/superpowers/specs/features/STATUS.md).
@@ -18,10 +18,11 @@ Remaining feature work is split into independent sessions:
 [`docs/superpowers/sessions/README.md`](docs/superpowers/sessions/README.md).
 
 Installed-app inventory, the store registry, verified offline index caching,
-FOSS matching, coverage reporting, alternative suggestions, replacement
-guidance, companion-store handoff, collections, local sharing/import,
-backup/migration, and store security details/trust audit are implemented.
-Contribution reports remain scheduled.
+FOSS matching, local match correction, coverage reporting, alternative
+suggestions, replacement guidance, companion-store handoff, collections, local
+sharing/import, backup/migration, store security details/trust audit, and
+reviewed contribution reports are implemented. All v1 implementation sessions
+are complete.
 
 **v1 does not download or install APKs, and it has no AccessibilityService.**
 Direct APK install and the install-time accessibility prompt are deferred.
@@ -41,8 +42,15 @@ Direct APK install and the install-time accessibility prompt are deferred.
   and signer, index SHA-256/version, verification time, HTTPS/HTTP opt-in state,
   failure reason, and a bounded local verification history; review fingerprint
   changes before sync resumes
+- Report a missing store, wrong match, or adapter request with a redacted,
+  user-reviewed preview; copy or share it offline, open a configurable prefilled
+  issue URL, or opt into redacted debug JSON without automatic uploads
 - Inspect installed apps on the device and match them against verified F-Droid
   and IzzyOnDroid indexes, with coverage gaps and clearly labelled alternatives
+- Correct a wrong match locally: search cached store catalogs, choose another
+  package or mark no suitable match, add a private note, see a corrected badge,
+  undo, and keep the automatic result visible; corrections travel with profile
+  backups
 - See whether a store build is an update, a replacement, or a different app,
   including signer, version, installer, and data-loss warnings
 - Hand off to F-Droid, Droid-ify, or Neo Store, or open a browser fallback, with
@@ -125,7 +133,7 @@ FossScout/
 │   ├── src/playstore/          # Play profile capabilities and enabled features
 │   └── src/fdroid/             # F-Droid profile capabilities and enabled features
 ├── core/
-│   ├── model/                  # Domain types: AppKey, Favourite, AppCollection
+│   ├── model/                  # Domain types: AppKey, Favourite, AppCollection, MatchOverride
 │   ├── feature/                # Capability, feature descriptors, registry, feature catalog
 │   ├── inventory/              # Installed-app contracts and inventory repository
 │   ├── store-api/              # Store/adapter contracts and registry models
@@ -133,15 +141,17 @@ FossScout/
 │   ├── matching/               # Pure-JVM matching, alternatives, and coverage engine
 │   ├── handoff/                # Replacement assessment, companion stores, handoff planning
 │   ├── backup/                 # Versioned full-profile backup, checksum, planner, encryption
-│   ├── data/                   # Favourites, collections, settings, and DataStore stores
+│   ├── contribution/           # Report schema, redaction, issue URL, and report builder
+│   ├── data/                   # Favourites, collections, settings, overrides, and DataStore stores
 │   └── ui/                     # Shared Compose theme (colors, typography, theming)
 ├── feature/
 │   ├── catalog/                # Bundled catalog, discover screen and view model
 │   ├── favourites/             # Saved-projects screen, notes and validation
 │   ├── inventory/              # Installed-app inventory and scan UI
-│   ├── matching/               # Match result, evidence, coverage, and alternatives UI
+│   ├── matching/               # Match result, correction, evidence, coverage, and alternatives UI
 │   ├── companion/              # Replacement guidance, handoff, and QR UI
 │   ├── backup/                 # Backup export/import and restore preview UI
+│   ├── contribution/           # Redacted report form, preview, and share actions
 │   ├── stores/                 # Store registry, sync, and trust evidence UI
 │   └── settings/               # Feature toggle screen and labels
 ├── docs/                       # Design specs and implementation plans
@@ -157,9 +167,10 @@ depend on `:app` or on each other.
 
 ## Roadmap
 
-- Add security/trust details and contribution hooks
 - Add project detail screens
-- Expand device/emulator verification and set up CI for builds and tests
+- Complete device/emulator verification for inventory, store intents, backup,
+  trust details, and contribution actions
+- Set up CI for builds, tests, and lint
 
 Direct APK download/install and the install-time accessibility prompt are
 post-v1 and restricted to builds where the platform policy allows them.

@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Proposed |
+| Status | **Done** (F20-R8 deferred) |
 | Availability | **General** |
 | Profiles | `playstore`, `fdroid`, `direct`, `custom` |
 | Required capabilities | None beyond local storage |
@@ -29,23 +29,29 @@ must survive index refreshes and device migration.
 `MatchOverride`:
 
 - canonical installed app key;
-- chosen target app key, or explicit `NO_MATCH`;
-- optional preferred store;
-- reason/note (private by default);
+- chosen target (app key, display name, store id, and store name), or an explicit
+  no-match (`target = null`);
+- optional private note (maximum 4,000 characters);
 - createdAt / updatedAt;
 - schema version.
 
-Overrides are local, per device, and applied before display. They do not change
-the store index or the upstream catalog.
+One override exists per installed app key. Overrides are local, per device, and
+applied before display. They do not change the store index or the upstream
+catalog. A null target means “no suitable match”; it is not the same as a missing
+override.
 
 ## 4. Scope
 
-- Correct an automatic match from the app detail screen.
+- Correct an automatic match from the match screen. The app has no separate
+  app-detail screen, so the existing match result is the correction entry point.
 - Choose “no suitable match”.
-- Pick a specific package from search results.
+- Pick a specific package from cached enabled-store search results.
+- Add an optional private note.
 - Show a “you corrected this” badge.
+- Keep the automatic result visible for inspection.
 - Undo a correction and return to the automatic result.
-- Include overrides in local backup/export when the user chooses.
+- Include overrides and notes in local profile backup/export when the user
+  chooses.
 
 ## 5. Non-goals
 
@@ -67,6 +73,30 @@ the store index or the upstream catalog.
 | F20-R7 | SHOULD | Overrides can be exported and imported with the profile backup. | Import preview lists override changes before applying. |
 | F20-R8 | MAY | A correction can be scoped to a store. | The same package from another store can still appear separately. |
 
+### Implementation notes (2026-10-28)
+
+- The match screen hosts the correction card and editor. Search is limited to
+  cached catalogs from enabled stores and works offline.
+- A correction replaces the displayed result, while the automatic result stays
+  visible under an “automatic result” heading. A corrected badge identifies the
+  user override.
+- A no-match correction makes inventory classification `UNKNOWN` and suppresses
+  the automatic suggestion without deleting it.
+- If the target disappears from the cached index, the override is retained and
+  the UI warns that the target is currently unavailable.
+- Undo removes the override and restores the automatic result.
+- Notes are private, excluded from sharing, and included in backup only as part
+  of the profile export.
+- Backup schema 2 adds match overrides. Version 1 backups are checksum-verified
+  with the legacy manifest, then migrated. Merge keeps the newer
+  `updatedAtEpochMillis`, replace removes local-only overrides, and skip adds
+  only missing overrides.
+- One override is stored per installed package key. Work-profile duplicates that
+  share a package key therefore share an override; profile-scoped overrides are
+  not implemented.
+- Deferred: store-scoped overrides (F20-R8), shareable correction files,
+  low-confidence correction prompts, and multiple overrides per installed app.
+
 ## 7. Edge cases
 
 - Correcting a match to an app that later disappears from the index.
@@ -75,8 +105,11 @@ the store index or the upstream catalog.
 - An imported override with an unknown feature/schema version.
 - A store refresh changes the target's display name.
 
-## 8. Open questions
+## 8. Resolved decisions
 
-1. Should corrections be shareable as a separate “match fixes” file?
-2. Should the app suggest a correction when confidence is low?
-3. Should multiple overrides be allowed per installed app (per store)?
+1. Corrections are not shareable as a separate “match fixes” file in this
+   version. They travel only through profile backup.
+2. The app does not prompt for a correction when confidence is low. The user
+   starts a correction from the match screen.
+3. Multiple overrides per installed app are not allowed. Store-scoped overrides
+   remain deferred under F20-R8.

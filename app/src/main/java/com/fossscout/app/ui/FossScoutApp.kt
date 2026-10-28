@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -43,6 +44,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.fossscout.app.AppContainer
 import com.fossscout.app.R
 import com.fossscout.app.ui.about.AboutScreen
+import com.fossscout.core.contribution.ContributionContext
+import com.fossscout.core.contribution.ReportStoreInput
+import com.fossscout.core.contribution.forMissingStore
+import com.fossscout.core.contribution.forWrongMatch
 import com.fossscout.core.feature.FeatureId
 import com.fossscout.core.handoff.AppHandoff
 import com.fossscout.core.matching.MatchDecision
@@ -55,6 +60,8 @@ import com.fossscout.feature.catalog.discover.DiscoverScreen
 import com.fossscout.feature.catalog.discover.DiscoverViewModel
 import com.fossscout.feature.companion.CompanionScreen
 import com.fossscout.feature.companion.CompanionViewModel
+import com.fossscout.feature.contribution.ContributionScreen
+import com.fossscout.feature.contribution.ContributionViewModel
 import com.fossscout.feature.favourites.CollectionsScreen
 import com.fossscout.feature.favourites.CollectionsViewModel
 import com.fossscout.feature.favourites.FavouritesScreen
@@ -71,6 +78,7 @@ import com.fossscout.feature.matching.MatchScreen
 import com.fossscout.feature.matching.MatchingViewModel
 import com.fossscout.feature.settings.FeatureSettingsScreen
 import com.fossscout.feature.settings.FeatureSettingsViewModel
+import com.fossscout.feature.stores.StoreEditor
 import com.fossscout.feature.stores.StoreExportRequest
 import com.fossscout.feature.stores.StoresScreen
 import com.fossscout.feature.stores.StoresViewModel
@@ -163,6 +171,18 @@ fun FossScoutApp(
     )
     val backupState by backupViewModel.uiState.collectAsStateWithLifecycle()
 
+    val contributionViewModel: ContributionViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                ContributionViewModel(
+                    environment = container.contributionEnvironment,
+                    builder = container.contributionReportBuilder,
+                )
+            }
+        },
+    )
+    val contributionState by contributionViewModel.uiState.collectAsStateWithLifecycle()
+
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
@@ -231,6 +251,24 @@ fun FossScoutApp(
         backupViewModel.consumeExportRequest()
     }
 
+    LaunchedEffect(contributionState.clipboardRequest) {
+        val request = contributionState.clipboardRequest ?: return@LaunchedEffect
+        context.copyContributionText(request.label, request.text)
+        contributionViewModel.consumeClipboardRequest()
+    }
+
+    LaunchedEffect(contributionState.shareRequest) {
+        val request = contributionState.shareRequest ?: return@LaunchedEffect
+        context.shareContribution(request.subject, request.text)
+        contributionViewModel.consumeShareRequest()
+    }
+
+    LaunchedEffect(contributionState.issueRequest) {
+        val request = contributionState.issueRequest ?: return@LaunchedEffect
+        context.openContributionIssue(request.url)
+        contributionViewModel.consumeIssueRequest()
+    }
+
     val destinations = remember(enabledFeatures) {
         AppDestination.entries.filter { destination ->
             destination.featureId == null || destination.featureId in enabledFeatures
@@ -240,16 +278,33 @@ fun FossScoutApp(
     var selectedDestination by rememberSaveable { mutableStateOf(AppDestination.DISCOVER.name) }
     var showCollections by rememberSaveable { mutableStateOf(false) }
     var showBackup by rememberSaveable { mutableStateOf(false) }
+    var showContribution by rememberSaveable { mutableStateOf(false) }
     val destination = destinations.firstOrNull { it.name == selectedDestination }
         ?: destinations.first()
     val inventoryEnabled = FeatureId.INVENTORY in enabledFeatures
     val backupEnabled = FeatureId.BACKUP in enabledFeatures
+    val contributionEnabled = FeatureId.CONTRIBUTION in enabledFeatures
     LaunchedEffect(backupEnabled) {
         if (!backupEnabled) showBackup = false
+    }
+    LaunchedEffect(contributionEnabled) {
+        if (!contributionEnabled) showContribution = false
     }
     LaunchedEffect(showBackup) {
         if (showBackup) backupViewModel.refreshExport()
     }
+    val openContribution: (ContributionContext) -> Unit = { reportContext ->
+        contributionViewModel.reset(reportContext)
+        showContribution = true
+    }
+    val closeContribution: () -> Unit = {
+        if (contributionState.preview != null) {
+            contributionViewModel.dismissPreview()
+        } else {
+            showContribution = false
+        }
+    }
+    BackHandler(enabled = showContribution) { closeContribution() }
     var handledSharedQuery by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(initialInventoryQuery, inventoryEnabled) {
@@ -275,7 +330,10 @@ fun FossScoutApp(
                     val label = stringResource(item.labelRes)
                     NavigationBarItem(
                         selected = item == destination,
-                        onClick = { selectedDestination = item.name },
+                        onClick = {
+                            showContribution = false
+                            selectedDestination = item.name
+                        },
                         icon = {
                             Icon(
                                 imageVector = item.icon,
@@ -291,6 +349,25 @@ fun FossScoutApp(
         val screenModifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
+
+        if (showContribution) {
+            ContributionScreen(
+                state = contributionState,
+                onBack = closeContribution,
+                onKindSelected = contributionViewModel::selectKind,
+                onDraftChange = contributionViewModel::updateDraft,
+                onPreview = contributionViewModel::previewReport,
+                onDismissPreview = contributionViewModel::dismissPreview,
+                onCopy = contributionViewModel::requestCopy,
+                onShare = contributionViewModel::requestShare,
+                onOpenIssue = contributionViewModel::requestOpenIssue,
+                onCopyJson = contributionViewModel::requestCopyJson,
+                onShareJson = contributionViewModel::requestShareJson,
+                onDismissError = contributionViewModel::dismissError,
+                modifier = screenModifier,
+            )
+            return@Scaffold
+        }
 
         when (destination) {
             AppDestination.DISCOVER -> DiscoverScreen(
@@ -418,6 +495,18 @@ fun FossScoutApp(
                                 repository = container.matchingRepository,
                                 appSource = container.installedAppSource,
                                 includeAlternatives = alternativesEnabled,
+                                setCorrection = { appKey, target, note ->
+                                    if (target == null) {
+                                        container.matchOverridesRepository.setNoMatch(appKey, note)
+                                    } else {
+                                        container.matchOverridesRepository.setTarget(
+                                            appKey,
+                                            target,
+                                            note,
+                                        )
+                                    }
+                                },
+                                removeCorrection = container.matchOverridesRepository::remove,
                             )
                         }
                     },
@@ -488,6 +577,26 @@ fun FossScoutApp(
                             } else {
                                 null
                             },
+                            onReportWrongMatch = if (contributionEnabled) {
+                                { decision: MatchDecision ->
+                                    openContribution(
+                                        ContributionContext.forWrongMatch(decision),
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                            onStartCorrection = matchingViewModel::startCorrection,
+                            onUndoCorrection = matchingViewModel::undoCorrection,
+                            onCorrectionQueryChange = matchingViewModel::onCorrectionQueryChange,
+                            onSearchCorrectionTargets =
+                                matchingViewModel::searchCorrectionTargets,
+                            onSelectCorrectionTarget =
+                                matchingViewModel::selectCorrectionTarget,
+                            onCorrectionNoteChange = matchingViewModel::onCorrectionNoteChange,
+                            onSaveCorrection = matchingViewModel::saveCorrection,
+                            onSaveNoMatch = matchingViewModel::saveNoMatch,
+                            onDismissCorrection = matchingViewModel::dismissCorrection,
                             modifier = screenModifier,
                             showCoverage = FeatureId.COVERAGE in enabledFeatures,
                             showAlternatives = alternativesEnabled,
@@ -562,6 +671,17 @@ fun FossScoutApp(
                     onRetry = storesViewModel::retry,
                     onDismissError = storesViewModel::dismissError,
                     modifier = screenModifier,
+                    onReportProblem = if (contributionEnabled) {
+                        { editor: StoreEditor? ->
+                            openContribution(
+                                ContributionContext.forMissingStore(
+                                    store = editor?.toReportStoreInput(),
+                                ),
+                            )
+                        }
+                    } else {
+                        null
+                    },
                 )
             }
 
@@ -607,6 +727,11 @@ fun FossScoutApp(
                         } else {
                             null
                         },
+                        onOpenContribution = if (contributionEnabled) {
+                            { openContribution(ContributionContext.forMissingStore()) }
+                        } else {
+                            null
+                        },
                         modifier = screenModifier,
                     )
                 }
@@ -645,6 +770,48 @@ fun FossScoutApp(
 
     if (sharingState.importCompleted) {
         ImportCompleteDialog(onDismiss = sharingViewModel::acknowledgeImportCompleted)
+    }
+}
+
+private fun StoreEditor.toReportStoreInput(): ReportStoreInput = ReportStoreInput(
+    name = name,
+    homepage = homepage,
+    adapterType = adapterType,
+    indexUrl = indexUrl,
+    apiUrl = apiUrl,
+    repositoryUrl = repositoryUrl,
+    hasPinnedFingerprint = fingerprint.isNotBlank(),
+)
+
+private fun Context.copyContributionText(label: String, text: String) {
+    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+    if (clipboard == null) {
+        Toast.makeText(this, R.string.contribution_copy_failed, Toast.LENGTH_SHORT).show()
+        return
+    }
+    clipboard.setPrimaryClip(ClipData.newPlainText(label, text))
+    Toast.makeText(this, R.string.contribution_copied, Toast.LENGTH_SHORT).show()
+}
+
+private fun Context.shareContribution(subject: String, text: String) {
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    runCatching {
+        startActivity(
+            Intent.createChooser(send, getString(R.string.contribution_share_chooser)),
+        )
+    }
+}
+
+private fun Context.openContributionIssue(url: String) {
+    val opened = runCatching {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    }.isSuccess
+    if (!opened) {
+        Toast.makeText(this, R.string.contribution_open_failed, Toast.LENGTH_SHORT).show()
     }
 }
 

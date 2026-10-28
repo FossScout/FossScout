@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Status | **Post-v1 — do not implement in a v1 session** |
-| Features | F09, F10, F15, F18, F19, F20, F21 |
+| Features | F09, F10, F15, F18, F19, F21 (F20 implemented as S18) |
 | Depends on | Separate product decisions and prerequisite sessions |
 | Profiles | Depends on feature; F09/F10 are restricted builds only |
 
@@ -53,6 +53,9 @@ rules, snooze, and Play handoff behaviour.
 
 ## F18 — Unified store search
 
+**Recommendation:** S16 is the recommended next feature, subject to approval and
+an approved brief.
+
 **Prerequisites:** F04/F05 and a local snapshot query layer.
 
 **Must decide:** grouping preference, anti-feature defaults, source-repository
@@ -73,12 +76,19 @@ after a dataset/licensing decision.
 
 ## F20 — Matching correction
 
-**Prerequisites:** F02/F06 and ideally F12/F13 for export/backup.
+**Status:** Implemented as S18 on `feat/f20-matching-correction` (rebased onto
+`main`; local, pending push/PR).
 
-**Must decide:** multiple overrides per app, behaviour when the target leaves the
-index, precedence, and whether overrides are store-scoped.
+**Prerequisites:** F02/F06 and F12/F13 for export/backup.
 
-**Suggested future session:** S18 — local match overrides with undo.
+**Decisions:** one override per installed package key; target search over cached
+enabled-store catalogs; a no-match is stored as a null target; notes are
+private; backup schema 2 carries overrides with v1 checksum migration. Merge
+keeps the newer `updatedAtEpochMillis`, replace removes local-only overrides,
+and skip adds only missing overrides.
+
+**Deferred:** store-scoped overrides (R8), shareable correction files,
+low-confidence prompts, profile-scoped duplicates, and device/UI verification.
 
 ## F21 — Trust badges
 

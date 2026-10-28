@@ -65,6 +65,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:contribution"))
     implementation(project(":core:data"))
     implementation(project(":core:feature"))
     implementation(project(":core:handoff"))
@@ -73,6 +74,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":feature:backup"))
     implementation(project(":feature:catalog"))
+    implementation(project(":feature:contribution"))
     implementation(project(":feature:companion"))
     implementation(project(":feature:favourites"))
     implementation(project(":feature:inventory"))

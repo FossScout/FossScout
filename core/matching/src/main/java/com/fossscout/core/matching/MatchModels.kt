@@ -2,6 +2,7 @@ package com.fossscout.core.matching
 
 import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.index.SnapshotFreshness
+import com.fossscout.core.model.MatchOverride
 import kotlinx.serialization.Serializable
 
 /**
@@ -209,6 +210,8 @@ data class MatchDecision(
     val alternatives: List<AlternativeSuggestion> = emptyList(),
     val coverage: CoverageSnapshot,
     val reasons: List<String> = emptyList(),
+    val correction: MatchOverride? = null,
+    val correctionTargetAvailable: Boolean? = null,
 ) {
     init {
         require(appKey.isNotBlank()) { "Decision app key is blank" }

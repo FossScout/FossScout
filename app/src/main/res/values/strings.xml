@@ -13,4 +13,8 @@
     <string name="companion_open_failed">No app can open this link.</string>
     <string name="companion_copied">Copied.</string>
     <string name="companion_repository_link_label">FossScout handoff</string>
+    <string name="contribution_copied">Report copied.</string>
+    <string name="contribution_copy_failed">Couldn\'t copy the report.</string>
+    <string name="contribution_share_chooser">Share contribution report</string>
+    <string name="contribution_open_failed">Couldn\'t open a browser. Copy the report instead.</string>
 </resources>

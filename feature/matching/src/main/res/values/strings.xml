@@ -47,6 +47,9 @@
     <string name="match_next_step">What happens next?</string>
     <string name="match_next_step_body">See whether the store build is an update, a replacement, or a different app, then open it in a store or browser.</string>
     <string name="match_next_step_action">Check replacement and handoff</string>
+    <string name="match_report_wrong_title">Is this match wrong?</string>
+    <string name="match_report_wrong_body">Send a redacted report with the package, observed result, and store statuses. No installed apps or notes are included.</string>
+    <string name="match_report_wrong_action">Report wrong match</string>
     <string name="match_license">License: %1$s</string>
     <string name="match_license_unknown">License: unknown</string>
     <string name="match_source">Source: %1$s</string>
@@ -106,5 +109,41 @@
     <string name="match_error_query">Type an app name or package first.</string>
     <string name="match_error_match">Couldn\'t complete the match. Cached indexes were left unchanged.</string>
     <string name="match_error_search">Couldn\'t search installed apps.</string>
+    <string name="match_error_correction">Couldn\'t update the correction. Your previous match is unchanged.</string>
     <string name="match_dismiss">Dismiss</string>
+
+    <string name="match_correction_card_title">Is this not the app you meant?</string>
+    <string name="match_correction_card_body">Correct the match locally. Your correction stays on this device unless you export a profile backup, and can be undone.</string>
+    <string name="match_correction_action">Correct this match</string>
+    <string name="match_correction_title">Correct this match</string>
+    <string name="match_correction_body">Choose a replacement for %1$s from the cached store indexes, or mark it as having no suitable match.</string>
+    <string name="match_correction_search_label">Search cached stores</string>
+    <string name="match_correction_search_action">Search</string>
+    <string name="match_correction_searching">Searching…</string>
+    <string name="match_correction_results_title">Choose a target</string>
+    <string name="match_correction_no_results">No cached store entry matches that search.</string>
+    <string name="match_correction_note_label">Private note (optional)</string>
+    <string name="match_correction_note_counter">%1$d/%2$d</string>
+    <plurals name="match_correction_note_too_long">
+        <item quantity="one">Keep the note at %1$d character or fewer.</item>
+        <item quantity="other">Keep the note at %1$d characters or fewer.</item>
+    </plurals>
+    <string name="match_correction_note_private">Private by default; included only in profile backups you export.</string>
+    <string name="match_correction_use_target">Use selected app</string>
+    <string name="match_correction_no_match">No suitable match</string>
+    <string name="match_correction_cancel">Cancel</string>
+    <string name="match_correction_selected">Selected</string>
+    <string name="match_correction_error_query">Type an app name or package first.</string>
+    <string name="match_correction_error_search">Couldn\'t search cached stores.</string>
+    <string name="match_correction_error_target">Choose a target app or mark no suitable match.</string>
+    <string name="match_correction_error_save">Couldn\'t save the correction. Your previous match is unchanged.</string>
+    <string name="match_correction_badge">You corrected this</string>
+    <string name="match_correction_no_match_title">No suitable match</string>
+    <string name="match_correction_no_match_body">FossScout will not suggest the automatic result for this app.</string>
+    <string name="match_correction_target_title">Corrected target: %1$s</string>
+    <string name="match_correction_target_missing">This target is not in the current cached index. Your correction is kept.</string>
+    <string name="match_correction_note">Note: %1$s</string>
+    <string name="match_correction_undo">Undo correction</string>
+    <string name="match_automatic_result_title">Automatic result</string>
+    <string name="match_automatic_result_body">This is the original automatic result, kept for reference. Your correction is shown above.</string>
 </resources>
