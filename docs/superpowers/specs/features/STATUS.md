@@ -36,6 +36,7 @@ file after every feature session with the new commit, test result, and status.
 | Security details and trust audit | **Done** (S10; APK checks deferred with F09) |
 | Sharing, backup, contribution | **Done** (sharing/import, backup, and reviewed contribution reports; device checks pending) |
 | Support and donations | **Partial** (F22 scaffold on a separate branch; About entry point hidden until a verified Liberapay URL is configured) |
+| CI and release delivery | **In progress** — [runbook](../../../RELEASING.md) |
 | Feature completion | **13 of 21 fully done; 2 partial; 3 deferred; 3 spec-only** (F22 support link remains Partial outside the v1 map) |
 
 **Recommended next session:** F18 unified store search is the recommended next candidate, subject to approval and an approved brief. F20 matching correction is merged; F22 remains blocked on the verified Liberapay URL, and F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.

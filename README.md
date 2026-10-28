@@ -170,7 +170,8 @@ depend on `:app` or on each other.
 - Add project detail screens
 - Complete device/emulator verification for inventory, store intents, backup,
   trust details, and contribution actions
-- Set up CI for builds, tests, and lint
+- CI for builds, tests, and lint; beta release automation is tracked in
+  [`docs/RELEASING.md`](docs/RELEASING.md)
 
 Direct APK download/install and the install-time accessibility prompt are
 post-v1 and restricted to builds where the platform policy allows them.
