@@ -8,6 +8,8 @@ import com.fossscout.core.handoff.HandoffPreferences
 import com.fossscout.core.model.AppCollection
 import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.Favourite
+import com.fossscout.core.model.MatchOverride
+import com.fossscout.core.model.MatchOverrideTarget
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.StoreDescriptor
@@ -77,18 +79,39 @@ internal fun sampleHandoff(
     preferredStores: Map<String, String> = mapOf("org.example.app" to "fdroid"),
 ): HandoffPreferences = HandoffPreferences(preferredStores = preferredStores)
 
+internal fun sampleMatchOverride(
+    installedAppKey: String = "org.example.app",
+    target: MatchOverrideTarget? = MatchOverrideTarget(
+        appKey = AppKey("org.example.alt"),
+        displayName = "Alternative",
+        storeId = StoreId("custom-repo"),
+        storeName = "Custom repo",
+    ),
+    note: String = "private correction",
+    createdAt: Long = 10,
+    updatedAt: Long = 20,
+): MatchOverride = MatchOverride(
+    installedAppKey = AppKey(installedAppKey),
+    target = target,
+    note = note,
+    createdAtEpochMillis = createdAt,
+    updatedAtEpochMillis = updatedAt,
+)
+
 internal fun samplePayload(
     favourites: List<Favourite> = listOf(sampleFavourite()),
     collections: List<AppCollection> = listOf(sampleCollection()),
     customStores: List<StoreDescriptor> = listOf(sampleStore()),
     featureSettings: FeatureSettings = sampleSettings(),
     handoffPreferences: HandoffPreferences = sampleHandoff(),
+    matchOverrides: List<MatchOverride>? = null,
 ): BackupPayload = BackupPayload(
     favourites = favourites,
     collections = collections,
     customStores = customStores,
     featureSettings = BackupFeatureSettings.from(featureSettings),
     handoffPreferences = BackupHandoffPreferences.from(handoffPreferences),
+    matchOverrides = matchOverrides,
 )
 
 internal fun sampleEnvelope(

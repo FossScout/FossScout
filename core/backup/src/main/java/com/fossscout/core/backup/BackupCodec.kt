@@ -50,14 +50,8 @@ class BackupCodec(
     }
 
     fun encode(envelope: BackupEnvelope): String {
-        validateOrThrow(envelope)
-        val expected = checksumFor(envelope)
-        if (envelope.checksum != expected) {
-            throw BackupFormatException(
-                BackupFormatReason.CHECKSUM_MISMATCH,
-                "Backup checksum does not match its contents",
-            )
-        }
+        validateCurrentOrThrow(envelope)
+        verifyChecksum(envelope)
         return json.encodeToString(envelope)
     }
 
@@ -74,15 +68,24 @@ class BackupCodec(
             )
         }
 
-        validateOrThrow(envelope)
-        val expected = checksumFor(envelope)
-        if (envelope.checksum != expected) {
-            throw BackupFormatException(
-                BackupFormatReason.CHECKSUM_MISMATCH,
-                "Backup checksum does not match its contents",
+        return when (envelope.schemaVersion) {
+            BACKUP_SCHEMA_VERSION -> {
+                validateCurrentOrThrow(envelope)
+                verifyChecksum(envelope)
+                envelope
+            }
+
+            LEGACY_BACKUP_SCHEMA_VERSION -> {
+                validateLegacyOrThrow(envelope)
+                verifyChecksum(envelope)
+                migrateLegacy(envelope)
+            }
+
+            else -> throw BackupFormatException(
+                BackupFormatReason.UNSUPPORTED_VERSION,
+                "Unsupported backup schema version: ${envelope.schemaVersion}",
             )
         }
-        return envelope
     }
 
     fun checksumFor(envelope: BackupEnvelope): String {
@@ -101,13 +104,8 @@ class BackupCodec(
             .joinToString(separator = "") { byte -> "%02x".format(byte.toInt() and 0xff) }
     }
 
-    private fun validateOrThrow(envelope: BackupEnvelope) {
-        if (envelope.format != BACKUP_FORMAT) {
-            throw BackupFormatException(
-                BackupFormatReason.UNSUPPORTED_FORMAT,
-                "Unsupported backup format: ${envelope.format}",
-            )
-        }
+    private fun validateCurrentOrThrow(envelope: BackupEnvelope) {
+        validateFormat(envelope)
         if (envelope.schemaVersion != BACKUP_SCHEMA_VERSION) {
             throw BackupFormatException(
                 BackupFormatReason.UNSUPPORTED_VERSION,
@@ -123,6 +121,55 @@ class BackupCodec(
                 exception,
             )
         }
+    }
+
+    private fun validateLegacyOrThrow(envelope: BackupEnvelope) {
+        validateFormat(envelope)
+        try {
+            require(envelope.appVersion.isNotBlank()) { "Backup app version is blank" }
+            require(envelope.createdAtEpochMillis >= 0) { "Backup creation time is negative" }
+            require(BackupEnvelope.CHECKSUM_PATTERN.matches(envelope.checksum)) {
+                "Backup checksum must be 64 lowercase hex characters"
+            }
+            require(envelope.manifest.isLegacy) {
+                "Legacy backup manifest does not match the v1 profile"
+            }
+            envelope.payload.validate()
+        } catch (exception: IllegalArgumentException) {
+            throw BackupFormatException(
+                BackupFormatReason.MALFORMED,
+                exception.message ?: "Invalid backup data",
+                exception,
+            )
+        }
+    }
+
+    private fun validateFormat(envelope: BackupEnvelope) {
+        if (envelope.format != BACKUP_FORMAT) {
+            throw BackupFormatException(
+                BackupFormatReason.UNSUPPORTED_FORMAT,
+                "Unsupported backup format: ${envelope.format}",
+            )
+        }
+    }
+
+    private fun verifyChecksum(envelope: BackupEnvelope) {
+        val expected = checksumFor(envelope)
+        if (envelope.checksum != expected) {
+            throw BackupFormatException(
+                BackupFormatReason.CHECKSUM_MISMATCH,
+                "Backup checksum does not match its contents",
+            )
+        }
+    }
+
+    private fun migrateLegacy(envelope: BackupEnvelope): BackupEnvelope {
+        val migrated = envelope.copy(
+            schemaVersion = BACKUP_SCHEMA_VERSION,
+            manifest = BackupManifest.forPayload(),
+            checksum = "",
+        )
+        return migrated.copy(checksum = checksumFor(migrated))
     }
 
     @Serializable

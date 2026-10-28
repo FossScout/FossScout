@@ -25,6 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -393,6 +394,18 @@ private fun RestorePreviewCard(
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
+            if (preview.matchOverrides.isNotEmpty()) {
+                Text(
+                    text = stringResource(
+                        R.string.backup_preview_overrides,
+                        preview.addedMatchOverrideCount,
+                        preview.mergedMatchOverrideCount,
+                        preview.replacedMatchOverrideCount,
+                        preview.skippedMatchOverrideCount,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
             if (preview.removedFavouriteCount > 0 ||
                 preview.removedCollectionCount > 0 ||
                 preview.removedStoreCount > 0
@@ -408,12 +421,35 @@ private fun RestorePreviewCard(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
-            if (preview.hasConflicts) {
+            if (preview.removedMatchOverrideCount > 0) {
+                Text(
+                    text = pluralStringResource(
+                        R.plurals.backup_preview_removed_overrides,
+                        preview.removedMatchOverrideCount,
+                        preview.removedMatchOverrideCount,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            val storeConflictCount = preview.stores.count {
+                it.action != com.fossscout.core.backup.BackupChangeAction.ADD
+            }
+            if (preview.conflictFavouriteCount > 0 || storeConflictCount > 0) {
                 Text(
                     text = stringResource(
                         R.string.backup_preview_conflicts,
                         preview.conflictFavouriteCount,
-                        preview.stores.count { it.action != com.fossscout.core.backup.BackupChangeAction.ADD },
+                        storeConflictCount,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            if (preview.conflictMatchOverrideCount > 0) {
+                Text(
+                    text = stringResource(
+                        R.string.backup_preview_conflicts_overrides,
+                        preview.conflictMatchOverrideCount,
                     ),
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -630,6 +666,7 @@ private fun includedLabel(section: BackupSection): String = when (section) {
     BackupSection.CUSTOM_STORES -> stringResource(R.string.backup_included_stores)
     BackupSection.FEATURE_SETTINGS -> stringResource(R.string.backup_included_settings)
     BackupSection.PREFERRED_STORE_CLIENTS -> stringResource(R.string.backup_included_handoff)
+    BackupSection.MATCH_OVERRIDES -> stringResource(R.string.backup_included_overrides)
 }
 
 @Composable

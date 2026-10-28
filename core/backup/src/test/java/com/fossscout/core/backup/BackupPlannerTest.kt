@@ -214,6 +214,99 @@ class BackupPlannerTest {
     }
 
     @Test
+    fun `replace includes incoming overrides and removes local-only ones`() {
+        val incoming = sampleMatchOverride(installedAppKey = "org.example.app")
+        val localOnly = sampleMatchOverride(installedAppKey = "org.local.app")
+        val envelope = sampleEnvelope(
+            samplePayload(matchOverrides = listOf(incoming)),
+        )
+        val local = BackupLocalState(matchOverrides = listOf(localOnly))
+
+        val plan = BackupPlanner.plan(
+            envelope = envelope,
+            local = local,
+            mode = BackupConflictMode.REPLACE,
+            nowEpochMillis = 500,
+        )
+
+        assertEquals(listOf(incoming), plan.target.matchOverrides)
+        assertEquals(1, plan.preview.addedMatchOverrideCount)
+        assertEquals(1, plan.preview.removedMatchOverrideCount)
+    }
+
+    @Test
+    fun `merge keeps the newest override for the same app`() {
+        val local = sampleMatchOverride(
+            installedAppKey = "org.example.app",
+            note = "local",
+            updatedAt = 30,
+        )
+        val olderIncoming = sampleMatchOverride(
+            installedAppKey = "org.example.app",
+            note = "older",
+            updatedAt = 20,
+        )
+        val newerIncoming = sampleMatchOverride(
+            installedAppKey = "org.example.app",
+            note = "newer",
+            updatedAt = 40,
+        )
+        val localState = BackupLocalState(matchOverrides = listOf(local))
+
+        val olderPlan = BackupPlanner.plan(
+            envelope = sampleEnvelope(
+                samplePayload(matchOverrides = listOf(olderIncoming)),
+            ),
+            local = localState,
+            mode = BackupConflictMode.MERGE,
+            nowEpochMillis = 500,
+        )
+        val newerPlan = BackupPlanner.plan(
+            envelope = sampleEnvelope(
+                samplePayload(matchOverrides = listOf(newerIncoming)),
+            ),
+            local = localState,
+            mode = BackupConflictMode.MERGE,
+            nowEpochMillis = 500,
+        )
+
+        assertEquals(listOf(local), olderPlan.target.matchOverrides)
+        assertEquals(listOf(newerIncoming), newerPlan.target.matchOverrides)
+        assertEquals(
+            BackupChangeAction.MERGE,
+            newerPlan.preview.matchOverrides.single().action,
+        )
+        assertTrue(newerPlan.preview.matchOverrides.single().noteChanged)
+    }
+
+    @Test
+    fun `skip keeps local overrides and adds only missing apps`() {
+        val local = sampleMatchOverride(installedAppKey = "org.example.app", note = "local")
+        val incomingConflict = sampleMatchOverride(
+            installedAppKey = "org.example.app",
+            note = "incoming",
+        )
+        val incomingNew = sampleMatchOverride(installedAppKey = "org.new.app")
+        val envelope = sampleEnvelope(
+            samplePayload(matchOverrides = listOf(incomingConflict, incomingNew)),
+        )
+
+        val plan = BackupPlanner.plan(
+            envelope = envelope,
+            local = BackupLocalState(matchOverrides = listOf(local)),
+            mode = BackupConflictMode.SKIP,
+            nowEpochMillis = 500,
+        )
+
+        assertEquals(
+            listOf(local, incomingNew),
+            plan.target.matchOverrides,
+        )
+        assertEquals(BackupChangeAction.SKIP, plan.preview.matchOverrides.first().action)
+        assertEquals(BackupChangeAction.ADD, plan.preview.matchOverrides.last().action)
+    }
+
+    @Test
     fun `replace settings removes local-only disabled features`() {
         val local = BackupLocalState(
             featureSettings = sampleSettings(

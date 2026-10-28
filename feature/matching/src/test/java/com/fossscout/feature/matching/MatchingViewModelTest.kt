@@ -11,6 +11,9 @@ import com.fossscout.core.matching.MatchOutcome
 import com.fossscout.core.matching.MatchingRepository
 import com.fossscout.core.matching.StoreCatalog
 import com.fossscout.core.matching.StoreCatalogData
+import com.fossscout.core.model.AppKey
+import com.fossscout.core.model.MatchOverride
+import com.fossscout.core.model.MatchOverrideTarget
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.StoreAvailability
@@ -20,6 +23,7 @@ import com.fossscout.core.store.StoreMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -187,12 +191,115 @@ class MatchingViewModelTest {
             assertFalse(viewModel.uiState.value.isLoading)
         }
 
+    @Test
+    fun `correction dialog searches and saves a selected target`() = runTest(dispatcher) {
+        val overrides = MutableStateFlow<List<MatchOverride>>(emptyList())
+        val viewModel = viewModel(
+            initialApp = app,
+            overrides = overrides,
+            setCorrection = { appKey, target, note ->
+                overrides.value = listOf(
+                    MatchOverride(
+                        installedAppKey = appKey,
+                        target = target,
+                        note = note,
+                        createdAtEpochMillis = 1,
+                        updatedAtEpochMillis = 2,
+                    ),
+                )
+            },
+            removeCorrection = { overrides.value = emptyList() },
+        )
+        advanceUntilIdle()
+
+        viewModel.startCorrection()
+        advanceUntilIdle()
+        assertEquals("Example", viewModel.uiState.value.correctionEditor?.query)
+        assertTrue(viewModel.uiState.value.correctionEditor?.hasSearched == true)
+
+        viewModel.onCorrectionQueryChange("Open")
+        assertFalse(viewModel.uiState.value.correctionEditor?.hasSearched == true)
+        viewModel.searchCorrectionTargets()
+        advanceUntilIdle()
+        val target = viewModel.uiState.value.correctionEditor?.results?.single()
+        assertNotNull(target)
+
+        viewModel.selectCorrectionTarget(target!!)
+        viewModel.onCorrectionNoteChange("private note")
+        viewModel.saveCorrection()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.correctionEditor)
+        assertEquals("private note", state.decision?.correction?.note)
+        assertEquals(
+            "org.maps.alt",
+            state.decision?.correction?.target?.appKey?.value,
+        )
+    }
+
+    @Test
+    fun `no-match correction is saved and can be undone`() = runTest(dispatcher) {
+        val overrides = MutableStateFlow<List<MatchOverride>>(emptyList())
+        val viewModel = viewModel(
+            initialApp = app,
+            overrides = overrides,
+            setCorrection = { appKey, target, note ->
+                overrides.value = listOf(
+                    MatchOverride(
+                        installedAppKey = appKey,
+                        target = target,
+                        note = note,
+                        createdAtEpochMillis = 1,
+                        updatedAtEpochMillis = 2,
+                    ),
+                )
+            },
+            removeCorrection = { overrides.value = emptyList() },
+        )
+        advanceUntilIdle()
+
+        viewModel.startCorrection()
+        advanceUntilIdle()
+        viewModel.saveNoMatch()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.decision?.correction?.isNoMatch == true)
+
+        viewModel.undoCorrection()
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.decision?.correction)
+    }
+
+    @Test
+    fun `saving without a target reports a validation error`() = runTest(dispatcher) {
+        val viewModel = viewModel(
+            initialApp = app,
+            setCorrection = { _, _, _ -> },
+            removeCorrection = {},
+        )
+        advanceUntilIdle()
+
+        viewModel.startCorrection()
+        advanceUntilIdle()
+        viewModel.saveCorrection()
+
+        assertEquals(
+            MatchCorrectionError.TARGET_REQUIRED,
+            viewModel.uiState.value.correctionEditor?.error,
+        )
+    }
+
     private fun viewModel(
         source: FakeSource = FakeSource(listOf(app)),
         storeEntries: Flow<List<StoreEntry>> = flowOf(listOf(entry())),
         initialQuery: String? = null,
         initialApp: InstalledApp? = null,
         includeAlternatives: Boolean = true,
+        overrides: Flow<List<MatchOverride>> = flowOf(emptyList()),
+        setCorrection: (suspend (AppKey, MatchOverrideTarget?, String) -> Unit)? = null,
+        removeCorrection: (suspend (AppKey) -> Unit)? = null,
     ): MatchingViewModel = MatchingViewModel(
         repository = MatchingRepository(
             storeEntries = storeEntries,
@@ -200,11 +307,14 @@ class MatchingViewModelTest {
             catalog = FakeCatalog(),
             now = { NOW },
             freshnessWindowMillis = FRESHNESS,
+            overrides = overrides,
         ),
         appSource = source,
         includeAlternatives = includeAlternatives,
         initialQuery = initialQuery,
         initialApp = initialApp,
+        setCorrection = setCorrection,
+        removeCorrection = removeCorrection,
     )
 
     private fun entry() = StoreEntry(

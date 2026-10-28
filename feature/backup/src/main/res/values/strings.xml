@@ -7,7 +7,7 @@
     <string name="backup_retry">Retry</string>
 
     <string name="backup_export_title">Export</string>
-    <string name="backup_export_body">Create one portable file with your favourites, notes, collections, custom stores, fingerprints, feature settings, and preferred store clients.</string>
+    <string name="backup_export_body">Create one portable file with your favourites, notes, collections, custom stores, fingerprints, feature settings, preferred store clients, and match corrections.</string>
     <string name="backup_manifest_included_title">Included</string>
     <string name="backup_manifest_excluded_title">Not included</string>
     <string name="backup_included_favourites">Favourites</string>
@@ -16,6 +16,7 @@
     <string name="backup_included_stores">Custom stores, pinned fingerprints, and trust notes</string>
     <string name="backup_included_settings">Feature settings and disabled features</string>
     <string name="backup_included_handoff">Preferred store clients</string>
+    <string name="backup_included_overrides">Match corrections and private notes</string>
     <string name="backup_excluded_index">Index snapshots and cached store data</string>
     <string name="backup_excluded_apk">APK files or installable apps</string>
     <string name="backup_excluded_inventory">Installed-app inventory</string>
@@ -42,17 +43,23 @@
     <string name="backup_preview_file">File: %1$s</string>
     <string name="backup_preview_summary">Favourites — added: %1$d, merged: %2$d, replaced: %3$d, skipped: %4$d. Collections — added: %5$d, replaced: %6$d. Custom stores — added: %7$d, replaced: %8$d.</string>
     <string name="backup_preview_removed">Replace removes local-only entries — favourites: %1$d, collections: %2$d, custom stores: %3$d.</string>
+    <string name="backup_preview_overrides">Match corrections — added: %1$d, merged: %2$d, replaced: %3$d, skipped: %4$d.</string>
+    <plurals name="backup_preview_removed_overrides">
+        <item quantity="one">Replace removes %1$d local match correction.</item>
+        <item quantity="other">Replace removes %1$d local match corrections.</item>
+    </plurals>
     <string name="backup_preview_notes">Private notes included: %1$d</string>
     <string name="backup_preview_manifest">This file contains:</string>
     <string name="backup_preview_conflicts">Favourite conflicts: %1$d. Custom-store conflicts: %2$d. The selected mode handles them.</string>
+    <string name="backup_preview_conflicts_overrides">Match-correction conflicts: %1$d. The selected mode handles them.</string>
     <string name="backup_preview_settings_changed">Feature settings or preferred store clients will also change.</string>
     <string name="backup_mode">Conflict handling</string>
     <string name="backup_mode_merge">Merge</string>
-    <string name="backup_mode_merge_desc">Add missing items, combine tags and collection items, and keep existing settings on conflict.</string>
+    <string name="backup_mode_merge_desc">Add missing items, combine tags and collection items, keep existing settings on conflict, and keep the newest match correction.</string>
     <string name="backup_mode_replace">Replace</string>
-    <string name="backup_mode_replace_desc">Replace favourites, collections, custom stores, settings, and preferred store clients with the backup.</string>
+    <string name="backup_mode_replace_desc">Replace favourites, collections, custom stores, settings, preferred store clients, and match corrections with the backup.</string>
     <string name="backup_mode_skip">Skip</string>
-    <string name="backup_mode_skip_desc">Only add missing favourites, collections, and custom stores. Leave conflicts and settings unchanged.</string>
+    <string name="backup_mode_skip_desc">Only add missing favourites, collections, custom stores, and match corrections. Leave conflicts and settings unchanged.</string>
     <string name="backup_restore_action">Restore backup</string>
     <string name="backup_restore_working">Restoring…</string>
     <string name="backup_restore_done">Backup restored.</string>

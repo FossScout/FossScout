@@ -13,12 +13,14 @@ import com.fossscout.core.data.DataStoreCollectionsStore
 import com.fossscout.core.data.DataStoreFavouritesStore
 import com.fossscout.core.data.DataStoreHandoffPreferencesStore
 import com.fossscout.core.data.DataStoreInventoryStore
+import com.fossscout.core.data.DataStoreMatchOverridesStore
 import com.fossscout.core.data.DataStoreStoreRegistryStore
 import com.fossscout.core.data.DataStoreSnapshotMetadataStore
 import com.fossscout.core.data.CollectionsRepository
 import com.fossscout.core.data.DefaultBackupService
 import com.fossscout.core.data.FavouritesRepository
 import com.fossscout.core.data.FeatureSettingsRepository
+import com.fossscout.core.data.MatchOverridesRepository
 import com.fossscout.core.data.ShareExportFactory
 import com.fossscout.core.data.ShareImportService
 import com.fossscout.core.data.StoreRegistryRepository
@@ -45,6 +47,7 @@ private val Context.storeRegistryDataStore by preferencesDataStore(name = "store
 private val Context.inventoryDataStore by preferencesDataStore(name = "inventory")
 private val Context.indexStateDataStore by preferencesDataStore(name = "index_state")
 private val Context.handoffDataStore by preferencesDataStore(name = "handoff")
+private val Context.matchOverridesDataStore by preferencesDataStore(name = "match_overrides")
 
 /**
  * Composition root for app-wide dependencies. Android framework objects are
@@ -85,6 +88,10 @@ class AppContainer(context: Context) {
         DataStoreCollectionsStore(context.collectionsDataStore),
     )
 
+    val matchOverridesRepository = MatchOverridesRepository(
+        DataStoreMatchOverridesStore(context.matchOverridesDataStore),
+    )
+
     val shareExportFactory = ShareExportFactory()
 
     val shareImportService = ShareImportService(
@@ -112,6 +119,7 @@ class AppContainer(context: Context) {
         storeRegistryRepository = storeRegistryRepository,
         featureSettingsRepository = featureSettingsRepository,
         handoffPreferencesRepository = handoffPreferencesRepository,
+        matchOverridesRepository = matchOverridesRepository,
         appVersion = { appVersionName },
     )
 
@@ -153,6 +161,7 @@ class AppContainer(context: Context) {
         storeEntries = storeRegistryRepository.entries,
         snapshots = indexSyncRepository.snapshots,
         catalog = SnapshotCatalogSource(snapshotPayloadStore),
+        overrides = matchOverridesRepository.overrides,
     )
 
     val inventoryRepository = InventoryRepository(
