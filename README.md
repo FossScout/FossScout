@@ -14,10 +14,6 @@ The modular foundation for v1 is implemented. The app is split into core and
 feature modules, ships as `playstore` and `fdroid` build profiles, and persists
 favourites, collections, settings, and match corrections locally with DataStore.
 
-The modular foundation for v1 is implemented. The app is split into core and
-feature modules, ships as `playstore` and `fdroid` build profiles, and persists
-favourites, collections, settings, and match corrections locally with DataStore.
-
 Current implementation status:
 [`docs/superpowers/specs/features/STATUS.md`](docs/superpowers/specs/features/STATUS.md).
 Remaining feature work is split into independent sessions:
@@ -90,6 +86,16 @@ Both profiles currently enable the same features. Each flavor supplies its own
 profile's capabilities to the feature registry. Optional features are separate
 modules; the current app composition includes all of them, and a future profile
 can exclude a module at the dependency boundary.
+
+GitHub beta builds use the `beta` build type with the `playstore` flavor. They
+are published as `com.fossscout.app.beta` with a `-beta` version-name suffix so
+they can be installed alongside the production app. Build one with:
+
+```sh
+./gradlew assemblePlaystoreBeta
+```
+
+The beta release process is documented in [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Getting started
 
