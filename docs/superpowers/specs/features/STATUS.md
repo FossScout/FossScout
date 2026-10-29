@@ -1,8 +1,8 @@
 # FossScout Implementation Status
 
 Last updated: **2026-10-29**
-Baseline: `main` at `3e19f78` (PR #4 merged CI, release workflow, and beta build support; S01–S11 and F20 are on `main`).
-Pending: F22 support-link scaffold on `feat/support-donation-links` at `9fed281` (About section hidden until a verified Liberapay URL is configured); F20 device/UI verification; beta signing secrets and release smoke test.
+Baseline: `main` at `0fc3447`; GitHub beta `v0.1.0-beta.1` published (S01–S11 and F20 are on `main`).
+Pending: F22 support-link scaffold on `feat/support-donation-links` at `9fed281` (About section hidden until a verified Liberapay URL is configured); F20 device/UI verification; beta device smoke test.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)
 
@@ -27,7 +27,7 @@ file after every feature session with the new commit, test result, and status.
 | --- | --- |
 | Modular foundation | **Done** |
 | Build profiles (`playstore`, `fdroid`) | **Done** for these two; `direct`/`custom` not implemented |
-| CI and beta release pipeline | **Partial** (CI green; beta workflow and `com.fossscout.app.beta` configured; signing secrets and release smoke test pending) |
+| CI and beta release pipeline | **Done for GitHub beta** (`v0.1.0-beta.1` prerelease; Play internal and F-Droid remain pending) |
 | Local favourites, tags, search, installed badge, and collections | **Done** (device badge refresh pending) |
 | Feature configuration | **Done** |
 | Store registry and installed inventory | **Partial** |
@@ -39,7 +39,7 @@ file after every feature session with the new commit, test result, and status.
 | Support and donations | **Partial** (F22 scaffold on a separate branch; About entry point hidden until a verified Liberapay URL is configured) |
 | Feature completion | **13 of 21 fully done; 2 partial; 3 deferred; 3 spec-only** (F22 support link remains Partial outside the v1 map) |
 
-**Recommended next session:** complete the beta signing/release smoke test, then evaluate F18 unified store search subject to approval and an approved brief. F20 matching correction is merged; F22 remains blocked on the verified Liberapay URL, and F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** run the beta device smoke test, then prepare Play internal testing. Evaluate F18 unified store search subject to approval and an approved brief. F20 matching correction is merged; F22 remains blocked on the verified Liberapay URL, and F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ## What works today
 
