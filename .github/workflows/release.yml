@@ -4,11 +4,34 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Version name, for example 0.2.0-beta.1'
+        required: true
+        type: string
+      version_code:
+        description: 'Monotonic version code, for example 20001'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark this release as a prerelease'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
 
 jobs:
   release:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    env:
+      KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -44,33 +67,53 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Decode keystore
-        if: ${{ secrets.KEYSTORE_FILE != '' }}
+      - name: Validate release secrets
         run: |
-          echo "${{ secrets.KEYSTORE_FILE }}" | base64 -d > keystore.jks
-          echo "KEYSTORE_FILE=$PWD/keystore.jks" >> $GITHUB_ENV
+          missing=0
+          for name in KEYSTORE_FILE KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "$(printenv "$name")" ]; then
+              echo "::error::Missing required release secret: $name"
+              missing=1
+            fi
+          done
+          exit "$missing"
 
-      - name: Set version from tag
+      - name: Decode keystore
         run: |
-          TAG=${GITHUB_REF#refs/tags/}
-          echo "CI_VERSION_NAME=${TAG#v}" >> $GITHUB_ENV
-          echo "CI_VERSION_CODE=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+          echo "$KEYSTORE_FILE" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Set version
+        env:
+          INPUT_VERSION_NAME: ${{ inputs.version_name }}
+          INPUT_VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION_NAME="$INPUT_VERSION_NAME"
+            VERSION_CODE="$INPUT_VERSION_CODE"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+            VERSION_NAME="${TAG#v}"
+            VERSION_CODE="${GITHUB_RUN_NUMBER}"
+          fi
+
+          case "$VERSION_CODE" in
+            ''|*[!0-9]*)
+              echo "::error::version_code must be numeric"
+              exit 1
+              ;;
+          esac
+
+          echo "CI_VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "CI_VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
 
       - name: Run tests
         run: ./gradlew test
 
       - name: Build release APKs
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew assemblePlaystoreRelease assembleFdroidRelease
 
       - name: Build release AABs
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew bundlePlaystoreRelease bundleFdroidRelease
 
       - name: Upload release artifacts
@@ -91,6 +134,8 @@ jobs:
             app/build/outputs/bundle/playstore/release/*.aab
             app/build/outputs/bundle/fdroid/release/*.aab
           draft: false
-          prerelease: false
+          prerelease: ${{ inputs.prerelease || contains(github.ref_name, '-beta') }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

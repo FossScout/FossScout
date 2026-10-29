@@ -14,13 +14,14 @@ Baseline: main @ b05ac9b (post F20/S11 merge)
 | CI badge in README | Done | Added CI badge at top of README.md |
 | Versioning from CI/env/git | Done | `app/build.gradle.kts` reads `CI_VERSION_CODE`/`GITHUB_RUN_NUMBER` and `CI_VERSION_NAME`/git describe |
 | Release signing config (conditional) | Done | `signingConfigs.release` reads env secrets; applied to release if keystore exists |
-| Release workflow | Done | `.github/workflows/release.yml` builds signed APK/AAB on tag `v*`, uploads artifacts, creates GitHub Release |
+| Release workflow | Fixed | `.github/workflows/release.yml` validates signing secrets through environment variables, has `contents: write`, supports manual dispatch, and builds/upload signed APK/AAB on tag `v*`; a real tag run still needs signing secrets. |
 
 ## Pending / Manual
 | Task | Status | Details |
 | --- | --- | --- |
 | GitHub Secrets for release | Pending (manual) | Add `KEYSTORE_FILE` (base64), `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` in repo settings |
 | Branch protection rules | Pending (manual) | Require PR reviews, require status checks (CI), restrict pushes to main |
+| Release smoke test | Pending (manual) | Add signing secrets, push a disposable `v*-beta*` tag, and verify the APK signature, checksum, and GitHub prerelease. |
 | Release notes/changelog | Pending | Consider release drafter or auto-generate from commits/PRs |
 | Coverage reporting | Pending | Optional: add jacoco/report upload |
 
