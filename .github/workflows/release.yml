@@ -100,7 +100,7 @@ jobs:
           sha256sum "$(basename "$APK")" > "$(basename "$APK").sha256"
 
       - name: Upload beta artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: beta-apk
           path: |
