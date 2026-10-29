@@ -6,18 +6,45 @@ plugins {
 
 android {
     namespace = "com.fossscout.app"
-    compileSdk = 35
+    compileSdk = 36
+
+    val ciVersionCode = System.getenv("CI_VERSION_CODE")?.toIntOrNull()
+        ?: System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+        ?: 1
+    val ciVersionName = System.getenv("CI_VERSION_NAME")
+        ?: runCatching {
+            val process = ProcessBuilder("git", "describe", "--tags", "--always")
+                .directory(rootDir)
+                .start()
+            process.inputStream.bufferedReader().readText().trim().takeIf { it.isNotEmpty() }
+        }.getOrNull()
+        ?: "0.1.0"
 
     defaultConfig {
         applicationId = "com.fossscout.app"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        targetSdk = 36
+        versionCode = ciVersionCode
+        versionName = ciVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            val storeFilePath = System.getenv("KEYSTORE_FILE")
+            val storePassword = System.getenv("KEYSTORE_PASSWORD")
+            val keyAlias = System.getenv("KEY_ALIAS")
+            val keyPassword = System.getenv("KEY_PASSWORD")
+            if (storeFilePath != null && storePassword != null && keyAlias != null && keyPassword != null) {
+                storeFile = file(storeFilePath)
+                this.storePassword = storePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+            }
         }
     }
 
@@ -28,6 +55,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            val releaseSigning = signingConfigs.findByName("release")
+            if (releaseSigning?.storeFile?.exists() == true) {
+                signingConfig = releaseSigning
+            }
         }
     }
 

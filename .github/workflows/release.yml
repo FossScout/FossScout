@@ -1,0 +1,141 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Version name, for example 0.2.0-beta.1'
+        required: true
+        type: string
+      version_code:
+        description: 'Monotonic version code, for example 20001'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark this release as a prerelease'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        run: |
+          export ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
+          rm -rf $ANDROID_HOME/cmdline-tools/latest
+          unzip -q /tmp/cmdline-tools.zip -d /tmp
+          mv /tmp/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Validate release secrets
+        run: |
+          missing=0
+          for name in KEYSTORE_FILE KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "$(printenv "$name")" ]; then
+              echo "::error::Missing required release secret: $name"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Decode keystore
+        run: |
+          echo "$KEYSTORE_FILE" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Set version
+        env:
+          INPUT_VERSION_NAME: ${{ inputs.version_name }}
+          INPUT_VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION_NAME="$INPUT_VERSION_NAME"
+            VERSION_CODE="$INPUT_VERSION_CODE"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+            VERSION_NAME="${TAG#v}"
+            VERSION_CODE="${GITHUB_RUN_NUMBER}"
+          fi
+
+          case "$VERSION_CODE" in
+            ''|*[!0-9]*)
+              echo "::error::version_code must be numeric"
+              exit 1
+              ;;
+          esac
+
+          echo "CI_VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          echo "CI_VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Build release APKs
+        run: ./gradlew assemblePlaystoreRelease assembleFdroidRelease
+
+      - name: Build release AABs
+        run: ./gradlew bundlePlaystoreRelease bundleFdroidRelease
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: release-artifacts
+          path: |
+            app/build/outputs/apk/*/release/*.apk
+            app/build/outputs/bundle/*/release/*.aab
+          retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/build/outputs/apk/playstore/release/*.apk
+            app/build/outputs/apk/fdroid/release/*.apk
+            app/build/outputs/bundle/playstore/release/*.aab
+            app/build/outputs/bundle/fdroid/release/*.aab
+          draft: false
+          prerelease: ${{ inputs.prerelease || contains(github.ref_name, '-beta') }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
