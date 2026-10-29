@@ -6,6 +6,18 @@ build/
 # Local configuration (contains machine-specific SDK path)
 local.properties
 
+# Signing material (never commit)
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.jks.b64
+*.keystore.b64
+*.p12.b64
+*.pfx.b64
+keystore.properties
+signing.properties
+
 # Android Studio / IntelliJ
 .idea/
 *.iml
