@@ -61,6 +61,12 @@ Before announcing the beta:
   matching, favourites, collections, and backup.
 - Confirm the release workflow run passed signature verification.
 
+## Release history
+
+| Version | Date | Channel | Result |
+| --- | --- | --- | --- |
+| [`v0.1.0-beta.1`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.1) | 2026-10-29 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version code 9, checksum and certificate verified. |
+
 ## Later channels
 
 Play internal testing and F-Droid are separate follow-up stages. Do not publish
