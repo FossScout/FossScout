@@ -11,10 +11,10 @@ local.properties
 *.keystore
 *.p12
 *.pfx
-*.jks.b64
-*.keystore.b64
-*.p12.b64
-*.pfx.b64
+*.b64
+KEYSTORE_PASSWORD.txt
+KEY_PASSWORD.txt
+KEY_ALIAS.txt
 keystore.properties
 signing.properties
 
