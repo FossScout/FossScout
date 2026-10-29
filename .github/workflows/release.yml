@@ -1,24 +1,9 @@
-name: Release
+name: Beta Release
 
 on:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
-    inputs:
-      version_name:
-        description: 'Version name, for example 0.2.0-beta.1'
-        required: true
-        type: string
-      version_code:
-        description: 'Monotonic version code, for example 20001'
-        required: true
-        type: string
-      prerelease:
-        description: 'Mark this release as a prerelease'
-        required: false
-        default: true
-        type: boolean
+      - 'v*-beta*'
 
 permissions:
   contents: write
@@ -84,18 +69,10 @@ jobs:
           echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
       - name: Set version
-        env:
-          INPUT_VERSION_NAME: ${{ inputs.version_name }}
-          INPUT_VERSION_CODE: ${{ inputs.version_code }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION_NAME="$INPUT_VERSION_NAME"
-            VERSION_CODE="$INPUT_VERSION_CODE"
-          else
-            TAG="${GITHUB_REF#refs/tags/}"
-            VERSION_NAME="${TAG#v}"
-            VERSION_CODE="${GITHUB_RUN_NUMBER}"
-          fi
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION_NAME="${TAG#v}"
+          VERSION_CODE="${GITHUB_RUN_NUMBER}"
 
           case "$VERSION_CODE" in
             ''|*[!0-9]*)
@@ -110,31 +87,35 @@ jobs:
       - name: Run tests
         run: ./gradlew test
 
-      - name: Build release APKs
-        run: ./gradlew assemblePlaystoreRelease assembleFdroidRelease
+      - name: Build beta APK
+        run: ./gradlew assemblePlaystoreBeta
 
-      - name: Build release AABs
-        run: ./gradlew bundlePlaystoreRelease bundleFdroidRelease
+      - name: Verify beta APK signature
+        run: |
+          APK_DIR=app/build/outputs/apk/playstore/beta
+          APK=$(find "$APK_DIR" -name '*.apk' ! -name '*-unsigned.apk' -print -quit)
+          test -n "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK"
+          cd "$APK_DIR"
+          sha256sum "$(basename "$APK")" > "$(basename "$APK").sha256"
 
-      - name: Upload release artifacts
+      - name: Upload beta artifact
         uses: actions/upload-artifact@v5
         with:
-          name: release-artifacts
+          name: beta-apk
           path: |
-            app/build/outputs/apk/*/release/*.apk
-            app/build/outputs/bundle/*/release/*.aab
+            app/build/outputs/apk/playstore/beta/*.apk
+            app/build/outputs/apk/playstore/beta/*.sha256
           retention-days: 30
 
-      - name: Create GitHub Release
+      - name: Create GitHub prerelease
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            app/build/outputs/apk/playstore/release/*.apk
-            app/build/outputs/apk/fdroid/release/*.apk
-            app/build/outputs/bundle/playstore/release/*.aab
-            app/build/outputs/bundle/fdroid/release/*.aab
+            app/build/outputs/apk/playstore/beta/*.apk
+            app/build/outputs/apk/playstore/beta/*.sha256
           draft: false
-          prerelease: ${{ inputs.prerelease || contains(github.ref_name, '-beta') }}
+          prerelease: true
           generate_release_notes: true
           fail_on_unmatched_files: true
         env:

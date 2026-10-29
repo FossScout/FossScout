@@ -11,14 +11,7 @@ android {
     val ciVersionCode = System.getenv("CI_VERSION_CODE")?.toIntOrNull()
         ?: System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
         ?: 1
-    val ciVersionName = System.getenv("CI_VERSION_NAME")
-        ?: runCatching {
-            val process = ProcessBuilder("git", "describe", "--tags", "--always")
-                .directory(rootDir)
-                .start()
-            process.inputStream.bufferedReader().readText().trim().takeIf { it.isNotEmpty() }
-        }.getOrNull()
-        ?: "0.1.0"
+    val ciVersionName = System.getenv("CI_VERSION_NAME") ?: "0.1.0"
 
     defaultConfig {
         applicationId = "com.fossscout.app"
@@ -48,6 +41,7 @@ android {
         }
     }
 
+    val releaseSigning = signingConfigs.findByName("release")
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -55,10 +49,15 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            val releaseSigning = signingConfigs.findByName("release")
             if (releaseSigning?.storeFile?.exists() == true) {
                 signingConfig = releaseSigning
             }
+        }
+        create("beta") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".beta"
+            versionNameSuffix = if (ciVersionName.contains("-beta")) "" else "-beta"
+            matchingFallbacks += listOf("release")
         }
     }
 
