@@ -1,8 +1,8 @@
 # CI Progress & Status
 
-Last updated: 2026-10-29
+Last updated: 2026-10-30
 Branch: main
-Baseline: main @ 0fc3447; beta release `v0.1.0-beta.1`
+Baseline: main @ f02f9cf; beta release `v0.1.0-beta.1`
 
 ## Completed
 | Task | Status | Details |
@@ -15,13 +15,14 @@ Baseline: main @ 0fc3447; beta release `v0.1.0-beta.1`
 | Versioning from CI/env | Done | `app/build.gradle.kts` reads `CI_VERSION_CODE`/`GITHUB_RUN_NUMBER` and `CI_VERSION_NAME`; local builds default to `0.1.0` |
 | Release signing config (conditional) | Done | `signingConfigs.release` reads env secrets; applied to release and beta builds if the keystore exists |
 | Beta build type | Done | `playstoreBeta` publishes as `com.fossscout.app.beta` with a `-beta` version-name suffix, so it can be installed alongside production |
-| Beta release workflow | Done | `.github/workflows/release.yml` validates signing secrets through environment variables, has `contents: write`, runs only for `v*-beta*` tags, verifies the beta APK signature/checksum, and creates a GitHub prerelease. Run [40850806405](https://github.com/FossScout/FossScout/actions/runs/40850806405) passed. |
+| Beta release workflow | Done | `.github/workflows/release.yml` validates signing secrets through environment variables, has `contents: write`, runs only for `v*-beta*` tags, checks out submodules, verifies the beta APK signature/checksum, and creates a GitHub prerelease. Run [40850806405](https://github.com/FossScout/FossScout/actions/runs/40850806405) passed before submodule checkout was added; the next beta tag must re-verify it. |
+| Shared docs submodule | Done | `tools/best-practices` is pinned to `6a7576a`; CI and release workflows check out submodules. |
 
 ## Pending / Manual
 | Task | Status | Details |
 | --- | --- | --- |
 | GitHub Secrets for release | Done | `KEYSTORE_FILE`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` configured on 2026-10-29 |
-| Branch protection rules | Pending (manual) | Require PR reviews, require status checks (CI), restrict pushes to main |
+| Branch protection rules | Done | `main` ruleset requires a PR, the `build` check, an up-to-date branch, and conversation resolution; blocks force pushes and deletion. `best-practices` has a PR-only ruleset. |
 | Release smoke test | Done | `v0.1.0-beta.1` published as a GitHub prerelease; APK package `com.fossscout.app.beta`, version `0.1.0-beta.1` (version code 9), checksum and certificate verified. |
 | Release notes/changelog | Pending | Consider release drafter or auto-generate from commits/PRs |
 | Coverage reporting | Pending | Optional: add jacoco/report upload |
