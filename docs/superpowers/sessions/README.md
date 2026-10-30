@@ -9,8 +9,9 @@ Start here:
 1. Read [`STATUS.md`](../specs/features/STATUS.md) for current implementation
    state and the verification baseline.
 2. Read the session brief and the feature specs it names.
-3. Check `git status` and create a branch for the session.
-4. Do not start a blocked session before its dependency lands.
+3. Check `git status`, create a branch for the session, and open a PR.
+4. Do not start a blocked session before its dependency lands; `main` requires
+   the `build` check and a pull request.
 
 ## Session map
 
@@ -105,9 +106,8 @@ session starts.
 - [ ] The session brief is updated if scope was split or changed.
 - [ ] No unrelated feature work is mixed into the branch.
 
-Full lint may be unavailable in this sandbox because some Android test
-dependencies cannot be resolved. Record that caveat; do not treat it as a code
-failure.
+Full lint runs in CI. If a local sandbox cannot resolve Android test
+dependencies, record that caveat; do not treat it as a code failure.
 
 ## Starting prompt for a new session
 

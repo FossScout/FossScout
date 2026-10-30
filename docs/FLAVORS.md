@@ -1,12 +1,14 @@
 # Flavors - FossScout
 
 FossScout supports two build flavors with different distribution channels.
+The GitHub beta is the only enabled release path; Play and F-Droid releases
+remain intentionally disabled.
 
 ## Flavors
 | Flavor | Application ID | Purpose | Notes |
 |---|---|---|---|
 | `playstore` | `com.fossscout.app` | Google Play Store | Play-safe feature set |
-| `fdroid` | `com.fossscout.app` (or flavor-specific) | F-Droid | May have different dependencies/features based on F-Droid policies |
+| `fdroid` | `com.fossscout.app.fdroid` | F-Droid | F-Droid-safe feature set; release path not enabled yet |
 
 ## Beta Variant
 - `playstoreBeta` variant uses application ID `com.fossscout.app.beta` with `-beta` version suffix
