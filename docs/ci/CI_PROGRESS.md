@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-30
 Branch: main
-Baseline: main @ f02f9cf; beta release `v0.1.0-beta.1`
+Feature baseline: main @ f02f9cf; beta release `v0.1.0-beta.1`. Docs/CI changes after this baseline are tracked below.
 
 ## Completed
 | Task | Status | Details |

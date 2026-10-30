@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
 Last updated: **2026-10-30**
-Baseline: `main` at `f02f9cf`; GitHub beta `v0.1.0-beta.1` published (S01–S11 and F20 are on `main`).
+Feature baseline: `main` at `f02f9cf`; GitHub beta `v0.1.0-beta.1` published (S01–S11 and F20 are on `main`). Docs/CI changes after this baseline do not change feature status.
 Pending: F22 support-link scaffold on `feat/support-donation-links` at `037b1ac` (About section hidden until a verified Liberapay URL is configured); F20 device/UI verification; beta device smoke test.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F21`](F21-trust-badges.md)

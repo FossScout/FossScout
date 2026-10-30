@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Hardened CI workflows by pinning GitHub Actions to commit SHAs.
+- Documented the protected `main` branch and shared documentation submodule workflow.
+
 ## [0.1.0-beta.1] - 2026-10-29
 
 ### Added
