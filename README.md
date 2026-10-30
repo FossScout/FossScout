@@ -190,3 +190,21 @@ post-v1 and restricted to builds where the platform policy allows them.
 ## License
 
 Released under the [MIT License](LICENSE).
+
+## Documentation
+
+Shared project-agnostic docs live in the
+[best-practices repository](https://github.com/FossScout/best-practices) and are
+available locally through the `tools/best-practices` submodule.
+
+- [Contributing](https://github.com/FossScout/best-practices/blob/main/guides/contributing.md)
+- [Architecture](https://github.com/FossScout/best-practices/blob/main/guides/architecture.md)
+- [Testing](https://github.com/FossScout/best-practices/blob/main/guides/testing.md)
+- [Security](https://github.com/FossScout/best-practices/blob/main/guides/security.md)
+- [Development](docs/DEVELOPMENT.md)
+- [Flavors](docs/FLAVORS.md)
+- [Release Process](https://github.com/FossScout/best-practices/blob/main/guides/release-process.md)
+- [Changelog](CHANGELOG.md)
+- [ADRs](docs/adr/README.md)
+- [Checklists](https://github.com/FossScout/best-practices/tree/main/checklists)
+- [Best Practices Library](https://github.com/FossScout/best-practices)
