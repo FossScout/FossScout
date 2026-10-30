@@ -12,7 +12,7 @@ Fixes # (issue)
 - [ ] Documentation update
 
 ## Checklist
-- [ ] I have read the [AGENTS.md](../AGENTS.md) and followed the workflow
+- [ ] I have read the [contributing guide](https://github.com/FossScout/best-practices/blob/main/guides/contributing.md) and followed the workflow
 - [ ] I have run tests (`./gradlew test`) and they pass
 - [ ] I have run lint (`./gradlew lint`) and there are no errors
 - [ ] I have built both flavors (`./gradlew assemblePlaystoreDebug assembleFdroidDebug`)
