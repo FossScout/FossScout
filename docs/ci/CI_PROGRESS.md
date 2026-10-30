@@ -24,7 +24,7 @@ Baseline: main @ f02f9cf; beta release `v0.1.0-beta.1`
 | GitHub Secrets for release | Done | `KEYSTORE_FILE`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` configured on 2026-10-29 |
 | Branch protection rules | Done | `main` ruleset requires a PR, the `build` check, an up-to-date branch, and conversation resolution; blocks force pushes and deletion. `best-practices` has a PR-only ruleset. |
 | Release smoke test | Done | `v0.1.0-beta.1` published as a GitHub prerelease; APK package `com.fossscout.app.beta`, version `0.1.0-beta.1` (version code 9), checksum and certificate verified. |
-| Release notes/changelog | Pending | Consider release drafter or auto-generate from commits/PRs |
+| Release notes/changelog | Partial | `CHANGELOG.md` is maintained manually; automation remains optional |
 | Coverage reporting | Pending | Optional: add jacoco/report upload |
 
 ## Verification commands (local)
