@@ -1,0 +1,1 @@
+tools/best-practices/guides/architecture.md

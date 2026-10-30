@@ -1,0 +1,4 @@
+[submodule "tools/best-practices"]
+	path = tools/best-practices
+	url = https://github.com/FossScout/best-practices.git
+	branch = main

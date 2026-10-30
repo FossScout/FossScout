@@ -1,0 +1,1 @@
+../../tools/best-practices/templates/adr/0000-adr-template.md
