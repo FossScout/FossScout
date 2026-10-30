@@ -13,7 +13,7 @@ remain intentionally disabled.
 ## Beta Variant
 - `playstoreBeta` variant uses application ID `com.fossscout.app.beta` with `-beta` version suffix
 - Allows installation alongside production
-- Only triggered by tags matching `v*-beta*`
+- The GitHub release workflow runs only for tags matching `v*-beta*`; the variant can still be built locally
 
 ## Build Commands
 ```bash
