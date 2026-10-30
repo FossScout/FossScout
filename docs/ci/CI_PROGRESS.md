@@ -8,6 +8,7 @@ Baseline: main @ f02f9cf; beta release `v0.1.0-beta.1`
 | Task | Status | Details |
 | --- | --- | --- |
 | CI workflow (build/test/lint) | Done | `.github/workflows/ci.yml` - JDK 17, Android SDK, gradle cache, runs test/lint/assemblePlaystoreDebug/assembleFdroidDebug, uploads APKs |
+| Action pinning | Done | Workflow actions are pinned to commit SHAs with version comments. |
 | Issue templates | Done | `.github/ISSUE_TEMPLATE/bug_report.md`, `feature_request.md` |
 | PR template | Done | `.github/PULL_REQUEST_TEMPLATE.md` includes the shared contributing guide link and verification checklist |
 | Dependabot | Done | `.github/dependabot.yml` for gradle and github-actions (weekly) |
