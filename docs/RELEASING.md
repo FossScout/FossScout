@@ -48,6 +48,10 @@ verifies the signature with `apksigner`, writes a `.sha256` file, uploads the
 artifact, and creates a GitHub prerelease. Only tags containing `-beta` trigger
 this workflow; stable tags are intentionally not enabled yet.
 
+The workflow checks out the shared docs submodule. The next beta tag is the
+first release that must exercise this checkout; confirm the run succeeds and
+record it in `docs/ci/CI_PROGRESS.md`.
+
 The workflow uses `GITHUB_RUN_NUMBER` as the Android version code.
 
 ## Verify the release
@@ -72,3 +76,6 @@ Before announcing the beta:
 Play internal testing and F-Droid are separate follow-up stages. Do not publish
 the beta APK to Play or F-Droid: Play App Signing and official F-Droid builds
 have different signing and application-ID requirements.
+
+The beta signing key is dedicated to GitHub beta builds. Do not reuse it for
+Play App Signing or F-Droid.
