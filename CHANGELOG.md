@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Manual Play internal-testing AAB build workflow with a dedicated upload key.
+
 ### Changed
 
 - Hardened CI workflows by pinning GitHub Actions to commit SHAs.

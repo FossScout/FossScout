@@ -1,0 +1,132 @@
+name: Play Internal AAB
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Version name (for example 0.1.0)'
+        required: true
+        type: string
+      version_code:
+        description: 'Positive integer version code'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-aab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      # Dedicated Play upload key; never reuse the beta signing key.
+      KEYSTORE_FILE: ${{ secrets.PLAY_KEYSTORE_FILE }}
+      KEYSTORE_PASSWORD: ${{ secrets.PLAY_KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.PLAY_KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.PLAY_KEY_PASSWORD }}
+      CI_VERSION_NAME: ${{ inputs.version_name }}
+      CI_VERSION_CODE: ${{ inputs.version_code }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          submodules: true
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        run: |
+          export ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
+          rm -rf $ANDROID_HOME/cmdline-tools/latest
+          unzip -q /tmp/cmdline-tools.zip -d /tmp
+          mv /tmp/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Validate Play signing secrets
+        run: |
+          missing=0
+          for pair in \
+            "PLAY_KEYSTORE_FILE:KEYSTORE_FILE" \
+            "PLAY_KEYSTORE_PASSWORD:KEYSTORE_PASSWORD" \
+            "PLAY_KEY_ALIAS:KEY_ALIAS" \
+            "PLAY_KEY_PASSWORD:KEY_PASSWORD"; do
+            secret="${pair%%:*}"
+            variable="${pair##*:}"
+            if [ -z "$(printenv "$variable")" ]; then
+              echo "::error::Missing required secret: $secret"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Validate version
+        run: |
+          case "$CI_VERSION_CODE" in
+            ''|*[!0-9]*)
+              echo "::error::version_code must be numeric"
+              exit 1
+              ;;
+          esac
+          if [ "$CI_VERSION_CODE" -le 0 ]; then
+            echo "::error::version_code must be greater than zero"
+            exit 1
+          fi
+          case "$CI_VERSION_NAME" in
+            *-beta*)
+              echo "::error::Play version name must not contain -beta"
+              exit 1
+              ;;
+          esac
+
+      - name: Decode Play upload keystore
+        run: |
+          echo "$KEYSTORE_FILE" | base64 -d > "$RUNNER_TEMP/play-upload.jks"
+          echo "KEYSTORE_FILE=$RUNNER_TEMP/play-upload.jks" >> "$GITHUB_ENV"
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Build Play AAB
+        run: ./gradlew bundlePlaystoreRelease
+
+      - name: Verify Play AAB
+        run: |
+          AAB_DIR=app/build/outputs/bundle/playstoreRelease
+          AAB=$(find "$AAB_DIR" -name '*.aab' -print -quit)
+          test -n "$AAB"
+          if ! jarsigner -verify "$AAB" > /tmp/jarsigner.txt 2>&1; then
+            cat /tmp/jarsigner.txt
+            exit 1
+          fi
+          cat /tmp/jarsigner.txt
+          grep -q 'jar verified' /tmp/jarsigner.txt
+          sha256sum "$AAB" > "$AAB.sha256"
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: play-internal-aab
+          path: |
+            app/build/outputs/bundle/playstoreRelease/*.aab
+            app/build/outputs/bundle/playstoreRelease/*.sha256
+          retention-days: 30
