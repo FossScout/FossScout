@@ -30,7 +30,8 @@ Encode the keystore without line wrapping:
 base64 -w0 release.jks
 ```
 
-Keep the keystore and passwords out of the repository.
+Keep the keystore and passwords out of the repository. The Play upload key uses
+separate secrets; see [Play internal testing](PLAY_INTERNAL_TESTING.md).
 
 ## Create a beta release
 
@@ -79,3 +80,6 @@ have different signing and application-ID requirements.
 
 The beta signing key is dedicated to GitHub beta builds. Do not reuse it for
 Play App Signing or F-Droid.
+
+See [Play internal testing](PLAY_INTERNAL_TESTING.md) for the manual AAB build
+workflow and Play Console setup.
