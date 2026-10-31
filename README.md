@@ -65,7 +65,8 @@ Direct APK install and the install-time accessibility prompt are deferred.
 
 ## Tech stack
 
-- Kotlin 2.0
+- Kotlin 2.4
+- Gradle 9.6 and Android Gradle Plugin 9.5
 - Jetpack Compose + Material 3
 - AndroidX Lifecycle and ViewModel with StateFlow
 - DataStore Preferences with kotlinx.serialization for local persistence
