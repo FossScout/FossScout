@@ -19,6 +19,7 @@ Feature baseline: main @ f02f9cf; beta release `v0.1.0-beta.1`. Docs/CI changes 
 | Beta release workflow | Done | `.github/workflows/release.yml` validates signing secrets through environment variables, has `contents: write`, runs only for `v*-beta*` tags, checks out submodules, verifies the beta APK signature/checksum, and creates a GitHub prerelease. Run [40850806405](https://github.com/FossScout/FossScout/actions/runs/40850806405) passed before submodule checkout was added; the next beta tag must re-verify it. |
 | Shared docs submodule | Done | `tools/best-practices` is pinned to `532512f`; CI and release workflows check out submodules. |
 | Play internal AAB build | Done | `.github/workflows/play-internal.yml` builds a signed AAB with dedicated Play upload secrets, verifies it, and uploads it as an artifact; Play Console upload remains manual. |
+| Toolchain upgrade | Done | Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.06.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
 
 ## Pending / Manual
 | Task | Status | Details |
@@ -30,6 +31,8 @@ Feature baseline: main @ f02f9cf; beta release `v0.1.0-beta.1`. Docs/CI changes 
 | Release notes/changelog | Partial | `CHANGELOG.md` is maintained manually; automation remains optional |
 | Play Console setup | Pending | App entry, Play App Signing, declarations, store listing, internal track, and tester setup remain manual |
 | Play upload automation | Pending | Requires a Play Developer API service account and an approved upload action or dependency |
+| Compose BOM 2026.09.00 | Pending | Requires `compileSdk = 37`; API 36 remains the approved compile SDK |
+| Built-in Kotlin migration | Pending | AGP 9.5 bundles Kotlin 2.2.10; the project opts out to keep Kotlin 2.4.21. Revisit before AGP 10 |
 | Coverage reporting | Pending | Optional: add jacoco/report upload |
 
 ## Verification commands (local)
@@ -46,6 +49,7 @@ CI_VERSION_CODE=123 CI_VERSION_NAME=1.0.0 ./gradlew :app:printVersion 2>&1 | tai
 
 ## Completeness check against STATUS.md
 - CI/build matrix: **Complete** (both flavors, debug/release/beta paths, manual Play AAB)
+- Toolchain: **Complete for approved API 36**; Compose BOM 2026.09 and built-in Kotlin migration remain pending
 - Versioning/flavors/variants: **Complete** (CI-driven, flavor support, beta application ID)
 - Issues/PR/workflow: **Complete** (templates + dependabot + branch workflow guidance)
 - Release/signing: **Complete for GitHub beta**; Play AAB build uses dedicated secrets, but Play Console upload and F-Droid signing remain pending
