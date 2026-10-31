@@ -1,6 +1,6 @@
 # CI Progress & Status
 
-Last updated: 2026-10-30
+Last updated: 2026-10-31
 Branch: main
 Feature baseline: main @ f02f9cf; beta release `v0.1.0-beta.1`. Docs/CI changes after this baseline are tracked below.
 
@@ -8,7 +8,7 @@ Feature baseline: main @ f02f9cf; beta release `v0.1.0-beta.1`. Docs/CI changes 
 | Task | Status | Details |
 | --- | --- | --- |
 | CI workflow (build/test/lint) | Done | `.github/workflows/ci.yml` - JDK 17, Android SDK, gradle cache, runs test/lint/assemblePlaystoreDebug/assembleFdroidDebug, uploads APKs |
-| Action pinning | Done | Workflow actions are pinned to commit SHAs with version comments. |
+| Action pinning | Done | Workflow actions are pinned to commit SHAs with version comments; CI explicitly uses read-only repository permissions. |
 | Issue templates | Done | `.github/ISSUE_TEMPLATE/bug_report.md`, `feature_request.md` |
 | PR template | Done | `.github/PULL_REQUEST_TEMPLATE.md` includes the shared contributing guide link and verification checklist |
 | Dependabot | Done | `.github/dependabot.yml` for gradle and github-actions (weekly) |
