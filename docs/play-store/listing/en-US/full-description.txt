@@ -1,0 +1,26 @@
+FossScout helps you discover free and open source Android software, check an app against verified FOSS store indexes, and hand off to a trusted store client without guesswork.
+
+It is local-first by design: no account, no ads, no analytics, and no hidden telemetry. Your favourites, notes, collections, and settings stay on your device unless you choose to export or share them.
+
+WHAT YOU CAN DO
+• Browse a curated catalog of FOSS projects and filter by category or tag.
+• Search by project name, tagline, or tag.
+• Check an app by name or package against verified F-Droid and IzzyOnDroid indexes.
+• Review match confidence, evidence, coverage, and alternatives.
+• Correct a wrong match locally and keep a private note.
+• Inspect store security details, pinned fingerprints, index signatures, and verification history.
+• Save favourites, write private notes, and build collections you can share or import.
+• Export and restore your local profile with an optional passphrase.
+• Hand off to F-Droid, Droid-ify, or Neo Store, or open a browser fallback.
+• Report a missing store, wrong match, or adapter request with a redacted preview.
+
+PRIVACY AND CONTROL
+FossScout keeps its working data on your device. The Play build uses manual package checks and limited package visibility; it does not request broad package access, install packages, or use an accessibility service. The F-Droid build adds a full installed-app scan for people who want it.
+
+Network access is used for store index sync and for links you choose to open. Store indexes are checked against pinned fingerprints and signatures. Reports are never uploaded automatically: you review the redacted content and decide whether to copy, share, or open it in your browser.
+
+FossScout does not download or install APKs. It helps you find the source and hand off to a store client you trust.
+
+FossScout is free software under the MIT License. The catalog is made of openly licensed projects.
+
+Requires Android 7.0 or newer.
