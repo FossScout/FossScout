@@ -1,0 +1,5 @@
+Initial internal test build of FossScout.
+
+Try Discover, search, FOSS matching, store security details, Saved projects, collections, contribution reports, and settings.
+
+FossScout does not install or uninstall apps. Please report crashes or confusing results through the repository issue tracker.

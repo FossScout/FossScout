@@ -4,6 +4,10 @@ Play internal testing is the next distribution stage after the GitHub beta. The
 repository can build a signed AAB for manual upload, but the Play Console setup
 and automated upload are not complete.
 
+The account-independent listing package is in
+[`docs/play-store/`](play-store/README.md): title and description, privacy
+policy draft, declarations, app icon, feature graphic, and phone screenshots.
+
 ## Signing
 
 Use a dedicated Play upload key. Do not reuse the GitHub beta signing key.
