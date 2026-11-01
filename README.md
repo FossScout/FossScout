@@ -71,7 +71,7 @@ Direct APK install and the install-time accessibility prompt are deferred.
 - AndroidX Lifecycle and ViewModel with StateFlow
 - DataStore Preferences with kotlinx.serialization for local persistence
 - Gradle version catalog (`gradle/libs.versions.toml`)
-- Min SDK 24, target/compile SDK 36
+- Min SDK 24, target SDK 36, compile SDK 37
 
 ## Build profiles
 
@@ -102,7 +102,7 @@ The beta release process is documented in [docs/RELEASING.md](docs/RELEASING.md)
 
 Requirements:
 
-- Android Studio (or a command-line Android SDK) with **SDK 36** and
+- Android Studio (or a command-line Android SDK) with **SDK Platform 37.0** and
   **Build-Tools 36.0.0**
 - JDK 17 or newer
 
