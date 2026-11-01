@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.fossscout.app"
-    compileSdk = 36
+    compileSdk = 37
 
     val ciVersionCode = System.getenv("CI_VERSION_CODE")?.toIntOrNull()
         ?: System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()

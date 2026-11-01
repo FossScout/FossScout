@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.fossscout.feature.companion"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Upgraded to Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.06.00, coroutines 1.11.0, and serialization 1.12.0.
+- Upgraded to Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0.
+- Raised `compileSdk` to 37 and updated CI, release, and Play workflows to install `platforms;android-37.0`.
 - Hardened CI workflows by pinning GitHub Actions to commit SHAs.
 - Documented the protected `main` branch and shared documentation submodule workflow.
 
