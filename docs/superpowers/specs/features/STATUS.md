@@ -111,8 +111,9 @@ file after every feature session with the new commit, test result, and status.
   and share actions, opt-in redacted debug JSON, and no automatic upload or new
   network permission.
 - Optional About-screen support entry point behind a single validated Liberapay
-  URL constant. The section stays hidden until the project URL is configured;
-  there is no payment SDK, new permission, account, tracking, or feature gating.
+  URL constant, enabled with the verified team URL. The guard still hides the
+  section if the constant is blank or invalid. There is no payment SDK, new
+  permission, account, tracking, or feature gating.
 - Policy-safe “unavailable in this build” explanations and capability labels for
   restricted features.
 - Play-safe manifest: no install-packages permission, broad package visibility,
@@ -147,7 +148,7 @@ file after every feature session with the new commit, test result, and status.
 | F19 | Permission and tracker diff | **Spec only** | Post-v1. No feature ID or code. | S12 |
 | F20 | Matching correction | **Done** | Local corrections from the match screen: cached enabled-store target search, no-suitable-match, private note, corrected badge, target-unavailable warning, undo, automatic result retained, and one override per package key. Backup schema 2 adds overrides with v1 checksum migration and merge/replace/skip preview. Store-scoped overrides (R8), shareable corrections, low-confidence prompts, and profile-scoped duplicates remain deferred. Device/UI verification pending. | S18 (post-v1) |
 | F21 | Trust badges | **Spec only** | Post-v1. No feature ID or code. | S12 |
-| F22 | Support and donations | **Partial** | About support section and URL validation exist in `9fed281`. The section is hidden because `SupportLinks.LIBERAPAY_URL` is blank; README documents the optional Liberapay path. No payment SDK, permission, account, tracking, or feature gating. | Post-v1 support |
+| F22 | Support and donations | **Done** | About support section and URL validation are enabled with the verified Liberapay team URL `https://liberapay.com/FossScout/`; the README links to the same profile. No payment SDK, permission, account, tracking, or feature gating. Device verification of the browser handoff remains pending. | Post-v1 support |
 
 ## Verification snapshot
 
@@ -186,8 +187,23 @@ on a real device.
 
 ### F22 support link (2026-11-02)
 
-Verification for the configured `https://liberapay.com/FossScout/` URL is
-recorded after the rebase and test run.
+Commands run on `feat/support-donation-links` after rebasing onto `main`
+(`dc9c27a`):
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test lint assemblePlaystoreDebug assembleFdroidDebug` | **Passed** (2m 54s, 645 actionable tasks) |
+| Unit tests | **Passed**: 521 test cases across 74 suites; 0 failures, 0 errors, 0 skipped |
+| `assemblePlaystoreDebug` | **Passed** |
+| `assembleFdroidDebug` | **Passed** |
+| `./gradlew :app:lintPlaystoreDebug` | **Passed**: 0 errors, 23 warnings |
+| `./gradlew lint` | **Passed**: 0 errors; app F-Droid 21 warnings, `feature:favourites` 14, `feature:inventory` 5, other modules 0–1 |
+| URL guard | `SupportLinksTest` covers blank, configured, non-HTTPS, non-Liberapay, root, query/fragment, credentials, and explicit-port cases |
+| Live URL | `https://liberapay.com/FossScout/` returned 200; Liberapay reports `kind: group` with `kanzel` as member |
+
+The support section is enabled by the configured URL. This is a
+composition/link-guard check, not device verification. No permission, provider,
+dependency, payment SDK, or manifest capability was added.
 
 Debug builds may warn that native symbols for `libandroidx.graphics.path.so`
 and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build

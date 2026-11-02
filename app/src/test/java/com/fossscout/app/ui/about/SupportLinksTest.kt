@@ -20,6 +20,11 @@ class SupportLinksTest {
     }
 
     @Test
+    fun `configured url is exposed to the about screen`() {
+        assertEquals("https://liberapay.com/FossScout/", SupportLinks.liberapayUrlOrNull())
+    }
+
+    @Test
     fun `non https url is rejected`() {
         assertNull(SupportLinks.validatedLiberapayUrl("http://liberapay.com/FossScout/"))
     }

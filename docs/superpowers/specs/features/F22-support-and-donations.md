@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Partial (About entry point implemented; verified Liberapay URL pending) |
+| Status | Done (verified Liberapay team URL configured) |
 | Availability | **General** |
 | Profiles | `playstore`, `fdroid`, `direct`, `custom` |
 | Required capabilities | None |
@@ -65,7 +65,10 @@ request inside the app.
 ## 8. Open questions
 
 1. What is the canonical Liberapay profile URL?
+   **Resolved:** `https://liberapay.com/FossScout/`, a team account with
+   `kanzel` as its member, verified on 2026-11-02.
 2. Should the README publish a second one-time donation method later?
+   **Deferred:** no second method is planned.
 
 ## 9. Implementation decision (2026-10-27)
 
@@ -73,11 +76,11 @@ request inside the app.
   are unchanged, and Settings does not add another support entry.
 - **Platform:** Liberapay. The link is external and uses the browser; no payment
   SDK is added.
-- **Hidden placeholder:** `SupportLinks.LIBERAPAY_URL` is blank until the
-  project account exists. `SupportLinks.validatedLiberapayUrl` accepts only an
-  HTTPS `liberapay.com` profile URL with no credentials, explicit port, query, or
-  fragment.
+- **Verified URL:** `SupportLinks.LIBERAPAY_URL` is
+  `https://liberapay.com/FossScout/`. `SupportLinks.validatedLiberapayUrl`
+  accepts only an HTTPS `liberapay.com` profile URL with no credentials,
+  explicit port, query, or fragment.
 - **README:** the support section explains that donations are optional, do not
-  unlock features, and the verified link will be published when configured.
+  unlock features, and links to the same verified profile.
 - **Deferred:** in-app billing, donation prompts, one-time payment methods, and
   store-specific donation links.

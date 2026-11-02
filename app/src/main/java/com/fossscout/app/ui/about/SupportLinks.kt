@@ -5,12 +5,11 @@ import java.net.URI
 /**
  * Keeps the optional donation entry point in one place.
  *
- * The URL stays blank until the project has a verified Liberapay account. A
- * blank or invalid value hides the About support section instead of exposing a
- * dead or untrusted link.
+ * The URL is the verified Liberapay team profile. A blank or invalid value
+ * hides the About support section instead of exposing a dead or untrusted link.
  */
 object SupportLinks {
-    const val LIBERAPAY_URL: String = ""
+    const val LIBERAPAY_URL: String = "https://liberapay.com/FossScout/"
 
     fun liberapayUrlOrNull(): String? = validatedLiberapayUrl(LIBERAPAY_URL)
 

@@ -58,5 +58,5 @@ requirements, acceptance criteria, data/privacy notes, and open questions.
   candidates: unified store search, permission/tracker comparison, local
   matching correction, and trust badges. They are proposed for the post-v1
   roadmap, not the first integrated foundation.
-- F22 is a post-v1 support feature. The About entry point exists, but it remains
-  hidden until a verified Liberapay URL is configured.
+- F22 is a post-v1 support feature. The About entry point is enabled with the
+  verified Liberapay team URL.
