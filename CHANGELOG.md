@@ -9,12 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- About-screen Liberapay support link using the verified team profile.
+- Google Play listing copy, graphics, privacy-policy draft, and declaration drafts.
+
+### Changed
+
+- Raised `compileSdk` to 37, upgraded Compose BOM to 2026.09.00, and updated CI, release, and Play workflows to install `platforms;android-37.0`.
+
+## [0.1.0-beta.2] - 2026-11-01
+
+### Added
+
 - Manual Play internal-testing AAB build workflow with a dedicated upload key.
 
 ### Changed
 
-- Upgraded to Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0.
-- Raised `compileSdk` to 37 and updated CI, release, and Play workflows to install `platforms;android-37.0`.
+- Upgraded to Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.06.00, coroutines 1.11.0, and serialization 1.12.0.
 - Hardened CI workflows by pinning GitHub Actions to commit SHAs.
 - Documented the protected `main` branch and shared documentation submodule workflow.
 
@@ -26,5 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beta build type with application ID `com.fossscout.app.beta`.
 - Signed GitHub prerelease workflow for `v*-beta*` tags.
 
-[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.0-beta.1...HEAD
+[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.0-beta.2...HEAD
+[0.1.0-beta.2]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.2
 [0.1.0-beta.1]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.1

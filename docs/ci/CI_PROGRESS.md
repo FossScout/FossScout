@@ -1,8 +1,8 @@
 # CI Progress & Status
 
-Last updated: 2026-11-01
+Last updated: 2026-11-02
 Branch: main
-Feature baseline: main @ f02f9cf; current beta release `v0.1.0-beta.2`. Docs/CI changes after this baseline are tracked below.
+Feature baseline: main @ 5c3f8ab; current beta release `v0.1.0-beta.2`. Docs/CI changes after this baseline are tracked below.
 
 ## Completed
 | Task | Status | Details |
@@ -28,6 +28,7 @@ Feature baseline: main @ f02f9cf; current beta release `v0.1.0-beta.2`. Docs/CI 
 | Play upload secrets | Pending | `PLAY_KEYSTORE_FILE`, `PLAY_KEYSTORE_PASSWORD`, `PLAY_KEY_ALIAS`, and `PLAY_KEY_PASSWORD` are not configured |
 | Branch protection rules | Done | `main` ruleset requires a PR, the `build` check, an up-to-date branch, and conversation resolution; blocks force pushes and deletion. `best-practices` has a PR-only ruleset. |
 | Release smoke test | Done | `v0.1.0-beta.2` published as a GitHub prerelease; APK package `com.fossscout.app.beta`, version `0.1.0-beta.2` (version code 10), checksum and certificate verified. |
+| Device smoke test | Pending | Use [`docs/DEVICE_SMOKE_TEST.md`](../DEVICE_SMOKE_TEST.md); no attached device or emulator is available in the current environment. |
 | Release notes/changelog | Partial | `CHANGELOG.md` is maintained manually; automation remains optional |
 | Play Console setup | Pending | App entry, Play App Signing, declarations, store listing, internal track, and tester setup remain manual |
 | Play upload automation | Pending | Requires a Play Developer API service account and an approved upload action or dependency |
@@ -53,4 +54,4 @@ CI_VERSION_CODE=123 CI_VERSION_NAME=1.0.0 ./gradlew :app:printVersion 2>&1 | tai
 - Versioning/flavors/variants: **Complete** (CI-driven, flavor support, beta application ID)
 - Issues/PR/workflow: **Complete** (templates + dependabot + branch workflow guidance)
 - Release/signing: **Complete for GitHub beta**; Play AAB build uses dedicated secrets, but Play Console upload and F-Droid signing remain pending
-- Documentation: **Complete for the beta channel and Play AAB build**; F-Droid runbook remains pending
+- Documentation: **Complete for the beta channel, Play AAB build, and device smoke-test checklist**; F-Droid runbook remains pending
