@@ -45,9 +45,9 @@ implementation sessions are complete; **S12 remains post-v1**.
 No v1 implementation session is currently next. F20 matching correction was
 merged as S18 in PR #2 (`9e55acf`); that PR also carried S11 because local `main`
 was ahead of `origin/main`. The F22 support-link work is tracked outside the v1
-session map; the verified Liberapay team URL is configured and the PR is
-pending. Store-scoped overrides, shareable corrections, low-confidence prompts,
-and device/UI verification remain deferred.
+session map; the verified Liberapay team URL is configured in this change.
+Store-scoped overrides, shareable corrections, low-confidence prompts, and
+device/UI verification remain deferred.
 
 No next post-v1 feature is selected. F18 unified store search is the recommended
 next candidate, subject to approval and a brief. F19/F21 still need approved
