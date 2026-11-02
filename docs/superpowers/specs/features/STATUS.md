@@ -1,8 +1,8 @@
 # FossScout Implementation Status
 
 Last updated: **2026-11-02**
-Feature baseline: `main` at `f02f9cf`; current GitHub beta `v0.1.0-beta.2` (S01–S11 and F20 are on `main`). Docs/CI changes after this baseline do not change feature status.
-Pending: F20 device/UI verification; beta device smoke test. F22 support link is complete and verified below.
+Feature baseline: `main` at `5c3f8ab`; current GitHub beta `v0.1.0-beta.2` (S01–S11, F20, and F22 are on `main`).
+Pending: device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); Play internal testing and F-Droid delivery.
 Delivery: Toolchain upgraded to Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play internal AAB workflow added; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F22`](F22-support-and-donations.md)
@@ -40,7 +40,7 @@ file after every feature session with the new commit, test result, and status.
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
 | Feature completion | **13 of 21 fully done; 2 partial; 3 deferred; 3 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** run the beta device smoke test, then prepare Play internal testing. Evaluate F18 unified store search subject to approval and an approved brief. F20 matching correction and F22 support link are complete; F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** run the [device smoke test](../../../DEVICE_SMOKE_TEST.md), then prepare Play internal testing. Evaluate F18 unified store search subject to approval and an approved brief. F20 matching correction and F22 support link are complete; F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ## What works today
 
@@ -210,6 +210,10 @@ and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build
 warning, not a failing check.
 
 ## Known gaps and blockers
+
+Device/UI verification for the completed features is tracked in
+[`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md). The current
+environment has no attached device or emulator.
 
 ### Product scope
 

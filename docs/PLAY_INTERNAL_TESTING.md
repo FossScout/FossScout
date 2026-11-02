@@ -80,5 +80,6 @@ access and an upload action or dependency. That is intentionally not added yet.
 - The AAB is signed by the Play upload key, not the beta key.
 - The package name is `com.fossscout.app`.
 - The version code is higher than the previous upload.
+- Complete the [device smoke test](DEVICE_SMOKE_TEST.md) with the Play build.
 - Internal testers can install the build.
 - The uploaded artifact matches the workflow SHA-256 checksum.

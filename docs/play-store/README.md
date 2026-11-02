@@ -77,7 +77,8 @@ device is available.
 3. Confirm no analytics, ads, or crash-reporting SDK was added.
 4. Build the Play AAB with the dedicated Play upload key, not the GitHub beta
    key.
-5. Re-check the listing text and screenshots against the Play build, not the
+5. Complete the [device smoke test](../DEVICE_SMOKE_TEST.md) with the Play build.
+6. Re-check the listing text and screenshots against the Play build, not the
    F-Droid build.
 
 See [`../PLAY_INTERNAL_TESTING.md`](../PLAY_INTERNAL_TESTING.md) for the AAB

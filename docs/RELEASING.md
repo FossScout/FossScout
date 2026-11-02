@@ -62,14 +62,15 @@ Before announcing the beta:
 - Confirm the GitHub release is marked as a prerelease.
 - Download the APK and verify the checksum.
 - Confirm the package name is `com.fossscout.app.beta`.
-- Install it alongside the production app and smoke-test startup, inventory,
-  matching, favourites, collections, and backup.
+- Complete the [device smoke test](DEVICE_SMOKE_TEST.md), including installing
+  alongside the production app.
 - Confirm the release workflow run passed signature verification.
 
 ## Release history
 
 | Version | Date | Channel | Result |
 | --- | --- | --- | --- |
+| [`v0.1.0-beta.2`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.2) | 2026-11-01 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version `0.1.0-beta.2` (version code 10), checksum and certificate verified. |
 | [`v0.1.0-beta.1`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.1) | 2026-10-29 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version code 9, checksum and certificate verified. |
 
 ## Later channels

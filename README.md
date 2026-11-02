@@ -214,6 +214,7 @@ available locally through the `tools/best-practices` submodule.
 - [Flavors](docs/FLAVORS.md)
 - [Release Process](docs/RELEASING.md)
 - [Play Internal Testing](docs/PLAY_INTERNAL_TESTING.md)
+- [Device Smoke Test](docs/DEVICE_SMOKE_TEST.md)
 - [Shared Release Process](https://github.com/FossScout/best-practices/blob/main/guides/release-process.md)
 - [Changelog](CHANGELOG.md)
 - [ADRs](docs/adr/README.md)
