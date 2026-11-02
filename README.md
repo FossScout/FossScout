@@ -189,6 +189,13 @@ depend on `:app` or on each other.
 Direct APK download/install and the install-time accessibility prompt are
 post-v1 and restricted to builds where the platform policy allows them.
 
+## Support
+
+FossScout is free software with no ads, accounts, or paid feature tiers. Optional
+donations support development; they do not unlock features. You can support the
+project through [Liberapay](https://liberapay.com/FossScout/), also available
+from the About screen.
+
 ## License
 
 Released under the [MIT License](LICENSE).
