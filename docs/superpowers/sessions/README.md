@@ -93,7 +93,8 @@ session starts.
 - Keep feature modules independent; put shared contracts in `core:*`.
 - All user-facing text belongs in `res/values/strings.xml`.
 - No restricted permission or service may enter the Play merged manifest.
-- Do not disturb the untracked `screenshots/` or `SCREENSHOT_CHECKLIST.md`.
+- Do not overwrite the tracked `screenshots/` or `SCREENSHOT_CHECKLIST.md`
+  without updating the capture records.
 
 ## Definition of done for every session
 

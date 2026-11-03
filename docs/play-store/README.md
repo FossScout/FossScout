@@ -45,11 +45,11 @@ scan.
 
 The listing copy and screenshots therefore describe manual app/package checks
 rather than a full device scan. Do not use the inventory full-scan screenshots
-from the ignored `screenshots/` directory for the Play listing.
+from the tracked `screenshots/` directory for the Play listing.
 
 ## Graphics
 
-The screenshots are derived from the existing ignored captures in
+The screenshots are derived from the existing tracked captures in
 `screenshots/` and recomposed onto 1080 × 1920 canvases. The selected source
 images are:
 

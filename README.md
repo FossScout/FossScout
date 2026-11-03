@@ -63,6 +63,23 @@ Direct APK install and the install-time accessibility prompt are deferred.
 - Light and dark themes with a custom green palette
 - Edge-to-edge Material 3 UI built entirely with Jetpack Compose
 
+## Screenshots
+
+Headless Compose captures from the screenshot harness. They are examples, not
+real-device smoke-test evidence; see
+[SCREENSHOT_CHECKLIST.md](SCREENSHOT_CHECKLIST.md) for the capture set and known
+limitations.
+
+| Discover | Installed apps | FOSS match |
+| --- | --- | --- |
+| [![Discover](screenshots/01-discover-light.png)](screenshots/01-discover-light.png) | [![Installed apps](screenshots/05-inventory-overview.png)](screenshots/05-inventory-overview.png) | [![FOSS match](screenshots/07-match-exact-result.png)](screenshots/07-match-exact-result.png) |
+
+| Stores | Saved | About |
+| --- | --- | --- |
+| [![Stores](screenshots/10-stores-overview.png)](screenshots/10-stores-overview.png) | [![Saved](screenshots/13-saved-favourites.png)](screenshots/13-saved-favourites.png) | [![About](screenshots/24-about.png)](screenshots/24-about.png) |
+
+More captures: [screenshots/](screenshots/).
+
 ## Tech stack
 
 - Kotlin 2.4
@@ -168,6 +185,7 @@ FossScout/
 │   ├── stores/                 # Store registry, sync, and trust evidence UI
 │   └── settings/               # Feature toggle screen and labels
 ├── docs/                       # Design specs and implementation plans
+├── screenshots/                # Tracked headless Compose captures
 ├── gradle/                     # Version catalog and wrapper
 ├── build.gradle.kts
 ├── settings.gradle.kts
@@ -215,6 +233,8 @@ available locally through the `tools/best-practices` submodule.
 - [Release Process](docs/RELEASING.md)
 - [Play Internal Testing](docs/PLAY_INTERNAL_TESTING.md)
 - [Device Smoke Test](docs/DEVICE_SMOKE_TEST.md)
+- [Screenshot Checklist](SCREENSHOT_CHECKLIST.md)
+- [Agent Guidelines](AGENTS.md)
 - [Shared Release Process](https://github.com/FossScout/best-practices/blob/main/guides/release-process.md)
 - [Changelog](CHANGELOG.md)
 - [ADRs](docs/adr/README.md)
