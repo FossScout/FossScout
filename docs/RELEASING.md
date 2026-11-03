@@ -49,8 +49,7 @@ verifies the signature with `apksigner`, writes a `.sha256` file, uploads the
 artifact, and creates a GitHub prerelease. Only tags containing `-beta` trigger
 this workflow; stable tags are intentionally not enabled yet.
 
-The workflow checks out the shared docs submodule. The next beta tag is the
-first release that must exercise this checkout; confirm the run succeeds and
+The workflow checks out the shared docs submodule. Confirm the run succeeds and
 record it in `docs/ci/CI_PROGRESS.md`.
 
 The workflow uses `GITHUB_RUN_NUMBER` as the Android version code.
@@ -70,6 +69,7 @@ Before announcing the beta:
 
 | Version | Date | Channel | Result |
 | --- | --- | --- | --- |
+| [`v0.1.0-beta.3`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.3) | 2026-11-03 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version `0.1.0-beta.3` (version code 11), SHA-256 `ef76fe01c48f116b156b6c472360d47b40fedbacdde0b9cde1dafcd8c154e332`, certificate verified. |
 | [`v0.1.0-beta.2`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.2) | 2026-11-01 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version `0.1.0-beta.2` (version code 10), checksum and certificate verified. |
 | [`v0.1.0-beta.1`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.1) | 2026-10-29 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version code 9, checksum and certificate verified. |
 
