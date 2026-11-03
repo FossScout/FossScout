@@ -22,6 +22,8 @@ NAV_LABELS = ("Discover", "Installed", "Saved", "Stores", "Settings", "About")
 NOT_COVERED = (
     "Release-signed Play AAB, Play Console upload, and internal-track installation.",
     "A real Google Play or F-Droid client install, and work-profile separation.",
+    "Google Play and F-Droid client-provided installer labels (the mapping is "
+    "unit-tested; this run uses installed-package fixtures).",
     "Store index sync, signer rotation/mismatch, storage budget, and cached freshness.",
     "Matching correction, replacement handoff, sharing/import, backup/restore, "
     "contribution, and settings reset flows.",
@@ -823,13 +825,12 @@ class Smoke:
         def installer_fixtures() -> str:
             results: list[str] = []
             cases: list[tuple[str | None, tuple[str, ...], str]] = [
-                (None, ("Installed by", "Installer unknown"), "14-installer-adb"),
-                ("org.fdroid.fdroid", ("Installed by F-Droid",), "15-installer-fdroid"),
-                ("com.android.vending", ("Installed by Google Play",), "16-installer-play"),
+                (None, ("Installed by ADB", "Installer unknown"), "14-installer-adb"),
+                ("com.android.shell", ("Installed by ADB",), "15-installer-known"),
                 (
-                    "com.example.unknown",
-                    ("Installed by com.example.unknown",),
-                    "17-installer-unknown",
+                    "com.android.settings",
+                    ("Installed by com.android.settings",),
+                    "16-installer-other",
                 ),
             ]
             for installer, expected, screenshot in cases:
