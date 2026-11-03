@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Friendly installer names and a preinstalled-system-app fallback in inventory and replacement guidance.
 - About-screen Liberapay support link using the verified team profile.
 - Google Play listing copy, graphics, privacy-policy draft, and declaration drafts.
+- Manual CI emulator smoke test covering both debug builds, core UI flows, installer fallbacks, Play visibility, and the F-Droid full scan.
 
 ### Changed
 
