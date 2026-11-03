@@ -20,6 +20,45 @@ blocker unless the release owner records a specific exception.
 Do not mix results between builds. The Play build uses manual package checks and
 limited package visibility; the F-Droid build uses the full inventory scan.
 
+## CI emulator baseline (partial)
+
+The manual `Device Smoke Test` workflow
+([`.github/workflows/device-smoke.yml`](../.github/workflows/device-smoke.yml))
+runs the CI-emulatable subset on a GitHub-hosted Ubuntu 24.04 runner with an API
+36 AOSP x86_64 emulator. It builds both debug APKs and does not use release
+signing. Start it from the Actions tab with `Run workflow`.
+
+Passing baseline: 2026-11-03, run
+[41644684403](https://github.com/FossScout/FossScout/actions/runs/41644684403),
+artifact `device-smoke`.
+
+Covered:
+
+- Both APKs' package, version, SDK levels, checksum, package visibility, and
+  forbidden install/delete/accessibility entries.
+- Launch, all six bottom destinations, favourites persistence, rotation, font
+  scale, dark theme, and the offline Stores screen.
+- Play limited visibility, manual package check, no full-scan action, and
+  installer fallback.
+- F-Droid full scan with status and last-checked time, plus installed-package
+  fixtures for the ADB fallback, a known installer (friendly name), an unknown
+  installer (raw package), and a preinstalled system app.
+
+Not covered:
+
+- Play Console/internal-track installation, release signing, real Google
+  Play/F-Droid client installs, and work profiles.
+- Google Play and F-Droid client-provided installer labels. The mapping is
+  unit-tested; the CI fixtures use installed packages.
+- Store index sync and signer rotation, matching correction, replacement
+  handoff, sharing/import, backup/restore, and settings reset.
+- Stale-threshold, hide/unhide persistence, inaccessible-app counts, and
+  real-device rendering, performance, and battery behavior.
+
+The artifact contains `report.md`, screenshots, UI dumps, logcat, package dumps,
+and the emulator log. A passing CI run is evidence for the listed checks only.
+It does not replace the real-device checklist below.
+
 ## Run record
 
 | Field | Value |

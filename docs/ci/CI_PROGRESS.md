@@ -20,6 +20,7 @@ Feature baseline: main @ 23a1d87; current beta release `v0.1.0-beta.2`. Docs/CI 
 | Shared docs submodule | Done | `tools/best-practices` is pinned to `532512f`; CI and release workflows check out submodules. |
 | Play internal AAB build | Done | `.github/workflows/play-internal.yml` builds a signed AAB with dedicated Play upload secrets, verifies it, and uploads it as an artifact; Play Console upload remains manual. |
 | Toolchain upgrade | Done | Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
+| CI device smoke test | Done | `.github/workflows/device-smoke.yml` is a manual API 36 AOSP x86_64 emulator run. Run [41644684403](https://github.com/FossScout/FossScout/actions/runs/41644684403) passed with both debug APKs: APK checks, launch/navigation, favourites persistence, rotation, font scale, theme, offline Stores, installer fallbacks, Play visibility, and the F-Droid full scan. |
 
 ## Pending / Manual
 | Task | Status | Details |
@@ -28,7 +29,7 @@ Feature baseline: main @ 23a1d87; current beta release `v0.1.0-beta.2`. Docs/CI 
 | Play upload secrets | Pending | `PLAY_KEYSTORE_FILE`, `PLAY_KEYSTORE_PASSWORD`, `PLAY_KEY_ALIAS`, and `PLAY_KEY_PASSWORD` are not configured |
 | Branch protection rules | Done | `main` ruleset requires a PR, the `build` check, an up-to-date branch, and conversation resolution; blocks force pushes and deletion. `best-practices` has a PR-only ruleset. |
 | Release smoke test | Done | `v0.1.0-beta.2` published as a GitHub prerelease; APK package `com.fossscout.app.beta`, version `0.1.0-beta.2` (version code 10), checksum and certificate verified. |
-| Device smoke test | Pending | Use [`docs/DEVICE_SMOKE_TEST.md`](../DEVICE_SMOKE_TEST.md); no attached device or emulator is available in the current environment. |
+| Real-device smoke test | Partial | The CI emulator baseline passes (run [41644684403](https://github.com/FossScout/FossScout/actions/runs/41644684403)). Remaining checks are in [`docs/DEVICE_SMOKE_TEST.md`](../DEVICE_SMOKE_TEST.md): release signing and Play internal track, real store clients, work profiles, store index/signing, matching correction, replacement handoff, sharing/import, backup/restore, stale/hide behavior, and real-device performance. |
 | Release notes/changelog | Partial | `CHANGELOG.md` is maintained manually; automation remains optional |
 | Play Console setup | Pending | App entry, Play App Signing, declarations, store listing, internal track, and tester setup remain manual |
 | Play upload automation | Pending | Requires a Play Developer API service account and an approved upload action or dependency |
@@ -54,4 +55,4 @@ CI_VERSION_CODE=123 CI_VERSION_NAME=1.0.0 ./gradlew :app:printVersion 2>&1 | tai
 - Versioning/flavors/variants: **Complete** (CI-driven, flavor support, beta application ID)
 - Issues/PR/workflow: **Complete** (templates + dependabot + branch workflow guidance)
 - Release/signing: **Complete for GitHub beta**; Play AAB build uses dedicated secrets, but Play Console upload and F-Droid signing remain pending
-- Documentation: **Complete for the beta channel, Play AAB build, and device smoke-test checklist**; F-Droid runbook remains pending
+- Documentation: **Complete for the beta channel, Play AAB build, and the CI device smoke baseline**; the real-device checklist and F-Droid runbook remain pending

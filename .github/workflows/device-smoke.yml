@@ -2,9 +2,6 @@ name: Device Smoke Test
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - ci/device-smoke
 
 permissions:
   contents: read

@@ -40,7 +40,7 @@ file after every feature session with the new commit, test result, and status.
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
 | Feature completion | **13 of 21 fully done; 2 partial; 3 deferred; 3 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** run the [device smoke test](../../../DEVICE_SMOKE_TEST.md), then prepare Play internal testing. Evaluate F18 unified store search subject to approval and an approved brief. F20 matching correction and F22 support link are complete; F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passes. Then prepare Play internal testing. Evaluate F18 unified store search subject to approval and an approved brief. F20 matching correction and F22 support link are complete; F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ## What works today
 

@@ -932,7 +932,8 @@ class Smoke:
             "",
             "- `playstore/` and `fdroid/` screenshots and UI dumps",
             "- `*/logcat.txt`, `*/package-dumpsys.txt`, and `static/` APK inspection",
-            "- `report.md` and `device.txt`",
+            "- `installer-fixtures/` package dumps for the installer cases",
+            "- `report.md`, `device.txt`, and the emulator log",
             "",
             "This partial run does not replace the full checklist in "
             "[`docs/DEVICE_SMOKE_TEST.md`]"
