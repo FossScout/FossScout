@@ -789,13 +789,19 @@ class Smoke:
         self.adb("uninstall", build.package, check=False)
         remote = "/data/local/tmp/fossscout-play-smoke.apk"
         self.adb("push", build.apk, remote, timeout=120)
-        command: list[object] = ["pm", "install", "-r"]
-        if installer:
-            command += ["-i", installer]
-        command.append(remote)
-        output = self.sh(*command, timeout=180).stdout
+        output = self.sh("pm", "install", "-r", remote, timeout=180).stdout
         if "Success" not in output:
             raise Failure(f"installer fixture install failed:\n{output}")
+        if installer:
+            output = self.sh(
+                "pm",
+                "set-installer",
+                build.package,
+                installer,
+                timeout=60,
+            ).stdout
+            if "Success" not in output:
+                raise Failure(f"installer fixture set failed:\n{output}")
         label = installer or "none"
         self.save(
             f"installer-fixtures/{label}-package-dumpsys.txt",
