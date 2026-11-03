@@ -42,7 +42,14 @@ Keep the keystore and passwords out of the repository.
 
 ## Build the AAB
 
-Run the **Play Internal AAB** workflow manually from GitHub Actions. Provide:
+The `PLAY_*` repository secrets are not configured yet. Until they are, build and
+sign the AAB locally with the dedicated Play upload key, keeping the keystore
+and output outside the repository. The current prepared AAB was built from
+`main` at `b62c960` on 2026-11-03 and includes the installer-label change;
+rebuild if application code changes before upload.
+
+After the secrets are configured, run the **Play Internal AAB** workflow
+manually from GitHub Actions. Provide:
 
 - `version_name`: a Play version name that does not contain `-beta`
 - `version_code`: a positive integer higher than every previously uploaded code
@@ -82,4 +89,4 @@ access and an upload action or dependency. That is intentionally not added yet.
 - The version code is higher than the previous upload.
 - Complete the [device smoke test](DEVICE_SMOKE_TEST.md) with the Play build.
 - Internal testers can install the build.
-- The uploaded artifact matches the workflow SHA-256 checksum.
+- The uploaded artifact matches the SHA-256 recorded next to the AAB.
