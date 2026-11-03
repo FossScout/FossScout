@@ -29,6 +29,7 @@
     <string name="companion_signer_unknown">Signer: unknown</string>
     <string name="companion_signer_not_applicable">Signer: different app</string>
     <string name="companion_installer">Installer: %1$s</string>
+    <string name="companion_installer_system">Installer: Preinstalled system app</string>
 
     <string name="companion_warning_data_loss">Uninstalling can delete local app data.</string>
     <string name="companion_warning_uninstall_required">Android requires uninstalling the current app first.</string>

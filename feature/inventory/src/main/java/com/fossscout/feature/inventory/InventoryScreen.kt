@@ -44,10 +44,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.fossscout.core.inventory.Classification
 import com.fossscout.core.inventory.InstalledApp
+import com.fossscout.core.inventory.InstallerSource
 import com.fossscout.core.inventory.InventoryEntry
 import com.fossscout.core.inventory.InventorySnapshot
 import com.fossscout.core.inventory.InventoryStatus
 import com.fossscout.core.inventory.ScanMode
+import com.fossscout.core.inventory.installerSource
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -591,9 +593,16 @@ private fun InventoryEntryCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = app.installerPackage?.let {
-                        stringResource(R.string.inventory_installer, it)
-                    } ?: stringResource(R.string.inventory_installer_unknown),
+                    text = when (val installer = installerSource(app.installerPackage, app.isSystemApp)) {
+                        is InstallerSource.Known ->
+                            stringResource(R.string.inventory_installer, installer.name)
+                        is InstallerSource.Other ->
+                            stringResource(R.string.inventory_installer, installer.packageName)
+                        InstallerSource.SystemApp ->
+                            stringResource(R.string.inventory_installer_system)
+                        InstallerSource.Unknown ->
+                            stringResource(R.string.inventory_installer_unknown)
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

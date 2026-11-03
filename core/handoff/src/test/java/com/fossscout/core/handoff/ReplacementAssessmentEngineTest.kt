@@ -132,6 +132,7 @@ class ReplacementAssessmentEngineTest {
         assertTrue(ReplacementWarning.CROSS_STORE_KEYS in result.warnings)
         assertTrue(ReplacementWarning.DISABLED_APP in result.warnings)
         assertTrue(ReplacementWarning.WORK_PROFILE in result.warnings)
+        assertTrue(result.installedIsSystemApp)
     }
 
     @Test
@@ -165,6 +166,18 @@ class ReplacementAssessmentEngineTest {
 
         assertTrue(ReplacementWarning.INSTALLER_UNKNOWN in result.warnings)
         assertFalse(ReplacementWarning.OTHER_STORE in result.warnings)
+    }
+
+    @Test
+    fun `system app without an installer is not treated as sideloaded`() {
+        val result = ReplacementAssessmentEngine.assess(
+            installed = installed(installer = null, isSystemApp = true),
+            candidate = candidate(),
+        )
+
+        assertTrue(ReplacementWarning.SYSTEM_APP in result.warnings)
+        assertFalse(ReplacementWarning.INSTALLER_UNKNOWN in result.warnings)
+        assertTrue(result.installedIsSystemApp)
     }
 
     @Test

@@ -41,6 +41,8 @@ import com.fossscout.core.handoff.ReplacementWarning
 import com.fossscout.core.handoff.RepositoryHandoff
 import com.fossscout.core.handoff.SignerComparison
 import com.fossscout.core.handoff.VersionSummary
+import com.fossscout.core.inventory.InstallerSource
+import com.fossscout.core.inventory.installerSource
 
 /**
  * F07/F08 result surface. The screen only offers safe handoffs; it has no
@@ -227,9 +229,23 @@ private fun ReplacementCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                assessment.installedInstallerPackage?.let { installer ->
+                val installerText = when (
+                    val installer = installerSource(
+                        assessment.installedInstallerPackage,
+                        assessment.installedIsSystemApp,
+                    )
+                ) {
+                    is InstallerSource.Known ->
+                        stringResource(R.string.companion_installer, installer.name)
+                    is InstallerSource.Other ->
+                        stringResource(R.string.companion_installer, installer.packageName)
+                    InstallerSource.SystemApp ->
+                        stringResource(R.string.companion_installer_system)
+                    InstallerSource.Unknown -> null
+                }
+                installerText?.let { text ->
                     Text(
-                        text = stringResource(R.string.companion_installer, installer),
+                        text = text,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
