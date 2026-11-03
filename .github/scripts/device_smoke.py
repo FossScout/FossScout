@@ -266,6 +266,10 @@ class Smoke:
         raise Failure(f"{package} did not reach the foreground")
 
     def rotation_value(self) -> int | None:
+        root = self.dump_ui()
+        value = root.get("rotation")
+        if value is not None:
+            return int(value)
         output = self.sh("dumpsys", "input").stdout
         match = re.search(r"SurfaceOrientation:\s*(\d+)", output)
         if match:
@@ -553,20 +557,20 @@ class Smoke:
         def rotation() -> str:
             self.open_destination("Discover", "FossScout", build, "01-discover")
             self.sh("settings", "put", "system", "accelerometer_rotation", "0")
-            self.sh("settings", "put", "system", "user_rotation", "1")
+            self.sh("wm", "user-rotation", "lock", "1")
             time.sleep(3)
             self.invalidate_screen_size()
             if not self.is_landscape():
-                self.adb("emu", "rotate", check=False)
-                time.sleep(3)
-                self.invalidate_screen_size()
-            if not self.is_landscape():
+                self.save_rotation_diagnostics(build)
                 raise Failure("emulator did not rotate to landscape")
             self.wait_for_navigation()
             self.capture(build, "09-landscape")
-            self.sh("settings", "put", "system", "user_rotation", "0")
+            self.sh("wm", "user-rotation", "lock", "0")
             time.sleep(3)
             self.invalidate_screen_size()
+            if self.is_landscape():
+                self.save_rotation_diagnostics(build)
+                raise Failure("emulator did not rotate back to portrait")
             self.wait_for_navigation()
             return "portrait and landscape"
 
@@ -610,6 +614,39 @@ class Smoke:
         self.record(scope, "font scale", font_scale)
         self.record(scope, "dark theme", dark_theme)
         self.record(scope, "offline launch", offline)
+
+    def save_rotation_diagnostics(self, build: Build) -> None:
+        commands = (
+            ("wm-size", ("wm", "size")),
+            ("wm-user-rotation", ("wm", "user-rotation")),
+            ("settings-user-rotation", ("settings", "get", "system", "user_rotation")),
+            (
+                "settings-accelerometer-rotation",
+                ("settings", "get", "system", "accelerometer_rotation"),
+            ),
+            ("dumpsys-input", ("dumpsys", "input")),
+            ("dumpsys-window-displays", ("dumpsys", "window", "displays")),
+        )
+        lines: list[str] = []
+        for name, command in commands:
+            result = self.sh(*command, check=False)
+            text = f"{result.stdout}{result.stderr}"
+            if name.startswith("dumpsys"):
+                text = "\n".join(
+                    line
+                    for line in text.splitlines()
+                    if re.search(
+                        r"SurfaceOrientation|mRotation|rotation|cur=|mDisplayInfo",
+                        line,
+                        re.IGNORECASE,
+                    )
+                )
+            lines.append(f"## {name}\n{text}")
+        try:
+            lines.append(f"## uiautomator rotation\n{self.dump_ui().get('rotation')}")
+        except Exception as exc:
+            lines.append(f"## uiautomator rotation\nunavailable: {exc}")
+        self.save(f"{build.flavor}/rotation-diagnostics.txt", "\n".join(lines))
 
     def set_airplane(self, enabled: bool) -> None:
         action = "enable" if enabled else "disable"

@@ -96,6 +96,7 @@ jobs:
           adb shell settings put global animator_duration_scale 0
           adb shell settings put system accelerometer_rotation 0
           adb shell settings put system user_rotation 0
+          adb shell wm user-rotation lock 0
           adb shell cmd uimode night no
           adb shell cmd connectivity airplane-mode disable || true
           mkdir -p "$RUNNER_TEMP/device-smoke"
