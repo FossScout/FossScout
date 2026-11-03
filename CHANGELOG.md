@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Tracked agent guidelines, the screenshot checklist, and the headless Compose screenshot set, with a README gallery.
 - Friendly installer names and a preinstalled-system-app fallback in inventory and replacement guidance.
 - About-screen Liberapay support link using the verified team profile.
 - Google Play listing copy, graphics, privacy-policy draft, and declaration drafts.
