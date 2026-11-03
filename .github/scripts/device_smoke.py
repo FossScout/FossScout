@@ -837,12 +837,13 @@ class Smoke:
     def full_scan(self, build: Build) -> str:
         self.open_inventory(build)
         self.tap_text("Scan all apps", exact=True, timeout=20)
-        self.wait_for_node("Full device scan", exact=True, timeout=180, scroll=True)
-        self.wait_for_node("Last checked", exact=False, timeout=20, scroll=True)
+        self.wait_for_node("Full device scan", exact=True, timeout=180)
+        self.wait_for_node("Last checked", exact=False, timeout=20)
         status, _ = self.wait_for_any_text(
             ("Complete", "Partial coverage"),
             exact=True,
             timeout=20,
+            scroll=False,
         )
         self.capture(build, "19-full-scan")
         self.save_ui(build, "19-full-scan")
