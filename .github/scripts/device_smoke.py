@@ -736,9 +736,18 @@ class Smoke:
     ) -> str:
         self.enter_package(build, package)
         self.tap_text("Check app", exact=True, timeout=20)
-        self.wait_for_node("Checked one app", exact=True, timeout=30, scroll=True)
-        observed, _ = self.wait_for_any_text(expected_any, exact=False)
-        self.wait_for_node("Unknown", exact=True, timeout=20, scroll=True)
+        self.wait_for_node("Checked one app", exact=True, timeout=30)
+        try:
+            observed, _ = self.wait_for_any_text(
+                expected_any,
+                exact=False,
+                scroll=False,
+            )
+        except Failure:
+            self.capture(build, f"{screenshot}-failure")
+            self.save_ui(build, f"{screenshot}-failure")
+            raise
+        self.wait_for_node("Unknown", exact=True, timeout=20, scroll=False)
         self.capture(build, screenshot)
         self.save_ui(build, screenshot)
         return f"{package}: {observed}"
@@ -787,6 +796,11 @@ class Smoke:
         output = self.sh(*command, timeout=180).stdout
         if "Success" not in output:
             raise Failure(f"installer fixture install failed:\n{output}")
+        label = installer or "none"
+        self.save(
+            f"installer-fixtures/{label}-package-dumpsys.txt",
+            self.sh("dumpsys", "package", build.package, check=False).stdout,
+        )
 
     def fdroid_specific(self, build: Build) -> None:
         self.record(
