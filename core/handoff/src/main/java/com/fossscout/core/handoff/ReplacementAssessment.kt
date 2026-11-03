@@ -55,6 +55,7 @@ data class ReplacementAssessment(
     val installedPackageName: String? = null,
     val installedLabel: String? = null,
     val installedInstallerPackage: String? = null,
+    val installedIsSystemApp: Boolean = false,
     val installedVersion: VersionSummary? = null,
     val candidateVersion: VersionSummary? = null,
     val signerComparison: SignerComparison = SignerComparison.NOT_APPLICABLE,
@@ -117,9 +118,9 @@ object ReplacementAssessmentEngine {
         val installer = installed.installerPackage
             ?.trim()
             ?.takeIf(String::isNotEmpty)
-        if (installer == null) {
+        if (installer == null && !installed.isSystemApp) {
             warnings += ReplacementWarning.INSTALLER_UNKNOWN
-        } else if (installer != CompanionStores.fdroid.packageName) {
+        } else if (installer != null && installer != CompanionStores.fdroid.packageName) {
             warnings += ReplacementWarning.OTHER_STORE
         }
 
@@ -132,6 +133,7 @@ object ReplacementAssessmentEngine {
                 installedPackageName = installed.packageName,
                 installedLabel = installed.label,
                 installedInstallerPackage = installer,
+                installedIsSystemApp = installed.isSystemApp,
                 installedVersion = installedVersion,
                 candidateVersion = candidateVersion,
                 signerComparison = SignerComparison.NOT_APPLICABLE,
@@ -284,6 +286,7 @@ object ReplacementAssessmentEngine {
         installedPackageName = installed.packageName,
         installedLabel = installed.label,
         installedInstallerPackage = installer,
+        installedIsSystemApp = installed.isSystemApp,
         installedVersion = installedVersion,
         candidateVersion = candidateVersion,
         signerComparison = signerComparison,

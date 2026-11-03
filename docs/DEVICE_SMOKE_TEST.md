@@ -60,11 +60,13 @@ limited package visibility; the F-Droid build uses the full inventory scan.
 - [ ] Leave a snapshot for more than the stale threshold. It is visibly marked
       stale.
 - [ ] Open an installed app result and verify the version, installer, and signer
-      rows. The installer row shows the raw installer package (for example
-      `com.android.vending` or `org.fdroid.fdroid`).
+      rows. Known installers use friendly names (for example Google Play or
+      F-Droid); unknown installers show the raw package.
 - [ ] Check an app installed from Google Play, one from F-Droid, one sideloaded
-      with an unknown installer, and one whose installer is not visible. The
-      last two show the "installer unknown (possibly sideloaded)" fallback.
+      with an unknown installer, one whose installer is not visible, and a
+      preinstalled system app. Unknown non-system apps show the "installer
+      unknown (possibly sideloaded)" fallback; system apps show "Preinstalled
+      system app".
 - [ ] Verify the installer source is shown only as context. It does not change
       the FOSS/Unknown/Unavailable classification.
 - [ ] On a work profile, confirm the work-profile badge and profile separation.
