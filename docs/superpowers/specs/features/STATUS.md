@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
-Last updated: **2026-11-02**
-Feature baseline: `main` at `5c3f8ab`; current GitHub beta `v0.1.0-beta.2` (S01–S11, F20, and F22 are on `main`).
+Last updated: **2026-11-03**
+Feature baseline: `main` at `23a1d87`; current GitHub beta `v0.1.0-beta.2` (S01–S11, F20, F22, and friendly installer labels are on `main`).
 Pending: device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); Play internal testing and F-Droid delivery.
 Delivery: Toolchain upgraded to Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play internal AAB workflow added; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)

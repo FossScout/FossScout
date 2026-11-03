@@ -1,8 +1,8 @@
 # CI Progress & Status
 
-Last updated: 2026-11-02
+Last updated: 2026-11-03
 Branch: main
-Feature baseline: main @ 5c3f8ab; current beta release `v0.1.0-beta.2`. Docs/CI changes after this baseline are tracked below.
+Feature baseline: main @ 23a1d87; current beta release `v0.1.0-beta.2`. Docs/CI changes after this baseline are tracked below.
 
 ## Completed
 | Task | Status | Details |
