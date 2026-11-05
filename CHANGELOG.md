@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-05
+
+First stable F-Droid tag. F-Droid publication is pending; the GitHub beta
+channel remains at `0.1.0-beta.3`.
+
+### Added
+
+- F-Droid listing metadata and submission-ready build metadata for `com.fossscout.app.fdroid`.
+
+### Changed
+
+- Updated datastore to 1.3.0, core-ktx to 1.19.1, and zxing to 3.5.4.
+
 ## [0.1.0-beta.3] - 2026-11-03
 
 ### Added
@@ -41,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beta build type with application ID `com.fossscout.app.beta`.
 - Signed GitHub prerelease workflow for `v*-beta*` tags.
 
-[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.0-beta.3...HEAD
+[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/FossScout/FossScout/tree/v0.1.0
 [0.1.0-beta.3]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.3
 [0.1.0-beta.2]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.2
 [0.1.0-beta.1]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.1
