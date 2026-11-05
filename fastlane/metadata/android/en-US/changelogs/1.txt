@@ -1,4 +1,4 @@
-Initial F-Droid build.
+Initial F-Droid release (v0.1.0).
 
 Browse and search the FOSS catalog, scan installed apps, match them against verified F-Droid and IzzyOnDroid indexes, save favourites and collections, and hand off to a trusted store client.
 

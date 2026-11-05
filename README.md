@@ -202,7 +202,7 @@ depend on `:app` or on each other.
 - Complete device/emulator verification for inventory, store intents, backup,
   trust details, and contribution actions
 - Complete Play internal testing
-- Submit the prepared F-Droid metadata after a stable release
+- Open the F-Droid metadata merge request for `v0.1.0`
   ([runbook](docs/FDROID.md))
 
 Direct APK download/install and the install-time accessibility prompt are

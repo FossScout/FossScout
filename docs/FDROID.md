@@ -1,9 +1,11 @@
 # F-Droid Release Readiness
 
 F-Droid is the second distribution channel after the GitHub beta. The source
-build, listing metadata, and a draft `fdroiddata` entry are prepared here, but
-the app is **not submitted**. F-Droid can only build a stable release; the
-latest release is `v0.1.0-beta.3`.
+build, listing metadata, and submission metadata are prepared. The stable
+`v0.1.0` tag exists, but the `fdroiddata` merge request is not open yet.
+
+The GitHub beta channel remains at `v0.1.0-beta.3`. The stable tag is for the
+F-Droid source build only; it does not create a GitHub release or enable Play.
 
 Do not publish the GitHub beta APK or the Play AAB to F-Droid. The F-Droid
 variant is a separate package built from source with the `fdroid` flavor.
@@ -13,16 +15,16 @@ variant is a separate package built from source with the `fdroid` flavor.
 | Item | Status |
 | --- | --- |
 | F-Droid flavor | Ready: `com.fossscout.app.fdroid`, full installed-app scan |
-| F-Droid release build | Verified locally on 2026-11-05 from `21d0f51` |
+| Stable tag | `v0.1.0` at `e4262a13eb6eab09ff2fa4674e3f4d705999053c` |
+| F-Droid release build | Verified locally from the tag on 2026-11-05 |
 | Fastlane listing metadata | Added under `fastlane/metadata/android/en-US/` |
-| `fdroiddata` metadata | Draft in [`docs/fdroid/com.fossscout.app.fdroid.yml`](fdroid/com.fossscout.app.fdroid.yml) |
-| Stable release and tag | Not created; stable releases remain disabled |
-| F-Droid signing plan | Not decided; see [Signing](#signing) |
-| F-Droid submission | Not started |
+| `fdroiddata` metadata | Prepared in [`docs/fdroid/com.fossscout.app.fdroid.yml`](fdroid/com.fossscout.app.fdroid.yml) and points at the stable commit |
+| F-Droid signing | F-Droid-hosted signing; no project key |
+| F-Droid submission | `fdroiddata` merge request not opened |
 
 ## Verified local build
 
-From the repository root on 2026-11-05:
+From the `v0.1.0` tag on 2026-11-05:
 
 ```sh
 ./gradlew assembleFdroidRelease
@@ -34,73 +36,60 @@ The build succeeded and produced an **unsigned** APK:
 - Package: `com.fossscout.app.fdroid`
 - Version name: `0.1.0-fdroid`
 - Version code: `1`
-- SHA-256: `2f861a660b00091432cf257e46cf40b607f3b029698a9b03e5947cbbac59110b`
+- SHA-256: `7ac11a2b7c861609b207f1aef5e53c948faa254d43a7255112bb895b20d7d8da`
 
 The merged manifest contains `QUERY_ALL_PACKAGES` and `INTERNET`, plus
 AndroidX's dynamic-receiver permission. It does not contain install, uninstall,
 or accessibility entries. The Play flavor keeps limited package visibility and
 does not declare `QUERY_ALL_PACKAGES`.
 
-This is a local build check, not a distributable artifact. Version code `1` is
-the local default and must be replaced with a unique release code before the
-first F-Droid submission if another F-Droid build has already been published.
+This is a local build check, not a distributable artifact. The build is not a
+reproducible artifact; the checksum is a local verification value. F-Droid will
+build and sign its own APK.
 
 ## Before submission
 
-1. **Cut a stable release.** F-Droid must not build `v0.1.0-beta.3`. Create a
-   stable tag such as `v0.1.0` on a commit whose F-Droid build has version name
-   `0.1.0-fdroid`. Use a version code higher than any previously published
-   F-Droid build.
+1. **The stable tag is ready.** `v0.1.0` points at
+   `e4262a13eb6eab09ff2fa4674e3f4d705999053c`, and the F-Droid build uses
+   version name `0.1.0-fdroid` and version code `1`. The tag does not trigger
+   the beta release workflow or create a GitHub release.
 2. **Confirm the F-Droid build server supports API 37.** The app uses
-   `compileSdk = 37`. Check the current F-Droid buildserver image before opening
-   the submission; if platform 37 is unavailable, wait for it rather than
-   lowering the SDK only for F-Droid.
+   `compileSdk = 37`. Check the current buildserver image before opening the
+   submission; if platform 37 is unavailable, wait for it rather than lowering
+   the SDK only for F-Droid.
 3. **Review the listing.** The Fastlane text and graphics are in
    `fastlane/metadata/android/en-US/`. The screenshots are shared with the Play
    listing. Recapture the full-scan screen from the F-Droid build if it adds
    useful evidence.
-4. **Keep the signing keys separate.** Do not use the GitHub beta key or the
-   Play upload key for an F-Droid build. See [Signing](#signing).
+4. **Use F-Droid-hosted signing.** Do not reuse the beta or Play keys. See
+   [Signing](#signing).
 5. **Recheck the manifest and permissions.** The F-Droid build intentionally
    requests broad package visibility for the full scan. Confirm the merged
    manifest still has no install, uninstall, or accessibility entries.
 
 ## Signing
 
-F-Droid has two supported paths:
+The chosen path is **F-Droid-hosted signing**. F-Droid builds and signs the APK
+with its own key; the project does not supply an F-Droid key, `Binaries`, or
+`AllowedAPKSigningKeys`. This keeps the beta, Play, and F-Droid signing material
+separate.
 
-- **F-Droid signs the build.** This is the default. The project does not need an
-  F-Droid key, and F-Droid publishes the APK signed with its own key.
-- **Reproducible build with a project key.** The project signs the `fdroid`
-  release APK with a dedicated F-Droid key, publishes that APK and its checksum,
-  and adds `Binaries` plus `AllowedAPKSigningKeys` to the metadata. F-Droid
-  verifies the upstream binary before using it.
-
-The current `app/build.gradle.kts` has one release signing configuration shared
-by the Play and F-Droid flavors. Do not point that configuration at the F-Droid
-key. A separate F-Droid signing path is a build-file change and needs explicit
-approval before it is implemented.
-
-If the project chooses the reproducible path, the published binary must be
-versioned and reproducible from the same commit, and the metadata needs the
-lowercase SHA-256 fingerprint of the F-Droid signing certificate.
+Reproducible builds with a dedicated project F-Droid key are deferred. If they
+are added later, the signing path must not reuse the beta or Play keys, and the
+metadata must add `Binaries` and `AllowedAPKSigningKeys`.
 
 ## Metadata
 
-Use [`docs/fdroid/com.fossscout.app.fdroid.yml`](fdroid/com.fossscout.app.fdroid.yml)
-as the starting point. Before submission:
+Use [`docs/fdroid/com.fossscout.app.fdroid.yml`](fdroid/com.fossscout.app.fdroid.yml).
+The prepared file already contains:
 
-- Replace `REPLACE_WITH_STABLE_COMMIT` with the full commit hash of the stable
-  tag. F-Droid does not accept a branch name or a tag name in `commit`.
-- Keep `versionName` as `0.1.0-fdroid` because the `fdroid` flavor appends the
-  suffix. Update both version fields when the stable release changes.
-- Leave `UpdateCheckMode: Static` until the version extraction has been tested.
-  The default version comes from `CI_VERSION_NAME`/`CI_VERSION_CODE` and the
-  flavor suffix; automatic extraction with `Tags` is not yet proven.
-- Add `Binaries` and `AllowedAPKSigningKeys` only if reproducible builds are
-  enabled.
-- Keep the `QUERY_ALL_PACKAGES` note in `MaintainerNotes`. It explains that the
-  permission is used for the on-device full scan and not for installing apps.
+- `commit: e4262a13eb6eab09ff2fa4674e3f4d705999053c`, the full stable commit
+  hash rather than the tag name;
+- `versionName: '0.1.0-fdroid'` because the `fdroid` flavor appends the suffix;
+- `versionCode: 1`;
+- `UpdateCheckMode: Static` until automatic version extraction is tested;
+- a `QUERY_ALL_PACKAGES` explanation in `MaintainerNotes`;
+- no `Binaries` or `AllowedAPKSigningKeys` because F-Droid signs the build.
 
 The descriptive listing is taken from `fastlane/metadata/android/en-US/`:
 `short_description.txt`, `full_description.txt`, `images/icon.png`,
@@ -108,9 +97,11 @@ The descriptive listing is taken from `fastlane/metadata/android/en-US/`:
 
 ## Submission
 
+The project does not have GitLab access in this environment. Opening the
+`fdroiddata` merge request is a manual step.
+
 1. Fork `fdroiddata` and create a branch for `com.fossscout.app.fdroid`.
-2. Copy the draft to `metadata/com.fossscout.app.fdroid.yml` and replace the
-   commit placeholder.
+2. Copy the prepared metadata to `metadata/com.fossscout.app.fdroid.yml`.
 3. In an F-Droid buildserver container, run:
 
    ```sh
@@ -129,20 +120,18 @@ The descriptive listing is taken from `fastlane/metadata/android/en-US/`:
 
 ## Verification after publication
 
-- The F-Droid listing shows package `com.fossscout.app.fdroid`, the stable
-  version, and the expected icon and screenshots.
-- The published APK is signed by the expected F-Droid or project key, not the
-  beta or Play key.
+- The F-Droid listing shows package `com.fossscout.app.fdroid`, version
+  `0.1.0-fdroid`, and the expected icon and screenshots.
+- The published APK is signed by F-Droid, not the beta or Play key.
 - The full scan works, the scan stays local, and the app does not request
   install, uninstall, or accessibility permissions.
 - Installing the new version over the previous F-Droid build preserves data.
 - The [device smoke test](DEVICE_SMOKE_TEST.md) records the F-Droid build
   separately from the Play and GitHub beta builds.
 
-## Open decisions
+## Open items
 
-- Choose F-Droid signing (F-Droid key) or reproducible builds (dedicated project
-  key). The latter needs a build-file change and approval.
 - Confirm that the F-Droid buildserver has Android API 37 before submitting.
+- Open the `fdroiddata` merge request and respond to review.
 - Decide whether to add F-Droid-specific full-scan screenshots.
 - Revisit `UpdateCheckMode` after the first stable build and metadata test.

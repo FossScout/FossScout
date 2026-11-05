@@ -1,11 +1,11 @@
-# Draft F-Droid build metadata for fdroiddata.
+# F-Droid build metadata prepared for submission to fdroiddata.
 #
-# This file is not submitted. Replace REPLACE_WITH_STABLE_COMMIT with the full
-# commit hash of the stable release tag before copying it to
-# fdroiddata/metadata/com.fossscout.app.fdroid.yml.
+# Stable tag: v0.1.0
+# Commit: e4262a13eb6eab09ff2fa4674e3f4d705999053c
+# Signing: F-Droid-hosted; do not add Binaries or AllowedAPKSigningKeys.
 #
-# The stable tag must point at a non-beta build. The F-Droid flavor appends
-# "-fdroid" to the version name, so versionName below is 0.1.0-fdroid.
+# The F-Droid flavor appends "-fdroid" to the version name, so versionName
+# below is 0.1.0-fdroid.
 
 Categories:
   - Internet
@@ -21,7 +21,7 @@ Repo: https://github.com/FossScout/FossScout.git
 Builds:
   - versionName: '0.1.0-fdroid'
     versionCode: 1
-    commit: REPLACE_WITH_STABLE_COMMIT
+    commit: e4262a13eb6eab09ff2fa4674e3f4d705999053c
     submodules: true
     gradle:
       - fdroid
