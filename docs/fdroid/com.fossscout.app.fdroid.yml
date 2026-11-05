@@ -1,0 +1,38 @@
+# Draft F-Droid build metadata for fdroiddata.
+#
+# This file is not submitted. Replace REPLACE_WITH_STABLE_COMMIT with the full
+# commit hash of the stable release tag before copying it to
+# fdroiddata/metadata/com.fossscout.app.fdroid.yml.
+#
+# The stable tag must point at a non-beta build. The F-Droid flavor appends
+# "-fdroid" to the version name, so versionName below is 0.1.0-fdroid.
+
+Categories:
+  - Internet
+  - System
+AuthorName: FossScout contributors
+License: MIT
+SourceCode: https://github.com/FossScout/FossScout
+IssueTracker: https://github.com/FossScout/FossScout/issues
+Liberapay: FossScout
+RepoType: git
+Repo: https://github.com/FossScout/FossScout.git
+
+Builds:
+  - versionName: '0.1.0-fdroid'
+    versionCode: 1
+    commit: REPLACE_WITH_STABLE_COMMIT
+    submodules: true
+    gradle:
+      - fdroid
+    output: app/build/outputs/apk/fdroid/release/app-fdroid-release-unsigned.apk
+
+RequiresRoot: false
+UpdateCheckMode: Static
+CurrentVersion: '0.1.0-fdroid'
+CurrentVersionCode: 1
+MaintainerNotes: |
+  The F-Droid build declares QUERY_ALL_PACKAGES solely to enumerate installed
+  apps for the local full scan. The scan stays on-device. The app has no install,
+  uninstall, or accessibility permissions. The Play flavor does not declare
+  QUERY_ALL_PACKAGES.

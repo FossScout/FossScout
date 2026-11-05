@@ -201,8 +201,9 @@ depend on `:app` or on each other.
 - Add project detail screens
 - Complete device/emulator verification for inventory, store intents, backup,
   trust details, and contribution actions
-- Prepare Play internal testing
-- Prepare F-Droid release metadata after a stable release
+- Complete Play internal testing
+- Submit the prepared F-Droid metadata after a stable release
+  ([runbook](docs/FDROID.md))
 
 Direct APK download/install and the install-time accessibility prompt are
 post-v1 and restricted to builds where the platform policy allows them.
@@ -232,6 +233,7 @@ available locally through the `tools/best-practices` submodule.
 - [Flavors](docs/FLAVORS.md)
 - [Release Process](docs/RELEASING.md)
 - [Play Internal Testing](docs/PLAY_INTERNAL_TESTING.md)
+- [F-Droid Release Readiness](docs/FDROID.md)
 - [Device Smoke Test](docs/DEVICE_SMOKE_TEST.md)
 - [Screenshot Checklist](SCREENSHOT_CHECKLIST.md)
 - [Agent Guidelines](AGENTS.md)

@@ -83,4 +83,5 @@ The beta signing key is dedicated to GitHub beta builds. Do not reuse it for
 Play App Signing or F-Droid.
 
 See [Play internal testing](PLAY_INTERNAL_TESTING.md) for the manual AAB build
-workflow and Play Console setup.
+workflow and Play Console setup. See [F-Droid release readiness](FDROID.md) for
+the source-build verification, listing metadata, and submission checklist.

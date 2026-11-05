@@ -1,6 +1,6 @@
 # CI Progress & Status
 
-Last updated: 2026-11-03
+Last updated: 2026-11-05
 Branch: main
 Feature baseline: main @ 23a1d87; current beta release `v0.1.0-beta.3`. Docs/CI changes after this baseline are tracked below.
 
@@ -21,6 +21,7 @@ Feature baseline: main @ 23a1d87; current beta release `v0.1.0-beta.3`. Docs/CI 
 | Play internal AAB build | Done | `.github/workflows/play-internal.yml` builds a signed AAB with dedicated Play upload secrets, verifies it, and uploads it as an artifact; Play Console upload remains manual. |
 | Toolchain upgrade | Done | Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
 | CI device smoke test | Done | `.github/workflows/device-smoke.yml` is a manual API 36 AOSP x86_64 emulator run. Run [41644684403](https://github.com/FossScout/FossScout/actions/runs/41644684403) passed with both debug APKs: APK checks, launch/navigation, favourites persistence, rotation, font scale, theme, offline Stores, installer fallbacks, Play visibility, and the F-Droid full scan. |
+| F-Droid release readiness | Done | `./gradlew assembleFdroidRelease` passed locally on 2026-11-05; output is `com.fossscout.app.fdroid`, version `0.1.0-fdroid` (code 1), with `QUERY_ALL_PACKAGES` and no install/uninstall/accessibility entries. Fastlane listing metadata and a draft `fdroiddata` entry are prepared in [`docs/FDROID.md`](../FDROID.md) and [`docs/fdroid/`](../fdroid/). |
 
 ## Pending / Manual
 | Task | Status | Details |
@@ -33,6 +34,7 @@ Feature baseline: main @ 23a1d87; current beta release `v0.1.0-beta.3`. Docs/CI 
 | Release notes/changelog | Partial | `CHANGELOG.md` is maintained manually; automation remains optional |
 | Play Console setup | Pending | App entry, Play App Signing, declarations, store listing, internal track, and tester setup remain manual |
 | Play upload automation | Pending | Requires a Play Developer API service account and an approved upload action or dependency |
+| F-Droid submission | Pending | Needs a stable non-beta tag, an F-Droid signing decision, buildserver API 37 confirmation, and an `fdroiddata` merge request. See [`docs/FDROID.md`](../FDROID.md). |
 | Compose BOM 2026.09.00 | Done | `compileSdk = 37`; CI, release, and Play workflows install `platforms;android-37.0` |
 | Built-in Kotlin migration | Pending | AGP 9.5 bundles Kotlin 2.2.10; the project opts out to keep Kotlin 2.4.21. Revisit before AGP 10 |
 | Coverage reporting | Pending | Optional: add jacoco/report upload |
@@ -45,6 +47,9 @@ CI_VERSION_CODE=123 CI_VERSION_NAME=1.0.0 ./gradlew :app:printVersion 2>&1 | tai
 # Build both flavors debug
 ./gradlew assemblePlaystoreDebug assembleFdroidDebug
 
+# Build the unsigned F-Droid release for metadata checks
+./gradlew assembleFdroidRelease
+
 # Run tests/lint
 ./gradlew test lint
 ```
@@ -55,4 +60,4 @@ CI_VERSION_CODE=123 CI_VERSION_NAME=1.0.0 ./gradlew :app:printVersion 2>&1 | tai
 - Versioning/flavors/variants: **Complete** (CI-driven, flavor support, beta application ID)
 - Issues/PR/workflow: **Complete** (templates + dependabot + branch workflow guidance)
 - Release/signing: **Complete for GitHub beta**; Play AAB build uses dedicated secrets, but Play Console upload and F-Droid signing remain pending
-- Documentation: **Complete for the beta channel, Play AAB build, and the CI device smoke baseline**; the real-device checklist and F-Droid runbook remain pending
+- Documentation: **Complete for the beta channel, Play AAB build, CI device smoke baseline, and F-Droid readiness**; the real-device checklist and F-Droid submission remain pending
