@@ -13,7 +13,7 @@ variant is a separate package built from source with the `fdroid` flavor.
 | Item | Status |
 | --- | --- |
 | F-Droid flavor | Ready: `com.fossscout.app.fdroid`, full installed-app scan |
-| F-Droid release build | Verified locally on 2026-11-05 from `1290d7e` |
+| F-Droid release build | Verified locally on 2026-11-05 from `21d0f51` |
 | Fastlane listing metadata | Added under `fastlane/metadata/android/en-US/` |
 | `fdroiddata` metadata | Draft in [`docs/fdroid/com.fossscout.app.fdroid.yml`](fdroid/com.fossscout.app.fdroid.yml) |
 | Stable release and tag | Not created; stable releases remain disabled |
@@ -34,7 +34,7 @@ The build succeeded and produced an **unsigned** APK:
 - Package: `com.fossscout.app.fdroid`
 - Version name: `0.1.0-fdroid`
 - Version code: `1`
-- SHA-256: `09d163b48d13cb134808e2a3b6f8e22d5a8a3f400a7d711c280415d36c62a3f4`
+- SHA-256: `2f861a660b00091432cf257e46cf40b607f3b029698a9b03e5947cbbac59110b`
 
 The merged manifest contains `QUERY_ALL_PACKAGES` and `INTERNET`, plus
 AndroidX's dynamic-receiver permission. It does not contain install, uninstall,
