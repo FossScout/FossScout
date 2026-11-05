@@ -8,7 +8,7 @@ remain intentionally disabled.
 | Flavor | Application ID | Purpose | Notes |
 |---|---|---|---|
 | `playstore` | `com.fossscout.app` | Google Play Store | Play-safe feature set |
-| `fdroid` | `com.fossscout.app.fdroid` | F-Droid | F-Droid-safe feature set; release path not enabled yet |
+| `fdroid` | `com.fossscout.app.fdroid` | F-Droid | F-Droid-safe feature set; source build verified, submission pending |
 
 ## Beta Variant
 - `playstoreBeta` variant uses application ID `com.fossscout.app.beta` with `-beta` version suffix

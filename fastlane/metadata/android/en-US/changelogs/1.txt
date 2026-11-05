@@ -1,0 +1,5 @@
+Initial F-Droid build.
+
+Browse and search the FOSS catalog, scan installed apps, match them against verified F-Droid and IzzyOnDroid indexes, save favourites and collections, and hand off to a trusted store client.
+
+This build performs the full installed-app scan. It does not install or uninstall apps.
