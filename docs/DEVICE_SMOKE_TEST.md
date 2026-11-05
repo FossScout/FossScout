@@ -254,8 +254,9 @@ It does not replace the real-device checklist below.
 - [ ] The F-Droid build has the expected broad package visibility and performs
       the full scan.
 - [ ] The F-Droid build installs and upgrades over the previous F-Droid build.
-- [ ] The F-Droid signing key is separate from the beta and Play keys.
-- [ ] The build matches the F-Droid metadata and reproducible-build plan.
+- [ ] The published F-Droid APK is signed by F-Droid, not by the beta or Play key.
+- [ ] The build matches the F-Droid metadata; F-Droid-hosted signing does not
+      add a project key or a `Binaries` entry.
 
 ## Exit criteria
 
