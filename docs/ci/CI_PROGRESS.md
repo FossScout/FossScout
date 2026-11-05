@@ -2,7 +2,7 @@
 
 Last updated: 2026-11-05
 Branch: main
-Feature baseline: main @ 23a1d87; current beta release `v0.1.0-beta.3`. Docs/CI changes after this baseline are tracked below.
+Feature baseline: main @ 21d0f51; current beta release `v0.1.0-beta.3`. Docs/CI changes after this baseline are tracked below.
 
 ## Completed
 | Task | Status | Details |
