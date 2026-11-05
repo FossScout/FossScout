@@ -21,7 +21,7 @@ Feature baseline: main @ 23a1d87; current beta release `v0.1.0-beta.3`. Docs/CI 
 | Play internal AAB build | Done | `.github/workflows/play-internal.yml` builds a signed AAB with dedicated Play upload secrets, verifies it, and uploads it as an artifact; Play Console upload remains manual. |
 | Toolchain upgrade | Done | Gradle 9.6.1, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
 | CI device smoke test | Done | `.github/workflows/device-smoke.yml` is a manual API 36 AOSP x86_64 emulator run. Run [41644684403](https://github.com/FossScout/FossScout/actions/runs/41644684403) passed with both debug APKs: APK checks, launch/navigation, favourites persistence, rotation, font scale, theme, offline Stores, installer fallbacks, Play visibility, and the F-Droid full scan. |
-| F-Droid release readiness | Done | `./gradlew assembleFdroidRelease` passed locally on 2026-11-05; output is `com.fossscout.app.fdroid`, version `0.1.0-fdroid` (code 1), with `QUERY_ALL_PACKAGES` and no install/uninstall/accessibility entries. Fastlane listing metadata and a draft `fdroiddata` entry are prepared in [`docs/FDROID.md`](../FDROID.md) and [`docs/fdroid/`](../fdroid/). |
+| F-Droid release readiness | Done | `./gradlew assembleFdroidRelease` passed locally on 2026-11-05 from `21d0f51` after the dependency updates; output is `com.fossscout.app.fdroid`, version `0.1.0-fdroid` (code 1), with `QUERY_ALL_PACKAGES` and no install/uninstall/accessibility entries. Fastlane listing metadata and a draft `fdroiddata` entry are prepared in [`docs/FDROID.md`](../FDROID.md) and [`docs/fdroid/`](../fdroid/). |
 
 ## Pending / Manual
 | Task | Status | Details |

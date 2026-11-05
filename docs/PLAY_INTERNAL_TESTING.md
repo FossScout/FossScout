@@ -45,8 +45,8 @@ Keep the keystore and passwords out of the repository.
 The `PLAY_*` repository secrets are not configured yet. Until they are, build and
 sign the AAB locally with the dedicated Play upload key, keeping the keystore
 and output outside the repository. The current prepared AAB was built from
-`main` at `b62c960` on 2026-11-03 and includes the installer-label change;
-rebuild if application code changes before upload.
+`main` at `21d0f51` on 2026-11-05 and includes the dependency updates and the
+installer-label change; rebuild if application code changes before upload.
 
 After the secrets are configured, run the **Play Internal AAB** workflow
 manually from GitHub Actions. Provide:
