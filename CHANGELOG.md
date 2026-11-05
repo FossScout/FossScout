@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated the Gradle wrapper to 9.8.2.
+
 ## [0.1.0] - 2026-11-05
 
 First stable F-Droid tag. F-Droid publication is pending; the GitHub beta
