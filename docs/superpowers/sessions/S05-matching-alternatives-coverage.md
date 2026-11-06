@@ -141,7 +141,7 @@ by L1/L2.
 - **F06-R4 — deferred SHOULD:** coverage is not yet embedded in S07 share/export envelopes; S09 should include it in backup/report payloads.
 - **F06-R5 — deferred SHOULD:** targeted “refresh only affected stores” was not added.
 - **F06-R6 — complete:** confidence is label-first (`HIGH`/`MEDIUM`/`LOW`/`UNKNOWN`) and explained by match level, freshness, and signer/source evidence.
-- **F01-R4 — production integration complete for available evidence:** inventory now calls `MatchingRepository.classify`; exact FOSS evidence yields `FOSS`, missing/partial evidence yields `UNKNOWN`, and missing/not-visible packages yield `UNAVAILABLE`. `PROPRIETARY` is not selected because no proprietary evidence source exists; absence of a FOSS listing is not treated as proof of closed source.
+- **F01-R4 — production integration complete for available evidence:** inventory now calls `MatchingRepository.classify`; exact FOSS evidence yields `FOSS`, missing/partial evidence yields `UNKNOWN`, and missing/not-visible packages yield `UNAVAILABLE`. `PROPRIETARY` is reserved for explicit evidence; no proprietary evidence source ships in v1, and absence of a FOSS listing is not treated as proof of closed source.
 
 ### Decisions and remaining gaps
 
@@ -150,4 +150,4 @@ by L1/L2.
 - Unsupported enabled stores block a conclusive “not found,” while disabled stores do not.
 - Alternatives are capped at five and hidden/undone per result session only.
 - Matching, alternatives, and coverage each respect their `FeatureId` toggle; matching itself remains hidden when `FeatureId.MATCHING` is disabled.
-- Remaining gaps are the deferred SHOULDs above, `PROPRIETARY` evidence, and real-device/index verification. S09 can reuse the coverage snapshot and `ShareEnvelope`; S10 owns trust details.
+- Remaining gaps are the deferred SHOULDs above, real-device/index verification, and a post-v1 proprietary evidence source. The v1 F01-R4 decision keeps `PROPRIETARY` reserved for explicit evidence and reports `UNKNOWN` otherwise. S09 can reuse the coverage snapshot and `ShareEnvelope`; S10 owns trust details.

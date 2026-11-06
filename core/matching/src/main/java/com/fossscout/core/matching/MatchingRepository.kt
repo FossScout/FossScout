@@ -132,8 +132,9 @@ class MatchingRepository(
 
     /**
      * F01-R4 integration. Only an L1 exact package with license and source may
-     * be called FOSS. Missing metadata and partial coverage stay UNKNOWN; the
-     * classifier never guesses that an app is proprietary.
+     * be called FOSS. The v1 decision reserves PROPRIETARY for explicit
+     * evidence; no evidence source ships in v1, so missing metadata, partial
+     * coverage, and absence of a FOSS listing stay UNKNOWN.
      */
     override suspend fun classify(app: InstalledApp): ClassificationResult {
         val decision = match(MatchQuery.from(app), includeAlternatives = false)
