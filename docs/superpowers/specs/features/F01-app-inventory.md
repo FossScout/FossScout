@@ -72,8 +72,9 @@ permission.
 - **Unavailable** — package no longer installed or not visible.
 
 Never infer “proprietary” solely from the absence of an F-Droid entry. The v1
-classifier has no proprietary evidence source, so it reserves that label for
-explicit evidence and reports **Unknown** otherwise.
+classifier ships a small curated catalog of known proprietary packages, each
+linked to the vendor’s terms. An exact FOSS match remains authoritative;
+unlisted apps and missing FOSS evidence stay **Unknown**.
 
 ## 6. Requirements
 

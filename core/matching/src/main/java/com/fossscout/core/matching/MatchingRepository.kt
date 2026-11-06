@@ -29,6 +29,7 @@ class MatchingRepository(
     private val freshnessWindowMillis: Long = DEFAULT_MATCH_FRESHNESS_MILLIS,
     private val maxAlternatives: Int = DEFAULT_MAX_ALTERNATIVES,
     private val overrides: Flow<List<MatchOverride>> = flowOf(emptyList()),
+    private val proprietaryEvidence: ProprietaryEvidenceSource = NoProprietaryEvidence,
 ) : ClassificationSource {
 
     suspend fun match(
@@ -132,9 +133,8 @@ class MatchingRepository(
 
     /**
      * F01-R4 integration. Only an L1 exact package with license and source may
-     * be called FOSS. The v1 decision reserves PROPRIETARY for explicit
-     * evidence; no evidence source ships in v1, so missing metadata, partial
-     * coverage, and absence of a FOSS listing stay UNKNOWN.
+     * be called FOSS. PROPRIETARY requires explicit evidence; missing metadata,
+     * partial coverage, and absence of a FOSS listing stay UNKNOWN.
      */
     override suspend fun classify(app: InstalledApp): ClassificationResult {
         val decision = match(MatchQuery.from(app), includeAlternatives = false)
@@ -151,12 +151,20 @@ class MatchingRepository(
             )
         }
         val primary = decision.primary
+        val proprietary = proprietaryEvidence.evidenceFor(app.packageName)
         return when {
             primary?.level == MatchLevel.L1 && primary.isFoss ->
                 ClassificationResult(
                     classification = Classification.FOSS,
                     explanation = "Exact package found in ${primary.storeName} " +
                         "with license ${primary.license}.",
+                )
+
+            proprietary != null ->
+                ClassificationResult(
+                    classification = Classification.PROPRIETARY,
+                    explanation = "Known proprietary app (${proprietary.displayName}). " +
+                        "Evidence: ${proprietary.evidenceUrl}",
                 )
 
             primary?.level == MatchLevel.L1 ->

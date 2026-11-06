@@ -47,6 +47,45 @@ class MatchingRepositoryTest {
     }
 
     @Test
+    fun `explicit proprietary evidence classifies a known package`() = runTest {
+        val evidence = ProprietaryEvidence(
+            packageName = "com.Slack",
+            displayName = "Slack",
+            evidenceUrl = "https://slack.com/terms-of-service",
+        )
+        val repository = repository(
+            catalogs = mapOf("store-1" to StoreCatalogData("store-1", emptyList())),
+            proprietaryEvidence = ProprietaryEvidenceSource { packageName ->
+                evidence.takeIf { packageName == it.packageName }
+            },
+        )
+
+        val result = repository.classify(installed("com.Slack"))
+
+        assertEquals(Classification.PROPRIETARY, result.classification)
+        val explanation = result.explanation!!
+        assertTrue(explanation.contains("Slack"))
+        assertTrue(explanation.contains("https://slack.com/terms-of-service"))
+    }
+
+    @Test
+    fun `exact FOSS match wins over proprietary evidence`() = runTest {
+        val evidence = ProprietaryEvidence(
+            packageName = "org.example.app",
+            displayName = "Example",
+            evidenceUrl = "https://example.com/terms",
+        )
+        val repository = repository(
+            catalogs = mapOf("store-1" to StoreCatalogData("store-1", listOf(ENTRY))),
+            proprietaryEvidence = ProprietaryEvidenceSource { evidence },
+        )
+
+        val result = repository.classify(installed("org.example.app"))
+
+        assertEquals(Classification.FOSS, result.classification)
+    }
+
+    @Test
     fun `missing license classifies as unknown not FOSS`() = runTest {
         val repository = repository(
             catalogs = mapOf(
@@ -236,6 +275,7 @@ class MatchingRepositoryTest {
         catalogs: Map<String, StoreCatalogData>,
         snapshotFetchedAt: Long = NOW - 1_000L,
         overrides: List<MatchOverride> = emptyList(),
+        proprietaryEvidence: ProprietaryEvidenceSource = NoProprietaryEvidence,
     ) = MatchingRepository(
         storeEntries = flowOf(listOf(entry())),
         snapshots = flowOf(
@@ -245,6 +285,7 @@ class MatchingRepositoryTest {
         now = { NOW },
         freshnessWindowMillis = FRESHNESS,
         overrides = flowOf(overrides),
+        proprietaryEvidence = proprietaryEvidence,
     )
 
     private fun matchOverride(target: MatchOverrideTarget?) = MatchOverride(

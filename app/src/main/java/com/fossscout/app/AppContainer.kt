@@ -35,6 +35,7 @@ import com.fossscout.core.index.IndexSyncRepository
 import com.fossscout.core.index.UrlConnectionHttpFetcher
 import com.fossscout.core.inventory.InstalledAppStateProvider
 import com.fossscout.core.inventory.InventoryRepository
+import com.fossscout.core.matching.KnownProprietaryApps
 import com.fossscout.core.matching.MatchingRepository
 import com.fossscout.core.matching.SnapshotCatalogSource
 import java.io.File
@@ -162,6 +163,7 @@ class AppContainer(context: Context) {
         snapshots = indexSyncRepository.snapshots,
         catalog = SnapshotCatalogSource(snapshotPayloadStore),
         overrides = matchOverridesRepository.overrides,
+        proprietaryEvidence = KnownProprietaryApps,
     )
 
     val inventoryRepository = InventoryRepository(

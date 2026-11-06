@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A curated proprietary-app evidence catalog with vendor terms for common apps, starting with Slack, Facebook, WhatsApp, Instagram, and other widely installed services.
+
 ### Fixed
 
 - Play builds can now find user-facing installed apps such as Slack and Facebook during manual checks.
