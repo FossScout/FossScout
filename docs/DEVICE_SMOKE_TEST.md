@@ -92,7 +92,8 @@ It does not replace the real-device checklist below.
 ## 2. Inventory and installer source (F01)
 
 - [ ] On Play, check one app by package name, one by label, and one by a shared
-      store link. No full-scan action is offered.
+      store link. Use Play-installed apps such as Slack or Facebook to verify
+      launcher visibility. No full-scan action is offered.
 - [ ] On F-Droid, run a full scan. The result reports complete or partial
       coverage and the last-scan time.
 - [ ] Filter system, disabled, and work-profile apps. The list changes without a

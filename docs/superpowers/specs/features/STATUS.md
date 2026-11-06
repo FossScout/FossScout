@@ -118,8 +118,9 @@ file after every feature session with the new commit, test result, and status.
 - Policy-safe “unavailable in this build” explanations and capability labels for
   restricted features.
 - Play-safe manifest: no install-packages permission, broad package visibility,
-  or accessibility service. Explicit package queries cover the supported store
-  clients; broad package visibility is confined to the F-Droid flavor.
+  or accessibility service. A launcher-intent query exposes user-facing apps to
+  manual checks; explicit package queries cover the supported store clients, and
+  broad package visibility is confined to the F-Droid flavor.
 - Material 3 UI, light/dark theme, About screen, and unit tests for the current
   data/domain/settings/store/inventory/favourites/index/matching/share/handoff/
   backup/contribution behaviour.

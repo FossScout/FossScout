@@ -4,10 +4,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!--
-      Explicit companion-store visibility for F08. These package queries keep
-      store detection working on API 30+ without broad package visibility.
+      Launcher visibility lets manual package checks find user-facing apps on
+      Play without broad package visibility. Explicit companion-store queries
+      keep F08 detection working even if a client has no launcher activity.
     -->
     <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
         <package android:name="org.fdroid.fdroid" />
         <package android:name="com.looker.droidify" />
         <package android:name="com.machiav3lli.fdroid" />

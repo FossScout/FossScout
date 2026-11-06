@@ -21,8 +21,9 @@ Status: ready to copy into Play Console after the app entry exists.
   and verification history are stored locally on the device.
 - The app does not send installed-app inventory, notes, collections, device
   identifiers, or account data to the developer.
-- The Play build does not request `QUERY_ALL_PACKAGES`, install packages, or use
-  an accessibility service.
+- The Play build uses a launcher-activity query for manual checks. It does not
+  request `QUERY_ALL_PACKAGES`, install packages, or use an accessibility
+  service.
 - Store-index sync contacts public F-Droid and IzzyOnDroid endpoints. Those
   third-party servers may receive standard request metadata such as an IP
   address, request time, and user agent, as with any HTTPS request. FossScout

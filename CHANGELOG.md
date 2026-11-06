@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Play builds can now find user-facing installed apps such as Slack and Facebook during manual checks.
+
 ### Changed
 
 - Discover search now matches project descriptions, supports multiple keywords, and accepts `#tag` prefixes.

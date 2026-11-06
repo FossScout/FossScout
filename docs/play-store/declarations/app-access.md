@@ -18,7 +18,8 @@ can access every feature without credentials.
 ## Notes for the reviewer
 
 - The Play build supports manual package checks and limited package visibility.
-  A full installed-app scan is available only in the F-Droid build.
+  Apps with a launcher activity are visible to those checks; a full
+  installed-app scan is available only in the F-Droid build.
 - Some handoff actions require a compatible store client; a browser fallback is
   available.
 - No login, test account, or special configuration is required.

@@ -53,6 +53,22 @@ class ManifestPolicyTest {
     }
 
     @Test
+    fun `main manifest makes launcher apps visible to manual checks`() {
+        val (name, contents) = manifest("src/main/AndroidManifest.xml")
+            ?: error("Main manifest is missing")
+
+        assertTrue(
+            "$name must query launcher activities",
+            contents.contains("android.intent.action.MAIN"),
+        )
+        assertTrue(
+            "$name must query the launcher category",
+            contents.contains("android.intent.category.LAUNCHER"),
+        )
+        assertFalse("$name must not request broad visibility", contents.contains("QUERY_ALL_PACKAGES"))
+    }
+
+    @Test
     fun `fdroid manifest declares broad package visibility`() {
         val (_, contents) = manifest("src/fdroid/AndroidManifest.xml")
             ?: error("F-Droid manifest is missing")

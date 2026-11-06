@@ -30,6 +30,7 @@
 | Accessibility service | No |
 | Install packages | No |
 | `QUERY_ALL_PACKAGES` | No in the Play build |
+| Launcher-activity query | Yes in the Play build; scopes manual checks to user-facing apps |
 | Tablet screenshots | Not prepared; needs a real tablet or emulator |
 | Promo video | Not prepared |
 | Additional languages | English only for now |
