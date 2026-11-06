@@ -68,7 +68,9 @@ permission.
 - **Unknown** — no reliable license/source information.
 - **Unavailable** — package no longer installed or not visible.
 
-Never infer “proprietary” solely from the absence of an F-Droid entry.
+Never infer “proprietary” solely from the absence of an F-Droid entry. The v1
+classifier has no proprietary evidence source, so it reserves that label for
+explicit evidence and reports **Unknown** otherwise.
 
 ## 6. Requirements
 
@@ -77,7 +79,7 @@ Never infer “proprietary” solely from the absence of an F-Droid entry.
 | F01-R1 | MUST | Inventory data stays local unless the user explicitly exports it. | A scan with networking disabled produces the same local result; no inventory network request is made. |
 | F01-R2 | MUST | Full scan is available only when `BROAD_PACKAGE_VISIBILITY` exists. | The `playstore` profile without the capability does not request or imply a full scan. |
 | F01-R3 | MUST | Manual check works in every profile. | A user can check one app by name/package/share without broad visibility. |
-| F01-R4 | MUST | Results distinguish FOSS, proprietary, unknown, and unavailable. | Each state has a visible label and an explanation. |
+| F01-R4 | MUST | Results distinguish FOSS, unknown, unavailable, and proprietary when explicit closed-source evidence exists. | Each applicable state has a visible label and an explanation. `PROPRIETARY` requires explicit closed-source evidence; missing FOSS evidence must remain `UNKNOWN`. |
 | F01-R5 | MUST | The result states when the last scan happened. | A stale snapshot is visibly marked with its timestamp. |
 | F01-R6 | SHOULD | System apps, disabled apps, and work-profile apps can be filtered. | Each filter changes the list without re-scanning. |
 | F01-R7 | SHOULD | The scan can be cancelled without corrupting the previous snapshot. | Cancelling leaves the last complete snapshot usable. |
