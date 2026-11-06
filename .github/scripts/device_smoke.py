@@ -772,6 +772,16 @@ class Smoke:
         )
         self.record(
             build.flavor,
+            "Play manual check finds a third-party launcher app",
+            lambda: self.manual_check(
+                build,
+                self.builds[1].package,
+                ("Installed by", "Installer unknown"),
+                "13b-manual-check-third-party",
+            ),
+        )
+        self.record(
+            build.flavor,
             "Play full scan unavailable",
             lambda: self.play_no_full_scan(build),
         )

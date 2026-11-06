@@ -58,6 +58,9 @@ permission.
 
 - The user searches for an app by name or package name, picks it from a
   system-provided picker if available, or shares a store link to FossScout.
+- A launcher-intent `<queries>` declaration makes user-facing apps visible to
+  the manual path without broad package visibility. Apps without a launcher
+  activity may still be unavailable.
 - FossScout checks only that app.
 - The result is clearly labelled “checked one app”, not “scanned the device”.
 

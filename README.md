@@ -96,7 +96,7 @@ The app has two product flavors on the `distribution` dimension:
 
 | Flavor | Application ID | Notes |
 | --- | --- | --- |
-| `playstore` | `com.fossscout.app` | Play-safe capability set. No install-packages permission, no broad package visibility, and no accessibility service. |
+| `playstore` | `com.fossscout.app` | Play-safe capability set. Manual checks use launcher visibility; no install-packages permission, no broad package visibility, and no accessibility service. |
 | `fdroid` | `com.fossscout.app.fdroid` | Version name suffixed `-fdroid`. Profile adds the broad package visibility capability and declares `QUERY_ALL_PACKAGES` for the full inventory scan. |
 
 Both profiles currently enable the same features. Each flavor supplies its own

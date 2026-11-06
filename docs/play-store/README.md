@@ -39,9 +39,9 @@ These cannot be completed without the Play Console account:
 ## Play build scope
 
 The Play build is `com.fossscout.app` with manual package checks and limited
-package visibility. It does not request `QUERY_ALL_PACKAGES`, install packages,
-or use an accessibility service. The F-Droid build adds the full installed-app
-scan.
+package visibility. A launcher-intent query makes user-facing apps visible to
+those checks. It does not request `QUERY_ALL_PACKAGES`, install packages, or use
+an accessibility service. The F-Droid build adds the full installed-app scan.
 
 The listing copy and screenshots therefore describe manual app/package checks
 rather than a full device scan. Do not use the inventory full-scan screenshots

@@ -32,9 +32,11 @@ FossScout can read package metadata for apps visible to it in order to check
 matches and show local inventory. This information is processed on the device
 and is not sent to the developer.
 
-The Play build uses manual package checks and limited package visibility. It
-does not request `QUERY_ALL_PACKAGES`, install packages, or use an accessibility
-service. The F-Droid build adds a full installed-app scan for users who want it.
+The Play build uses manual package checks and limited package visibility. A
+launcher-intent query makes apps with a launcher icon visible to those checks.
+It does not request `QUERY_ALL_PACKAGES`, install packages, or use an
+accessibility service. The F-Droid build adds a full installed-app scan for
+users who want it.
 
 ## Network requests
 
@@ -76,7 +78,8 @@ and your device provider; you can disable system backup in Android settings.
 FossScout requests:
 
 - **Internet** for store-index sync and links you open.
-- **Package queries** for F-Droid, Droid-ify, and Neo Store so companion-store
+- **Package queries** for apps with a launcher activity so manual checks can find
+  user-facing apps, and for F-Droid, Droid-ify, and Neo Store so companion-store
   detection works without broad package visibility.
 
 FossScout does not request location, contacts, camera, microphone, SMS, call

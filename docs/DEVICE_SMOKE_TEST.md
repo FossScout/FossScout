@@ -29,8 +29,8 @@ runs the CI-emulatable subset on a GitHub-hosted Ubuntu 24.04 runner with an API
 signing. Start it from the Actions tab with `Run workflow`.
 
 Passing baseline: 2026-11-06, run
-[42208716388](https://github.com/FossScout/FossScout/actions/runs/42208716388),
-commit `a1706ef`, artifact `device-smoke`.
+[42229372236](https://github.com/FossScout/FossScout/actions/runs/42229372236),
+commit `4e346c5`, artifact `device-smoke`.
 
 Covered:
 
@@ -38,7 +38,8 @@ Covered:
   forbidden install/delete/accessibility entries.
 - Launch, all six bottom destinations, favourites persistence, rotation, font
   scale, dark theme, and the offline Stores screen.
-- Play limited visibility, manual package check, no full-scan action, and
+- Play limited visibility, manual package check against both FossScout and a
+  separately installed third-party launcher app, no full-scan action, and
   installer fallback.
 - F-Droid full scan with status and last-checked time, plus installed-package
   fixtures for the ADB fallback, a known installer (friendly name), an unknown
@@ -92,7 +93,8 @@ It does not replace the real-device checklist below.
 ## 2. Inventory and installer source (F01)
 
 - [ ] On Play, check one app by package name, one by label, and one by a shared
-      store link. No full-scan action is offered.
+      store link. Use Play-installed apps such as Slack or Facebook to verify
+      launcher visibility. No full-scan action is offered.
 - [ ] On F-Droid, run a full scan. The result reports complete or partial
       coverage and the last-scan time.
 - [ ] Filter system, disabled, and work-profile apps. The list changes without a
