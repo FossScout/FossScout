@@ -32,7 +32,7 @@ Direct APK install and the install-time accessibility prompt are deferred.
 ## Features
 
 - Browse a curated catalog of FOSS projects
-- Search by project name, tagline, or tag
+- Search by project name, tagline, description, or tag, including multi-keyword queries and `#tag` prefixes
 - Filter by category
 - Favourite projects and keep a private note on each one; favourites persist
   across app restarts

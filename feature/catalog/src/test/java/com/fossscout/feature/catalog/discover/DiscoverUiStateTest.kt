@@ -18,6 +18,48 @@ class DiscoverUiStateTest {
     }
 
     @Test
+    fun `query matches project descriptions`() {
+        assertEquals(
+            listOf("F-Droid"),
+            state.copy(query = "reproducible").visibleProjects(false).map { it.name },
+        )
+    }
+
+    @Test
+    fun `multi keyword query requires every keyword across fields`() {
+        assertEquals(
+            listOf("Blender"),
+            state.copy(query = "3d animation").visibleProjects(false).map { it.name },
+        )
+        assertEquals(
+            listOf("Organic Maps"),
+            state.copy(query = "offline maps").visibleProjects(false).map { it.name },
+        )
+        assertTrue(state.copy(query = "offline qwerty").visibleProjects(false).isEmpty())
+    }
+
+    @Test
+    fun `tag query accepts hash prefixes and comma separators`() {
+        assertEquals(
+            listOf("Anki"),
+            state.copy(query = "#flashcards").visibleProjects(false).map { it.name },
+        )
+        assertEquals(
+            listOf("Signal"),
+            state.copy(query = "#privacy").visibleProjects(false).map { it.name },
+        )
+        assertEquals(
+            listOf("Organic Maps"),
+            state.copy(query = "offline, maps").visibleProjects(false).map { it.name },
+        )
+    }
+
+    @Test
+    fun `blank query keeps every project`() {
+        assertEquals(SampleProjects, state.copy(query = "   ").visibleProjects(false))
+    }
+
+    @Test
     fun `category filter narrows the catalog`() {
         val designProjects = state.copy(category = ProjectCategory.DESIGN).visibleProjects(false)
 

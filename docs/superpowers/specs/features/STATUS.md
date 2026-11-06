@@ -44,7 +44,8 @@ file after every feature session with the new commit, test result, and status.
 
 ## What works today
 
-- Bundled project catalog with search and category filters.
+- Bundled project catalog with multi-keyword search across names, taglines,
+  descriptions, and tags, plus category filters.
 - Locally persisted favourites with private notes, duplicate handling, note
   length validation, and visible read/write error states.
 - Runtime feature toggles backed by a versioned DataStore envelope, with
