@@ -29,8 +29,8 @@ runs the CI-emulatable subset on a GitHub-hosted Ubuntu 24.04 runner with an API
 signing. Start it from the Actions tab with `Run workflow`.
 
 Passing baseline: 2026-11-06, run
-[42229372236](https://github.com/FossScout/FossScout/actions/runs/42229372236),
-commit `4e346c5`, artifact `device-smoke`.
+[42235668700](https://github.com/FossScout/FossScout/actions/runs/42235668700),
+commit `4c39620`, artifact `device-smoke`.
 
 Covered:
 
