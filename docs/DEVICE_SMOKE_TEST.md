@@ -83,6 +83,8 @@ It does not replace the real-device checklist below.
 - [ ] Switch light/dark theme. Text and controls remain readable.
 - [ ] Navigate every bottom destination and return with Back. No lost state or
       duplicate screens.
+- [ ] On Discover, search by name, a description-only word, and a `#tag`. A
+      multi-keyword query narrows the list; clearing restores the catalog.
 - [ ] Kill the process and relaunch. Persisted state is restored.
 - [ ] Run with the network disabled. Offline screens explain the state and do not
       crash.

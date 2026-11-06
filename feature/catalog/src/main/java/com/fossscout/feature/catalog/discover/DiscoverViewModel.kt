@@ -28,19 +28,37 @@ data class DiscoverUiState(
     val savedStateError: DiscoverSavedError? = null,
 ) {
     fun visibleProjects(savedOnly: Boolean): List<Project> {
-        val normalizedQuery = query.trim()
+        val keywords = query.trim()
+            .split(QUERY_SEPARATOR)
+            .filter { it.isNotEmpty() && it != "#" }
         return projects.filter { project ->
             val matchesTab = !savedOnly || project.id in savedIds
             val matchesCategory = category == null || project.category == category
-            val matchesQuery = normalizedQuery.isEmpty() ||
-                project.name.contains(normalizedQuery, ignoreCase = true) ||
-                project.tagline.contains(normalizedQuery, ignoreCase = true) ||
-                project.tags.any { it.contains(normalizedQuery, ignoreCase = true) }
+            val matchesQuery = keywords.isEmpty() || project.matchesKeywords(keywords)
 
             matchesTab && matchesCategory && matchesQuery
         }
     }
 }
+
+private val QUERY_SEPARATOR = Regex("[\\s,]+")
+
+/**
+ * Every keyword must match a searchable field. A `#` prefix restricts that
+ * keyword to tags.
+ */
+private fun Project.matchesKeywords(keywords: List<String>): Boolean =
+    keywords.all { keyword ->
+        if (keyword.startsWith("#")) {
+            val tag = keyword.drop(1)
+            tag.isNotEmpty() && tags.any { it.contains(tag, ignoreCase = true) }
+        } else {
+            name.contains(keyword, ignoreCase = true) ||
+                tagline.contains(keyword, ignoreCase = true) ||
+                description.contains(keyword, ignoreCase = true) ||
+                tags.any { it.contains(keyword, ignoreCase = true) }
+        }
+    }
 
 class DiscoverViewModel(
     private val favouritesRepository: FavouritesRepository,
