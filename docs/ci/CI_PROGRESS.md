@@ -1,6 +1,6 @@
 # CI Progress & Status
 
-Last updated: 2026-11-05
+Last updated: 2026-11-06
 Branch: main
 Feature baseline: main @ 21d0f51; F-Droid tag `v0.1.0` @ `e4262a1`; current beta release `v0.1.0-beta.3`. Docs/CI changes after this baseline are tracked below.
 
