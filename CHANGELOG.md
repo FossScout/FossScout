@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-beta.4] - 2026-11-06
+
 ### Added
 
 - A curated proprietary-app evidence catalog with vendor terms for common apps, starting with Slack, Facebook, WhatsApp, Instagram, and other widely installed services.
@@ -67,8 +69,9 @@ channel remains at `0.1.0-beta.3`.
 - Beta build type with application ID `com.fossscout.app.beta`.
 - Signed GitHub prerelease workflow for `v*-beta*` tags.
 
-[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.0-beta.4...HEAD
 [0.1.0]: https://github.com/FossScout/FossScout/tree/v0.1.0
+[0.1.0-beta.4]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.4
 [0.1.0-beta.3]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.3
 [0.1.0-beta.2]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.2
 [0.1.0-beta.1]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.1
