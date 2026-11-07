@@ -1,8 +1,8 @@
 # CI Progress & Status
 
-Last updated: 2026-11-06
+Last updated: 2026-11-07
 Branch: main
-Feature baseline: main @ 21d0f51; F-Droid tag `v0.1.0` @ `e4262a1`; current beta release `v0.1.0-beta.3`. Docs/CI changes after this baseline are tracked below.
+Feature baseline: main @ f59dc4b; F-Droid tag `v0.1.0` @ `e4262a1`; current beta release `v0.1.0-beta.4`. Docs/CI changes after this baseline are tracked below.
 
 ## Completed
 | Task | Status | Details |
@@ -16,7 +16,7 @@ Feature baseline: main @ 21d0f51; F-Droid tag `v0.1.0` @ `e4262a1`; current beta
 | Versioning from CI/env | Done | `app/build.gradle.kts` reads `CI_VERSION_CODE`/`GITHUB_RUN_NUMBER` and `CI_VERSION_NAME`; local builds default to `0.1.0` |
 | Release signing config (conditional) | Done | `signingConfigs.release` reads env secrets; applied to release and beta builds if the keystore exists |
 | Beta build type | Done | `playstoreBeta` publishes as `com.fossscout.app.beta` with a `-beta` version-name suffix, so it can be installed alongside production |
-| Beta release workflow | Done | `.github/workflows/release.yml` validates signing secrets through environment variables, has `contents: write`, runs only for `v*-beta*` tags, checks out submodules, verifies the beta APK signature/checksum, and creates a GitHub prerelease. Run [41648987372](https://github.com/FossScout/FossScout/actions/runs/41648987372) passed for `v0.1.0-beta.3`. |
+| Beta release workflow | Done | `.github/workflows/release.yml` validates signing secrets through environment variables, has `contents: write`, runs only for `v*-beta*` tags, checks out submodules, verifies the beta APK signature/checksum, and creates a GitHub prerelease. Run [42239255577](https://github.com/FossScout/FossScout/actions/runs/42239255577) passed for `v0.1.0-beta.4`. |
 | Shared docs submodule | Done | `tools/best-practices` is pinned to `532512f`; CI and release workflows check out submodules. |
 | Play internal AAB build | Done | `.github/workflows/play-internal.yml` builds a signed AAB with dedicated Play upload secrets, verifies it, and uploads it as an artifact; Play Console upload remains manual. |
 | Toolchain upgrade | Done | Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
@@ -31,7 +31,7 @@ Feature baseline: main @ 21d0f51; F-Droid tag `v0.1.0` @ `e4262a1`; current beta
 | GitHub Secrets for release | Done | `KEYSTORE_FILE`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` configured on 2026-10-29 |
 | Play upload secrets | Pending | `PLAY_KEYSTORE_FILE`, `PLAY_KEYSTORE_PASSWORD`, `PLAY_KEY_ALIAS`, and `PLAY_KEY_PASSWORD` are not configured |
 | Branch protection rules | Done | `main` ruleset requires a PR, the `build` check, an up-to-date branch, and conversation resolution; blocks force pushes and deletion. `best-practices` has a PR-only ruleset. |
-| Release smoke test | Done | `v0.1.0-beta.3` published as a GitHub prerelease; APK package `com.fossscout.app.beta`, version `0.1.0-beta.3` (version code 11), SHA-256 `ef76fe01c48f116b156b6c472360d47b40fedbacdde0b9cde1dafcd8c154e332`, certificate SHA-256 `96:6B:04:56:B3:E6:F6:3B:D8:BD:64:3A:4F:53:D4:9E:E4:31:DE:0B:4A:16:86:07:DA:E0:6D:4B:4A:5A:57:16`. |
+| Release smoke test | Done | `v0.1.0-beta.4` published as a GitHub prerelease; APK package `com.fossscout.app.beta`, version `0.1.0-beta.4` (version code 12), SHA-256 `7e42bb6d2d9f900c17aa57bfcf64522487f64a54411fc84ac7bad738764e6148`, certificate SHA-256 `96:6B:04:56:B3:E6:F6:3B:D8:BD:64:3A:4F:53:D4:9E:E4:31:DE:0B:4A:16:86:07:DA:E0:6D:4B:4A:5A:57:16`. |
 | Real-device smoke test | Partial | The CI emulator baseline passes (run [42235668700](https://github.com/FossScout/FossScout/actions/runs/42235668700) on `4c39620`). Remaining checks are in [`docs/DEVICE_SMOKE_TEST.md`](../DEVICE_SMOKE_TEST.md): release signing and Play internal track, real store clients, work profiles, store index/signing, matching correction, replacement handoff, sharing/import, backup/restore, stale/hide behavior, and real-device performance. |
 | Release notes/changelog | Partial | `CHANGELOG.md` is maintained manually; automation remains optional |
 | Play Console setup | Pending | App entry, Play App Signing, declarations, store listing, internal track, and tester setup remain manual |
