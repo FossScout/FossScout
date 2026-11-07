@@ -76,6 +76,13 @@ class DiscoverUiStateTest {
     }
 
     @Test
+    fun `project lookup resolves a selected id`() {
+        assertEquals("blender", state.projectById("blender")?.id)
+        assertEquals(null, state.projectById("missing"))
+        assertEquals(null, state.projectById(null))
+    }
+
+    @Test
     fun `filters combine`() {
         val filtered = state.copy(
             query = "offline",

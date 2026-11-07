@@ -32,6 +32,7 @@ Direct APK install and the install-time accessibility prompt are deferred.
 ## Features
 
 - Browse a curated catalog of FOSS projects
+- Open a project detail screen with its description, license, tags, stars, website, and save action
 - Search by project name, tagline, description, or tag, including multi-keyword queries and `#tag` prefixes
 - Filter by category
 - Favourite projects and keep a private note on each one; favourites persist
@@ -198,7 +199,6 @@ depend on `:app` or on each other.
 
 ## Roadmap
 
-- Add project detail screens
 - Complete device/emulator verification for inventory, store intents, backup,
   trust details, and contribution actions
 - Complete Play internal testing

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Project detail screens with description, license, tags, stars, website, and save action.
+
 ## [0.1.0-beta.4] - 2026-11-06
 
 ### Added
