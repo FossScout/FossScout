@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Proposed |
+| Status | Done |
 | Availability | **General** |
 | Profiles | `playstore`, `fdroid`, `direct`, `custom` |
 | Required capabilities | Store index/network capability for indexed stores; deep links for link-only stores |
@@ -27,7 +27,7 @@ exist in several stores with different versions or build status.
 ## 3. Scope
 
 - Search indexed stores locally from the cached index.
-- Search link-only stores by opening the store's own search/deep link.
+- Hand link-only stores off to the store's website or documented search page.
 - Merge duplicate package results across stores without hiding store-specific
   metadata.
 - Show package ID, app name, summary, store, version, and trust indicators.
@@ -65,11 +65,29 @@ exist in several stores with different versions or build status.
 
 ## 7. Privacy
 
-Queries stay on the device. Opening a link-only store hands the query to that
-store under the store's own privacy policy; the UI must say so before opening.
+Queries stay on the device. Opening a link-only store opens its website without
+sending the query; once the user searches there, the store's own privacy policy
+applies, and the UI says so before opening.
 
-## 8. Open questions
+## 8. Resolved decisions
 
-1. Should grouping prefer the newest version or the user's preferred store?
-2. Should search include apps with anti-features by default, or require a filter?
-3. Should search scan source-code repositories as a separate result type?
+1. **Grouping:** prefer the user's store priority, while showing every store and
+   version that carries the package. Selecting a result opens a detail dialog
+   with all store-specific metadata.
+2. **Anti-features:** include anti-feature apps by default and label them. The
+   trust filter can hide them with “No anti-features”.
+3. **Link-only handoff:** open the store homepage. The query is not sent, and the
+   UI explains that searching there falls under the store's own privacy policy.
+4. **Source-code repositories:** not a separate result type in this iteration.
+
+## 9. Implementation notes
+
+- Search is launched from the Stores screen rather than adding another bottom
+  navigation tab.
+- Indexed results come from the same cached `SnapshotCatalogSource` used by
+  matching; no network request is made by search.
+- Store, trust, and availability filters combine and re-run the current search.
+- Results report cache age per store. Enabled stores with no cache or an
+  unreadable cache are listed instead of being silently treated as no results.
+- Favourites use the existing local favourite store; no install action is added.
+- Search history (F18-R8, MAY) is not implemented in this iteration.

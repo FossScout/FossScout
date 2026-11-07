@@ -27,6 +27,11 @@ object FeatureCatalog {
             ),
         ),
         FeatureDescriptor(
+            id = FeatureId.STORE_SEARCH,
+            availability = Availability.GENERAL,
+            requiredCapabilities = setOf(Capability.STORE_INDEX_NETWORK),
+        ),
+        FeatureDescriptor(
             id = FeatureId.INDEX_CACHE,
             availability = Availability.GENERAL,
             requiredCapabilities = setOf(Capability.STORE_INDEX_NETWORK),

@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
 Last updated: **2026-11-07**
-Feature baseline: `main` at `0a28e36`; current GitHub beta `v0.1.0-beta.4` (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
+Feature baseline: `main` at `f985c27`; F18 unified store search is implemented on `feat/f18-unified-store-search`. Current GitHub beta `v0.1.0-beta.4` (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
 Pending: device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); Play internal testing and F-Droid delivery.
 Delivery: Toolchain upgraded to Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play internal AAB workflow added; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
@@ -38,9 +38,9 @@ file after every feature session with the new commit, test result, and status.
 | Security details and trust audit | **Done** (S10; APK checks deferred with F09) |
 | Sharing, backup, contribution | **Done** (sharing/import, backup, and reviewed contribution reports; device checks pending) |
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
-| Feature completion | **13 of 21 fully done; 2 partial; 3 deferred; 3 spec-only** (F22 support link is Done outside the v1 map) |
+| Feature completion | **14 of 21 fully done; 2 partial; 3 deferred; 2 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passes. Then prepare Play internal testing. Evaluate F18 unified store search subject to approval and an approved brief. F20 matching correction and F22 support link are complete; F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passes. Then prepare Play internal testing. F18 unified store search, F20 matching correction, and F22 support link are complete; F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ## What works today
 
@@ -66,6 +66,11 @@ file after every feature session with the new commit, test result, and status.
   reuse, streaming parse into bounded local snapshots, cancellation-safe atomic
   replacement, freshness/last-sync state, and a 16–2048 MB storage-budget
   setting.
+- Unified store search launched from Stores: offline cached-index results across
+  every enabled indexed store, duplicate-package grouping with every store and
+  version retained, per-store cache age and trust, anti-feature labels, filters
+  for store/trust/availability, explicit link-only homepage handoffs, and local
+  favourites without an install action.
 - Local installed-app inventory with manual package/label/store-link lookup on
   both profiles, F-Droid-only full scan, persisted complete snapshots, stale
   marking, system/disabled/work-profile/hide filters, and production
@@ -147,7 +152,7 @@ file after every feature session with the new commit, test result, and status.
 | F15 | Update tracking | **Deferred** | Not enabled in either v1 profile. | S12 |
 | F16 | Contribution hooks | **Done** | Pure-JVM schema-v1 report builder and redaction boundary, configurable prefilled issue URL, preview-gated ViewModel, Compose contribution screen, and Settings/Stores/Match entry points. Default reports exclude inventory, notes, account data, device identifiers, raw errors, query tokens, and local paths; coverage keeps statuses/reasons only. Copy/share work offline; debug details are opt-in and exported as redacted JSON. The GitHub issue URL is configurable in the builder. Device checks for preview, clipboard, share sheet, browser opening, and debug JSON remain. | S11 |
 | F17 | Feature configuration | **Done** | Descriptor settings model (boolean/text/integer with defaults and validation), versioned envelope with legacy migration, registry-authoritative availability, basic/advanced sections, per-feature/global reset, and read-only snapshot used by F13. `INDEX_CACHE` declares the real `storage_budget_mb` setting; S09 adds the backup import/export UI. | S01, S09 |
-| F18 | Unified store search | **Spec only** | Post-v1. No feature ID or code. | S12 |
+| F18 | Unified store search | **Done** | Search runs offline from every enabled indexed store through the shared cached-catalog loader; duplicate packages are grouped with every store/version and per-store metadata; store/trust/availability filters, anti-feature labels, cache-age timestamps, unavailable-cache notices, and link-only homepage handoffs are implemented. Results can be favourited locally; no install action is added. Search history (R8, MAY) remains deferred. Device/UI verification pending. | S16 (post-v1) |
 | F19 | Permission and tracker diff | **Spec only** | Post-v1. No feature ID or code. | S12 |
 | F20 | Matching correction | **Done** | Local corrections from the match screen: cached enabled-store target search, no-suitable-match, private note, corrected badge, target-unavailable warning, undo, automatic result retained, and one override per package key. Backup schema 2 adds overrides with v1 checksum migration and merge/replace/skip preview. Store-scoped overrides (R8), shareable corrections, low-confidence prompts, and profile-scoped duplicates remain deferred. Device/UI verification pending. | S18 (post-v1) |
 | F21 | Trust badges | **Spec only** | Post-v1. No feature ID or code. | S12 |
@@ -211,6 +216,23 @@ dependency, payment SDK, or manifest capability was added.
 Debug builds may warn that native symbols for `libandroidx.graphics.path.so`
 and `libdatastore_shared_counter.so` cannot be stripped. This is a debug-build
 warning, not a failing check.
+
+### F18 unified store search (2026-11-07)
+
+Commands run on `feat/f18-unified-store-search` before merge:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint` | **Passed** (6m 16s, 645 actionable tasks) |
+| Unit tests | **789 test executions across 113 suites; 0 failures, 0 errors, 0 skipped** |
+| `assemblePlaystoreDebug` | **Passed** |
+| `assembleFdroidDebug` | **Passed** |
+| `./gradlew lint` | **Passed**: 0 errors. Existing warnings only; no new warnings in `feature:matching` or `feature:stores`. |
+| New tests | `StoreSearchRepositoryTest` covers cross-store grouping, store priority, every-store metadata, store/trust/anti-feature filters, link-only handoffs, unavailable caches, disabled stores, summary/package matching, and blank queries. `StoreSearchViewModelTest` covers option loading, query validation, grouped results, combined filters, availability handoff, and repository failures. `SnapshotCatalogSourceTest` covers anti-feature projection. |
+| Boundary check | No dependency, Gradle-file, manifest, or permission change. Search reuses `MatchingRepository` and `SnapshotCatalogSource`; favourites reuse `FavouritesRepository`. |
+
+Device/UI verification is still outstanding for the search screen, filter chips,
+result details, link-only browser handoff, and favourite action.
 
 ## Known gaps and blockers
 

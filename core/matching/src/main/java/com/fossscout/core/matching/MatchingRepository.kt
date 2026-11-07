@@ -61,6 +61,160 @@ class MatchingRepository(
     }
 
     /**
+     * Lists enabled stores for the search filters without reading their index
+     * payloads. This keeps opening the search screen cheap even with large
+     * cached catalogs.
+     */
+    suspend fun storeSearchOptions(): List<StoreSearchStoreOption> {
+        val timestamp = now()
+        val snapshotMap = snapshots.first()
+        return storeEntries.first()
+            .filter { it.descriptor.enabled }
+            .mapIndexed { index, entry ->
+                val snapshot = snapshotMap[entry.descriptor.id.value]
+                StoreSearchStoreOption(
+                    storeId = entry.descriptor.id.value,
+                    storeName = entry.descriptor.name,
+                    priority = index,
+                    indexed = entry.availability.mode == StoreMode.MATCHABLE,
+                    freshness = snapshot
+                        ?.freshness(timestamp, freshnessWindowMillis)
+                        ?: SnapshotFreshness.NEVER_SYNCED,
+                    lastSyncEpochMillis = snapshot?.fetchedAtEpochMillis,
+                )
+            }
+    }
+
+    /**
+     * F18 unified search over every enabled store. Indexed stores are queried
+     * from their verified cached snapshot; link-only stores are returned as
+     * explicit handoffs and are never parsed.
+     */
+    suspend fun searchStores(query: StoreSearchQuery): StoreSearchResponse {
+        val needle = query.text.trim().lowercase()
+        val timestamp = now()
+        if (needle.isEmpty()) {
+            return StoreSearchResponse(
+                query = query.text,
+                searchedAtEpochMillis = timestamp,
+            )
+        }
+
+        val stores = loadStores(timestamp).filter(MatchStoreInput::enabled)
+        val options = stores.mapIndexed { index, store -> store.searchOption(index) }
+        val selectedStores = stores.filter { store ->
+            query.storeIds.isEmpty() || store.storeId in query.storeIds
+        }
+        val priorityByStoreId = stores
+            .mapIndexed { index, store -> store.storeId to index }
+            .toMap()
+
+        val linkOnlyStores = if (
+            query.availabilityFilter != StoreSearchAvailabilityFilter.INDEXED
+        ) {
+            selectedStores.mapNotNull { store ->
+                val reason = store.linkOnlyReason ?: return@mapNotNull null
+                StoreSearchLinkOnly(
+                    storeId = store.storeId,
+                    storeName = store.storeName,
+                    homepage = store.homepage,
+                    reason = reason,
+                )
+            }
+        } else {
+            emptyList()
+        }
+
+        val unavailableStores = if (
+            query.availabilityFilter == StoreSearchAvailabilityFilter.LINK_ONLY
+        ) {
+            emptyList()
+        } else {
+            selectedStores.mapNotNull { store ->
+                when {
+                    !store.supported -> null
+                    store.snapshot == null -> StoreSearchUnavailable(
+                        storeId = store.storeId,
+                        storeName = store.storeName,
+                        reason = StoreSearchUnavailableReason.NEVER_SYNCED,
+                    )
+
+                    store.loadError != null -> StoreSearchUnavailable(
+                        storeId = store.storeId,
+                        storeName = store.storeName,
+                        reason = StoreSearchUnavailableReason.INDEX_UNREADABLE,
+                    )
+
+                    else -> null
+                }
+            }
+        }
+
+        val groups = if (
+            query.availabilityFilter == StoreSearchAvailabilityFilter.LINK_ONLY
+        ) {
+            emptyList()
+        } else {
+            selectedStores
+                .filter(MatchStoreInput::contributesCatalogResults)
+                .flatMap { store ->
+                    store.catalog?.entries.orEmpty().mapNotNull { entry ->
+                        val rank = storeSearchRank(entry, needle) ?: return@mapNotNull null
+                        RankedSearchHit(
+                            entry = entry,
+                            rank = rank,
+                            hit = store.searchHit(
+                                entry = entry,
+                                priority = priorityByStoreId.getValue(store.storeId),
+                            ),
+                        )
+                    }
+                }
+                .filter { ranked ->
+                    when (query.trustFilter) {
+                        StoreSearchTrustFilter.ALL -> true
+                        StoreSearchTrustFilter.VERIFIED_INDEX ->
+                            ranked.hit.isIndexVerified
+                        StoreSearchTrustFilter.OPEN_SOURCE ->
+                            ranked.hit.hasOpenSourceMetadata
+                        StoreSearchTrustFilter.NO_ANTI_FEATURES ->
+                            ranked.hit.antiFeatures.isEmpty()
+                    }
+                }
+                .groupBy { ranked -> ranked.entry.packageName }
+                .map { (packageName, rankedHits) ->
+                    val sorted = rankedHits.sortedBy { ranked -> ranked.hit.priority }
+                    val primary = sorted.first()
+                    StoreSearchGroup(
+                        packageName = packageName,
+                        name = primary.entry.name,
+                        summary = primary.entry.summary,
+                        categories = primary.entry.categories,
+                        stores = sorted
+                            .map(RankedSearchHit::hit)
+                            .distinctBy(StoreSearchStoreHit::storeId),
+                    ) to rankedHits.minOf(RankedSearchHit::rank)
+                }
+                .sortedWith(
+                    compareBy<Pair<StoreSearchGroup, Int>> { it.second }
+                        .thenBy { it.first.name.lowercase() }
+                        .thenBy { it.first.packageName },
+                )
+                .map { it.first }
+        }
+
+        return StoreSearchResponse(
+            query = query.text,
+            groups = groups,
+            linkOnlyStores = linkOnlyStores,
+            unavailableStores = unavailableStores,
+            storeOptions = options,
+            indexedStoreCount = options.count(StoreSearchStoreOption::indexed),
+            searchedAtEpochMillis = timestamp,
+        )
+    }
+
+    /**
      * Searches the cached catalogs for a correction target. Results are ordered
      * by package/name relevance and never trigger a network request.
      */
@@ -127,6 +281,8 @@ class MatchingRepository(
                 freshness = freshness,
                 catalog = data,
                 loadError = loadError,
+                homepage = entry.descriptor.homepage,
+                linkOnlyReason = entry.availability.reason,
             )
         }
     }
@@ -201,5 +357,53 @@ class MatchingRepository(
                     explanation = "Coverage is incomplete, so a FOSS build cannot be ruled out.",
                 )
         }
+    }
+}
+
+private data class RankedSearchHit(
+    val entry: CatalogEntry,
+    val rank: Int,
+    val hit: StoreSearchStoreHit,
+)
+
+private fun MatchStoreInput.searchOption(priority: Int): StoreSearchStoreOption =
+    StoreSearchStoreOption(
+        storeId = storeId,
+        storeName = storeName,
+        priority = priority,
+        indexed = supported,
+        freshness = freshness,
+        lastSyncEpochMillis = snapshot?.fetchedAtEpochMillis,
+    )
+
+private fun MatchStoreInput.searchHit(
+    entry: CatalogEntry,
+    priority: Int,
+): StoreSearchStoreHit = StoreSearchStoreHit(
+    storeId = storeId,
+    storeName = storeName,
+    priority = priority,
+    license = entry.license,
+    sourceCode = entry.sourceCode,
+    versionName = entry.versionName,
+    versionCode = entry.versionCode,
+    antiFeatures = entry.antiFeatures,
+    fetchedAtEpochMillis = snapshot?.fetchedAtEpochMillis,
+    freshness = freshness,
+    signatureStatus = snapshot?.signatureStatus,
+)
+
+private fun storeSearchRank(entry: CatalogEntry, needle: String): Int? {
+    val packageName = entry.packageName.lowercase()
+    val name = entry.name.lowercase()
+    val summary = entry.summary.lowercase()
+    return when {
+        packageName == needle -> 0
+        packageName.startsWith(needle) -> 1
+        name.startsWith(needle) -> 2
+        name.contains(needle) -> 3
+        summary.contains(needle) -> 4
+        packageName.contains(needle) -> 5
+        else -> null
     }
 }

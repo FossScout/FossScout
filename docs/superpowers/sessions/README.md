@@ -49,11 +49,10 @@ session map; the verified Liberapay team URL is configured in this change.
 Store-scoped overrides, shareable corrections, low-confidence prompts, and
 device/UI verification remain deferred.
 
-No next post-v1 feature is selected. F18 unified store search is the recommended
-next candidate, subject to approval and a brief. F19/F21 still need approved
-briefs and heavier dataset/evidence decisions. If multiple sessions run in
-parallel in future, use the wave table and avoid editing the same app wiring
-files without coordinating.
+No next post-v1 feature is selected. F18 unified store search is implemented;
+F19/F21 still need approved briefs and heavier dataset/evidence decisions. If
+multiple sessions run in parallel in future, use the wave table and avoid
+editing the same app wiring files without coordinating.
 
 ## Planning assumptions
 

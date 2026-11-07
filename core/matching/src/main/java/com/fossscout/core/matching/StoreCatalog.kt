@@ -22,6 +22,7 @@ data class CatalogEntry(
     val versionName: String? = null,
     val versionCode: Long? = null,
     val signerSha256: List<String> = emptyList(),
+    val antiFeatures: List<String> = emptyList(),
 ) {
     init {
         require(packageName.isNotBlank()) { "Catalog package is blank" }
@@ -117,6 +118,7 @@ internal fun StorePackage.toCatalogEntry(): CatalogEntry {
         signerSha256 = latest?.signerSha256?.map { it.trim().lowercase() }
             ?.filter(String::isNotEmpty)
             .orEmpty(),
+        antiFeatures = antiFeatures.keys.sorted(),
     )
 }
 
