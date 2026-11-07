@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
@@ -56,6 +57,8 @@ import com.fossscout.feature.backup.BackupScreen
 import com.fossscout.feature.backup.BackupViewModel
 import com.fossscout.feature.catalog.data.Project
 import com.fossscout.feature.catalog.data.ProjectRepository
+import com.fossscout.feature.catalog.detail.ProjectDetailScreen
+import com.fossscout.feature.catalog.discover.DiscoverSavedError
 import com.fossscout.feature.catalog.discover.DiscoverScreen
 import com.fossscout.feature.catalog.discover.DiscoverViewModel
 import com.fossscout.feature.companion.CompanionScreen
@@ -276,6 +279,7 @@ fun FossScoutApp(
     }
 
     var selectedDestination by rememberSaveable { mutableStateOf(AppDestination.DISCOVER.name) }
+    var selectedProjectId by rememberSaveable { mutableStateOf<String?>(null) }
     var showCollections by rememberSaveable { mutableStateOf(false) }
     var showBackup by rememberSaveable { mutableStateOf(false) }
     var showContribution by rememberSaveable { mutableStateOf(false) }
@@ -305,6 +309,7 @@ fun FossScoutApp(
         }
     }
     BackHandler(enabled = showContribution) { closeContribution() }
+    BackHandler(enabled = selectedProjectId != null) { selectedProjectId = null }
     var handledSharedQuery by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(initialInventoryQuery, inventoryEnabled) {
@@ -314,6 +319,7 @@ fun FossScoutApp(
             shared.isNotEmpty() &&
             handledSharedQuery != initialInventoryQuery
         ) {
+            selectedProjectId = null
             selectedDestination = AppDestination.INVENTORY.name
             handledSharedQuery = initialInventoryQuery
         }
@@ -321,7 +327,7 @@ fun FossScoutApp(
 
     val state by discoverViewModel.uiState.collectAsStateWithLifecycle()
 
-    val openProject: (Project) -> Unit = { project -> context.openWebsite(project.website) }
+    val openProject: (Project) -> Unit = { project -> selectedProjectId = project.id }
 
     Scaffold(
         bottomBar = {
@@ -332,6 +338,7 @@ fun FossScoutApp(
                         selected = item == destination,
                         onClick = {
                             showContribution = false
+                            selectedProjectId = null
                             selectedDestination = item.name
                         },
                         icon = {
@@ -370,18 +377,37 @@ fun FossScoutApp(
         }
 
         when (destination) {
-            AppDestination.DISCOVER -> DiscoverScreen(
-                state = state,
-                savedOnly = false,
-                onQueryChange = discoverViewModel::onQueryChange,
-                onCategorySelected = discoverViewModel::onCategorySelected,
-                onToggleSaved = discoverViewModel::onToggleSaved,
-                onClearFilters = discoverViewModel::clearFilters,
-                onOpenProject = openProject,
-                modifier = screenModifier,
-                showSaveAction = favouritesEnabled,
-                onRetrySavedState = discoverViewModel::retrySavedState,
-            )
+            AppDestination.DISCOVER -> {
+                val discoverListState = rememberLazyListState()
+                val selectedProject = state.projectById(selectedProjectId)
+                if (selectedProject != null) {
+                    ProjectDetailScreen(
+                        project = selectedProject,
+                        isSaved = selectedProject.id in state.savedIds,
+                        onBack = { selectedProjectId = null },
+                        onToggleSaved = { discoverViewModel.onToggleSaved(selectedProject) },
+                        onOpenWebsite = { context.openWebsite(selectedProject.website) },
+                        modifier = screenModifier,
+                        showSaveAction = favouritesEnabled &&
+                            !state.isSavedStateLoading &&
+                            state.savedStateError != DiscoverSavedError.READ_FAILED,
+                    )
+                } else {
+                    DiscoverScreen(
+                        state = state,
+                        savedOnly = false,
+                        onQueryChange = discoverViewModel::onQueryChange,
+                        onCategorySelected = discoverViewModel::onCategorySelected,
+                        onToggleSaved = discoverViewModel::onToggleSaved,
+                        onClearFilters = discoverViewModel::clearFilters,
+                        onOpenProject = openProject,
+                        modifier = screenModifier,
+                        showSaveAction = favouritesEnabled,
+                        onRetrySavedState = discoverViewModel::retrySavedState,
+                        listState = discoverListState,
+                    )
+                }
+            }
 
             AppDestination.SAVED -> {
                 val favouritesViewModel: FavouritesViewModel = viewModel(

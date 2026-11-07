@@ -16,6 +16,15 @@
     <string name="discover_empty_saved_no_match_body">Nothing in your saved list matches these filters.</string>
     <string name="discover_empty_no_match_body">Try a different search term or category.</string>
 
+    <string name="project_detail_back">Back</string>
+    <string name="project_detail_about">About</string>
+    <string name="project_detail_tags">Tags</string>
+    <string name="project_detail_stars">Stars: %1$s</string>
+    <string name="project_detail_website">Website</string>
+    <string name="project_detail_visit_website">Visit project website</string>
+    <string name="project_detail_save">Save project</string>
+    <string name="project_detail_saved">Saved</string>
+
     <plurals name="discover_project_count">
         <item quantity="one">%1$d project</item>
         <item quantity="other">%1$d projects</item>

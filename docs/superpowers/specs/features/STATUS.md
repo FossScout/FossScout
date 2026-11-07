@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
-Last updated: **2026-11-06**
-Feature baseline: `main` at `21d0f51`; current GitHub beta `v0.1.0-beta.3` (S01–S11, F20, F22, friendly installer labels, and the approved dependency updates are on `main`).
+Last updated: **2026-11-07**
+Feature baseline: `main` at `5162464`; current GitHub beta `v0.1.0-beta.4` (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
 Pending: device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); Play internal testing and F-Droid delivery.
 Delivery: Toolchain upgraded to Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play internal AAB workflow added; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
@@ -45,7 +45,8 @@ file after every feature session with the new commit, test result, and status.
 ## What works today
 
 - Bundled project catalog with multi-keyword search across names, taglines,
-  descriptions, and tags, plus category filters.
+  descriptions, and tags, plus category filters and project detail screens with
+  license, stars, tags, website, and save actions.
 - Locally persisted favourites with private notes, duplicate handling, note
   length validation, and visible read/write error states.
 - Runtime feature toggles backed by a versioned DataStore envelope, with

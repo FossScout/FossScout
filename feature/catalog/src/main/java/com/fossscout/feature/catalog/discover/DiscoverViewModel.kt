@@ -27,6 +27,8 @@ data class DiscoverUiState(
     val isSavedStateLoading: Boolean = true,
     val savedStateError: DiscoverSavedError? = null,
 ) {
+    fun projectById(id: String?): Project? = projects.firstOrNull { it.id == id }
+
     fun visibleProjects(savedOnly: Boolean): List<Project> {
         val keywords = query.trim()
             .split(QUERY_SEPARATOR)

@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.fossscout.feature.catalog.data.Project
 
@@ -130,11 +131,11 @@ fun ProjectCard(
 }
 
 @Composable
-private fun ProjectMonogram(name: String) {
+internal fun ProjectMonogram(name: String, size: Dp = 46.dp) {
     Surface(
         shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.primaryContainer,
-        modifier = Modifier.size(46.dp),
+        modifier = Modifier.size(size),
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -148,7 +149,7 @@ private fun ProjectMonogram(name: String) {
 }
 
 @Composable
-private fun LicensePill(license: String) {
+internal fun LicensePill(license: String) {
     Surface(
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
@@ -162,7 +163,7 @@ private fun LicensePill(license: String) {
     }
 }
 
-private fun formatStars(stars: Int): String = when {
+internal fun formatStars(stars: Int): String = when {
     stars >= 1_000 -> "${stars / 1_000}k"
     else -> stars.toString()
 }
