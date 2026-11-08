@@ -19,7 +19,15 @@ class SnapshotCatalogSourceTest {
     @Test
     fun `load projects only the fields matching needs`() = runTest {
         val payloads = FakePayloadStore(
-            mapOf("one.ndjson" to listOf(packageRecord())),
+            mapOf(
+                "one.ndjson" to listOf(
+                    packageRecord(
+                        antiFeatures = mapOf(
+                            "Tracking" to mapOf("en-US" to "Tracks usage"),
+                        ),
+                    ),
+                ),
+            ),
         )
         val source = SnapshotCatalogSource(payloads)
 
@@ -33,6 +41,7 @@ class SnapshotCatalogSourceTest {
         assertEquals("1.2.3", entry.versionName)
         assertEquals(2L, entry.versionCode)
         assertEquals(listOf("aaaa"), entry.signerSha256)
+        assertEquals(listOf("Tracking"), entry.antiFeatures)
         assertTrue(entry.hasLicense)
         assertTrue(entry.hasSource)
     }
@@ -103,6 +112,7 @@ class SnapshotCatalogSourceTest {
 
     private fun packageRecord(
         sourceCode: String = "https://example.org/src",
+        antiFeatures: Map<String, Map<String, String>> = emptyMap(),
     ) = StorePackage(
         packageName = "org.example.app",
         name = mapOf("en-US" to "Example"),
@@ -110,6 +120,7 @@ class SnapshotCatalogSourceTest {
         categories = listOf("Tools"),
         license = "GPL-3.0-only",
         sourceCode = sourceCode,
+        antiFeatures = antiFeatures,
         versions = listOf(
             StorePackageVersion(
                 fileSha256 = "a".repeat(64),

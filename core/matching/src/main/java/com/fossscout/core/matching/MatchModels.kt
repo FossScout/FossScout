@@ -3,6 +3,7 @@ package com.fossscout.core.matching
 import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.index.SnapshotFreshness
 import com.fossscout.core.model.MatchOverride
+import com.fossscout.core.store.LinkOnlyReason
 import kotlinx.serialization.Serializable
 
 /**
@@ -236,6 +237,8 @@ data class MatchStoreInput(
     val freshness: SnapshotFreshness = SnapshotFreshness.NEVER_SYNCED,
     val catalog: StoreCatalogData? = null,
     val loadError: String? = null,
+    val homepage: String = "",
+    val linkOnlyReason: LinkOnlyReason? = null,
 ) {
     init {
         require(storeId.isNotBlank()) { "Store id is blank" }

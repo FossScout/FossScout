@@ -99,6 +99,7 @@ fun StoresScreen(
     onRetry: () -> Unit,
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenStoreSearch: (() -> Unit)? = null,
     onReportProblem: ((StoreEditor?) -> Unit)? = null,
 ) {
     Column(
@@ -108,6 +109,7 @@ fun StoresScreen(
     ) {
         Row(
             modifier = Modifier.padding(start = 20.dp, end = 12.dp, top = 16.dp, bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -126,6 +128,11 @@ fun StoresScreen(
             if (onReportProblem != null) {
                 TextButton(onClick = { onReportProblem(null) }) {
                     Text(stringResource(R.string.stores_report_problem))
+                }
+            }
+            if (onOpenStoreSearch != null) {
+                OutlinedButton(onClick = onOpenStoreSearch) {
+                    Text(stringResource(R.string.stores_search))
                 }
             }
             Button(onClick = onAdd) {

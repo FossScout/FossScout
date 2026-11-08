@@ -51,7 +51,10 @@ import com.fossscout.core.contribution.forMissingStore
 import com.fossscout.core.contribution.forWrongMatch
 import com.fossscout.core.feature.FeatureId
 import com.fossscout.core.handoff.AppHandoff
+import com.fossscout.core.model.AppKey
+import com.fossscout.core.model.StoreId
 import com.fossscout.core.matching.MatchDecision
+import com.fossscout.core.matching.StoreSearchGroup
 import com.fossscout.feature.backup.BackupExportRequest
 import com.fossscout.feature.backup.BackupScreen
 import com.fossscout.feature.backup.BackupViewModel
@@ -79,6 +82,8 @@ import com.fossscout.feature.inventory.InventoryScreen
 import com.fossscout.feature.inventory.InventoryViewModel
 import com.fossscout.feature.matching.MatchScreen
 import com.fossscout.feature.matching.MatchingViewModel
+import com.fossscout.feature.matching.StoreSearchScreen
+import com.fossscout.feature.matching.StoreSearchViewModel
 import com.fossscout.feature.settings.FeatureSettingsScreen
 import com.fossscout.feature.settings.FeatureSettingsViewModel
 import com.fossscout.feature.stores.StoreEditor
@@ -135,6 +140,7 @@ fun FossScoutApp(
     }
     val favouritesEnabled = FeatureId.FAVOURITES in enabledFeatures
     val sharingEnabled = FeatureId.SHARING in enabledFeatures
+    val storeSearchEnabled = FeatureId.STORE_SEARCH in enabledFeatures
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -283,6 +289,7 @@ fun FossScoutApp(
     var showCollections by rememberSaveable { mutableStateOf(false) }
     var showBackup by rememberSaveable { mutableStateOf(false) }
     var showContribution by rememberSaveable { mutableStateOf(false) }
+    var showStoreSearch by rememberSaveable { mutableStateOf(false) }
     val destination = destinations.firstOrNull { it.name == selectedDestination }
         ?: destinations.first()
     val inventoryEnabled = FeatureId.INVENTORY in enabledFeatures
@@ -293,6 +300,9 @@ fun FossScoutApp(
     }
     LaunchedEffect(contributionEnabled) {
         if (!contributionEnabled) showContribution = false
+    }
+    LaunchedEffect(storeSearchEnabled) {
+        if (!storeSearchEnabled) showStoreSearch = false
     }
     LaunchedEffect(showBackup) {
         if (showBackup) backupViewModel.refreshExport()
@@ -309,6 +319,7 @@ fun FossScoutApp(
         }
     }
     BackHandler(enabled = showContribution) { closeContribution() }
+    BackHandler(enabled = showStoreSearch) { showStoreSearch = false }
     BackHandler(enabled = selectedProjectId != null) { selectedProjectId = null }
     var handledSharedQuery by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -338,6 +349,7 @@ fun FossScoutApp(
                         selected = item == destination,
                         onClick = {
                             showContribution = false
+                            showStoreSearch = false
                             selectedProjectId = null
                             selectedDestination = item.name
                         },
@@ -674,44 +686,109 @@ fun FossScoutApp(
                 )
                 val storesState by storesViewModel.uiState.collectAsStateWithLifecycle()
 
-                StoresScreen(
-                    state = storesState,
-                    onAdd = storesViewModel::startAdd,
-                    onEdit = storesViewModel::startEdit,
-                    onEditorChange = storesViewModel::updateEditor,
-                    onSaveEditor = storesViewModel::saveEditor,
-                    onDismissEditor = storesViewModel::dismissEditor,
-                    onToggle = storesViewModel::setEnabled,
-                    onMoveUp = storesViewModel::moveUp,
-                    onMoveDown = storesViewModel::moveDown,
-                    onRequestDelete = storesViewModel::requestDelete,
-                    onConfirmDelete = storesViewModel::confirmDelete,
-                    onDismissDelete = storesViewModel::dismissDelete,
-                    onExport = storesViewModel::export,
-                    onShareExport = context::shareStoreDescriptor,
-                    onDismissExport = storesViewModel::dismissExport,
-                    onOpenHomepage = context::openWebsite,
-                    onSync = storesViewModel::sync,
-                    onCancelSync = storesViewModel::cancelSync,
-                    onOpenSecurityDetails = storesViewModel::openSecurityDetails,
-                    onDismissSecurityDetails = storesViewModel::dismissSecurityDetails,
-                    onApproveFingerprint = storesViewModel::approveFingerprintRotation,
-                    onCleanupStorage = storesViewModel::cleanupStorage,
-                    onRetry = storesViewModel::retry,
-                    onDismissError = storesViewModel::dismissError,
-                    modifier = screenModifier,
-                    onReportProblem = if (contributionEnabled) {
-                        { editor: StoreEditor? ->
-                            openContribution(
-                                ContributionContext.forMissingStore(
-                                    store = editor?.toReportStoreInput(),
-                                ),
-                            )
-                        }
-                    } else {
-                        null
-                    },
-                )
+                if (showStoreSearch && storeSearchEnabled) {
+                    val searchViewModel: StoreSearchViewModel = viewModel(
+                        factory = viewModelFactory {
+                            initializer {
+                                StoreSearchViewModel(container.matchingRepository)
+                            }
+                        },
+                    )
+                    val searchState by searchViewModel.uiState.collectAsStateWithLifecycle()
+                    val favourites by container.favouritesRepository.favourites
+                        .collectAsStateWithLifecycle(initialValue = emptyList())
+                    val savedAppKeys = remember(favourites) {
+                        favourites.mapTo(mutableSetOf()) { it.appKey }
+                    }
+                    StoreSearchScreen(
+                        state = searchState,
+                        savedAppKeys = savedAppKeys,
+                        onBack = { showStoreSearch = false },
+                        onQueryChange = searchViewModel::onQueryChange,
+                        onSearch = searchViewModel::search,
+                        onToggleStore = searchViewModel::toggleStore,
+                        onTrustFilterChange = searchViewModel::setTrustFilter,
+                        onAvailabilityFilterChange =
+                            searchViewModel::setAvailabilityFilter,
+                        onClearFilters = searchViewModel::clearFilters,
+                        onOpenDetails = searchViewModel::openDetails,
+                        onDismissDetails = searchViewModel::dismissDetails,
+                        onToggleSaved = { group: StoreSearchGroup ->
+                            scope.launch {
+                                val appKey = AppKey.from(group.packageName)
+                                try {
+                                    if (appKey in savedAppKeys) {
+                                        container.favouritesRepository.remove(appKey)
+                                    } else {
+                                        container.favouritesRepository.add(
+                                            appKey = appKey,
+                                            displayName = group.name,
+                                            preferredStoreId = StoreId(
+                                                group.primaryStore.storeId,
+                                            ),
+                                        )
+                                    }
+                                } catch (cancellation: CancellationException) {
+                                    throw cancellation
+                                } catch (_: Exception) {
+                                    Toast.makeText(
+                                        context,
+                                        R.string.store_search_save_failed,
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                }
+                            }
+                        },
+                        onOpenHomepage = context::openWebsite,
+                        onDismissError = searchViewModel::dismissError,
+                        modifier = screenModifier,
+                        showFavoriteAction = favouritesEnabled,
+                    )
+                } else {
+                    StoresScreen(
+                        state = storesState,
+                        onAdd = storesViewModel::startAdd,
+                        onEdit = storesViewModel::startEdit,
+                        onEditorChange = storesViewModel::updateEditor,
+                        onSaveEditor = storesViewModel::saveEditor,
+                        onDismissEditor = storesViewModel::dismissEditor,
+                        onToggle = storesViewModel::setEnabled,
+                        onMoveUp = storesViewModel::moveUp,
+                        onMoveDown = storesViewModel::moveDown,
+                        onRequestDelete = storesViewModel::requestDelete,
+                        onConfirmDelete = storesViewModel::confirmDelete,
+                        onDismissDelete = storesViewModel::dismissDelete,
+                        onExport = storesViewModel::export,
+                        onShareExport = context::shareStoreDescriptor,
+                        onDismissExport = storesViewModel::dismissExport,
+                        onOpenHomepage = context::openWebsite,
+                        onSync = storesViewModel::sync,
+                        onCancelSync = storesViewModel::cancelSync,
+                        onOpenSecurityDetails = storesViewModel::openSecurityDetails,
+                        onDismissSecurityDetails = storesViewModel::dismissSecurityDetails,
+                        onApproveFingerprint = storesViewModel::approveFingerprintRotation,
+                        onCleanupStorage = storesViewModel::cleanupStorage,
+                        onRetry = storesViewModel::retry,
+                        onDismissError = storesViewModel::dismissError,
+                        modifier = screenModifier,
+                        onOpenStoreSearch = if (storeSearchEnabled) {
+                            { showStoreSearch = true }
+                        } else {
+                            null
+                        },
+                        onReportProblem = if (contributionEnabled) {
+                            { editor: StoreEditor? ->
+                                openContribution(
+                                    ContributionContext.forMissingStore(
+                                        store = editor?.toReportStoreInput(),
+                                    ),
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                    )
+                }
             }
 
             AppDestination.SETTINGS -> {
