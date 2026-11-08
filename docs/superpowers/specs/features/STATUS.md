@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
-Last updated: **2026-11-07**
-Feature baseline: `main` at `f985c27`; F18 unified store search is implemented on `feat/f18-unified-store-search`. Current GitHub beta `v0.1.0-beta.4` (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
+Last updated: **2026-11-08**
+Feature baseline: `main` at `8dce751`; F18 unified store search is merged and F19 permission comparison is implemented on `feat/f19-permission-diff`. Current GitHub beta `v0.1.0-beta.4` (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
 Pending: device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); Play internal testing and F-Droid delivery.
 Delivery: Toolchain upgraded to Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play internal AAB workflow added; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
@@ -240,6 +240,21 @@ Commands run on `feat/f18-unified-store-search` before merge:
 Device/UI verification is still outstanding for the search screen, filter chips,
 result details, link-only browser handoff, and favourite action.
 
+### F19 permission comparison (2026-11-08)
+
+Commands run on `feat/f19-permission-diff` after rebasing onto `main` at `8dce751`:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test assemblePlaystoreDebug assembleFdroidDebug lint` | **Passed** (10m 10s, 645 actionable tasks) |
+| Unit tests | **839 test executions across 122 result files; 0 failures, 0 errors, 0 skipped** (debug and release variants counted separately) |
+| `assemblePlaystoreDebug` | **Passed** |
+| `assembleFdroidDebug` | **Passed** |
+| `./gradlew lint` | **Passed**: 0 errors. Existing warnings only; `feature:matching` reports one existing lifecycle custom-check warning and no new permission-comparison issue. |
+| New tests | `PermissionDiffTest` covers installed-only/alternative-only/shared grouping, unknown store metadata, empty installed permissions, readable dangerous permission text, unknown permission fallback, and candidate conversion. Matching ViewModel tests cover package lookup and refreshed installed permissions; catalog and engine tests cover permission propagation. |
+| Boundary check | No Gradle or dependency change. No manifest permission was added; `GET_PERMISSIONS` is a `PackageManager` query flag. Permission data stays local. |
+| Deferred | Tracker signature matching (R4) needs a versioned dataset and compatible license; audit export (R8), APK manifest analysis, and real-device/UI verification remain outstanding. |
+
 ## Known gaps and blockers
 
 Device/UI verification for the completed features is tracked in
@@ -273,6 +288,9 @@ environment has no attached device or emulator.
 - F20 stores one override per installed package key, so work-profile duplicates
   that share a package key share a correction. Store-scoped overrides (R8),
   shareable correction files, and low-confidence prompts remain deferred.
+- F19 tracker signature matching is blocked on a dataset with a compatible
+  license and update policy. The permission comparison intentionally treats an
+  empty or absent store permission list as unknown, not as no permissions.
 - F20 device/UI verification could not be run in this environment: `adb` reports
   no attached devices, no emulator binary is installed, and `/dev/kvm` is absent.
   Target search, the correction dialog, note limit/privacy copy,
