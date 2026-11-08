@@ -11,6 +11,7 @@ internal fun FeatureId.titleRes(): Int = when (this) {
     FeatureId.INVENTORY -> R.string.feature_inventory_title
     FeatureId.MATCHING -> R.string.feature_matching_title
     FeatureId.ALTERNATIVES -> R.string.feature_alternatives_title
+    FeatureId.PERMISSION_DIFF -> R.string.feature_permission_diff_title
     FeatureId.STORES -> R.string.feature_stores_title
     FeatureId.STORE_SEARCH -> R.string.feature_store_search_title
     FeatureId.INDEX_CACHE -> R.string.feature_index_cache_title

@@ -38,9 +38,9 @@ file after every feature session with the new commit, test result, and status.
 | Security details and trust audit | **Done** (S10; APK checks deferred with F09) |
 | Sharing, backup, contribution | **Done** (sharing/import, backup, and reviewed contribution reports; device checks pending) |
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
-| Feature completion | **14 of 21 fully done; 2 partial; 3 deferred; 2 spec-only** (F22 support link is Done outside the v1 map) |
+| Feature completion | **14 of 21 fully done; 3 partial; 3 deferred; 1 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passes. Then prepare Play internal testing. F18 unified store search, F20 matching correction, and F22 support link are complete; F19/F21 need heavier dataset/evidence decisions. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passes. Then prepare Play internal testing. F18 unified store search, F20 matching correction, and F22 support link are complete. F19 now has a permission-only comparison; its tracker signatures still need a licensed dataset, and F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ## What works today
 
@@ -78,6 +78,12 @@ file after every feature session with the new commit, test result, and status.
 - FOSS matching over cached indexes: exact package L1, signer/source-derived
   L2, functional alternatives L3, missing-metadata L0, evidence cards, offline
   operation, and inventory classification integration.
+- Permission comparison from a match result: installed `PackageManager`
+  permissions against the alternative's cached index metadata, with
+  added/removed/shared counts, a grouped detail view, readable dangerous and
+  special permission explanations, and unknown store metadata kept distinct
+  from “none”. Tracker signatures remain unavailable until a licensed dataset
+  is selected.
 - Local match correction: search cached enabled-store catalogs, replace a match
   or mark no suitable match, add a private note, see a corrected badge, undo, and
   keep the automatic result inspectable. Overrides survive index refreshes and
@@ -153,7 +159,7 @@ file after every feature session with the new commit, test result, and status.
 | F16 | Contribution hooks | **Done** | Pure-JVM schema-v1 report builder and redaction boundary, configurable prefilled issue URL, preview-gated ViewModel, Compose contribution screen, and Settings/Stores/Match entry points. Default reports exclude inventory, notes, account data, device identifiers, raw errors, query tokens, and local paths; coverage keeps statuses/reasons only. Copy/share work offline; debug details are opt-in and exported as redacted JSON. The GitHub issue URL is configurable in the builder. Device checks for preview, clipboard, share sheet, browser opening, and debug JSON remain. | S11 |
 | F17 | Feature configuration | **Done** | Descriptor settings model (boolean/text/integer with defaults and validation), versioned envelope with legacy migration, registry-authoritative availability, basic/advanced sections, per-feature/global reset, and read-only snapshot used by F13. `INDEX_CACHE` declares the real `storage_budget_mb` setting; S09 adds the backup import/export UI. | S01, S09 |
 | F18 | Unified store search | **Done** | Search runs offline from every enabled indexed store through the shared cached-catalog loader; duplicate packages are grouped with every store/version and per-store metadata; store/trust/availability filters, anti-feature labels, cache-age timestamps, unavailable-cache notices, and link-only homepage handoffs are implemented. Results can be favourited locally; no install action is added. Search history (R8, MAY) remains deferred. Device/UI verification pending. | S16 (post-v1) |
-| F19 | Permission and tracker diff | **Spec only** | Post-v1. No feature ID or code. | S12 |
+| F19 | Permission and tracker diff | **Partial** | Permission comparison is implemented from primary, other-match, or alternative match cards: installed `PackageManager` requested permissions, cached index permissions for the store version, added/removed/shared summary counts, grouped details, readable dangerous/special/normal/signature labels, and explicit unknown state when store metadata is absent. Tracker signature matching (R4) is deferred until a versioned dataset with a compatible license is selected; the tracker section states the limitation. APK manifest analysis and audit export (R8) remain deferred. Real-device/UI verification pending. | S17 |
 | F20 | Matching correction | **Done** | Local corrections from the match screen: cached enabled-store target search, no-suitable-match, private note, corrected badge, target-unavailable warning, undo, automatic result retained, and one override per package key. Backup schema 2 adds overrides with v1 checksum migration and merge/replace/skip preview. Store-scoped overrides (R8), shareable corrections, low-confidence prompts, and profile-scoped duplicates remain deferred. Device/UI verification pending. | S18 (post-v1) |
 | F21 | Trust badges | **Spec only** | Post-v1. No feature ID or code. | S12 |
 | F22 | Support and donations | **Done** | About support section and URL validation are enabled with the verified Liberapay team URL `https://liberapay.com/FossScout/`; the README links to the same profile. No payment SDK, permission, account, tracking, or feature gating. Device verification of the browser handoff remains pending. | Post-v1 support |

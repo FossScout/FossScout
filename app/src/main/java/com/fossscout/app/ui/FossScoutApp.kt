@@ -54,6 +54,7 @@ import com.fossscout.core.handoff.AppHandoff
 import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.matching.MatchDecision
+import com.fossscout.core.matching.PermissionComparison
 import com.fossscout.core.matching.StoreSearchGroup
 import com.fossscout.feature.backup.BackupExportRequest
 import com.fossscout.feature.backup.BackupScreen
@@ -82,6 +83,7 @@ import com.fossscout.feature.inventory.InventoryScreen
 import com.fossscout.feature.inventory.InventoryViewModel
 import com.fossscout.feature.matching.MatchScreen
 import com.fossscout.feature.matching.MatchingViewModel
+import com.fossscout.feature.matching.PermissionDiffScreen
 import com.fossscout.feature.matching.StoreSearchScreen
 import com.fossscout.feature.matching.StoreSearchViewModel
 import com.fossscout.feature.settings.FeatureSettingsScreen
@@ -520,7 +522,11 @@ fun FossScoutApp(
 
                 var showMatch by remember { mutableStateOf(false) }
                 var showCompanion by remember { mutableStateOf(false) }
+                var permissionComparison by remember {
+                    mutableStateOf<PermissionComparison?>(null)
+                }
                 val alternativesEnabled = FeatureId.ALTERNATIVES in enabledFeatures
+                val permissionDiffEnabled = FeatureId.PERMISSION_DIFF in enabledFeatures
                 val replacementGuidanceEnabled =
                     FeatureId.REPLACEMENT_GUIDANCE in enabledFeatures
                 val companionHandoffEnabled = FeatureId.COMPANION_HANDOFF in enabledFeatures
@@ -579,7 +585,18 @@ fun FossScoutApp(
                     companionViewModel.uiState.collectAsStateWithLifecycle()
 
                 if (showMatch) {
-                    if (showCompanion) {
+                    BackHandler(enabled = permissionComparison != null) {
+                        permissionComparison = null
+                    }
+                    val comparison = permissionComparison
+                    if (comparison != null) {
+                        PermissionDiffScreen(
+                            comparison = comparison,
+                            onBack = { permissionComparison = null },
+                            onOpenSource = { url -> context.openWebsite(url) },
+                            modifier = screenModifier,
+                        )
+                    } else if (showCompanion) {
                         CompanionScreen(
                             state = companionState,
                             onBack = { showCompanion = false },
@@ -606,6 +623,7 @@ fun FossScoutApp(
                             onBack = {
                                 showMatch = false
                                 showCompanion = false
+                                permissionComparison = null
                             },
                             onOpenCompanion = if (companionEnabled) {
                                 { decision: MatchDecision ->
@@ -638,6 +656,11 @@ fun FossScoutApp(
                             modifier = screenModifier,
                             showCoverage = FeatureId.COVERAGE in enabledFeatures,
                             showAlternatives = alternativesEnabled,
+                            onComparePermissions = if (permissionDiffEnabled) {
+                                { comparison -> permissionComparison = comparison }
+                            } else {
+                                null
+                            },
                         )
                     }
                 } else {
@@ -659,6 +682,7 @@ fun FossScoutApp(
                         onCheckMatch = { entry ->
                             matchingViewModel.matchEntry(entry.identity, entry.app)
                             showCompanion = false
+                            permissionComparison = null
                             showMatch = true
                         },
                         onDismissError = inventoryViewModel::dismissError,

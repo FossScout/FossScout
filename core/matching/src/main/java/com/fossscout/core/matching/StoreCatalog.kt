@@ -10,7 +10,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Lean projection of a store index record. Descriptions are not retained: the
  * matching engine only needs identity, license/source evidence, categories,
- * version, signer, and a short summary for alternative ranking.
+ * version, signer, permissions, and a short summary for alternative ranking.
  */
 data class CatalogEntry(
     val packageName: String,
@@ -23,6 +23,7 @@ data class CatalogEntry(
     val versionCode: Long? = null,
     val signerSha256: List<String> = emptyList(),
     val antiFeatures: List<String> = emptyList(),
+    val permissions: List<String> = emptyList(),
 ) {
     init {
         require(packageName.isNotBlank()) { "Catalog package is blank" }
@@ -119,6 +120,11 @@ internal fun StorePackage.toCatalogEntry(): CatalogEntry {
             ?.filter(String::isNotEmpty)
             .orEmpty(),
         antiFeatures = antiFeatures.keys.sorted(),
+        permissions = latest?.permissions.orEmpty()
+            .map(String::trim)
+            .filter(String::isNotEmpty)
+            .distinct()
+            .sorted(),
     )
 }
 

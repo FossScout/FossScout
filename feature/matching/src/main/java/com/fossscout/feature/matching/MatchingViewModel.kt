@@ -39,6 +39,7 @@ class MatchingViewModel(
     val uiState: StateFlow<MatchUiState> = _uiState.asStateFlow()
     private var includeAlternativesEnabled: Boolean = includeAlternatives
     private var lastQuery: MatchQuery? = null
+    private var lastInstalledApp: InstalledApp? = null
 
     init {
         when {
@@ -69,7 +70,7 @@ class MatchingViewModel(
             beginMatch()
             val apps = try {
                 if (looksLikePackageName(input)) {
-                    emptyList()
+                    listOfNotNull(appSource.find(input))
                 } else {
                     appSource.search(input, limit = 10)
                 }
@@ -84,11 +85,11 @@ class MatchingViewModel(
             }
 
             when {
-                apps.isEmpty() -> runMatch(MatchQuery.forInput(input))
+                apps.isEmpty() -> runMatch(MatchQuery.forInput(input), null)
                 apps.size == 1 -> {
                     val app = apps.single()
                     _uiState.update { it.copy(query = app.packageName) }
-                    runMatch(MatchQuery.from(app))
+                    runMatch(MatchQuery.from(app), app)
                 }
                 else -> _uiState.update {
                     it.copy(isLoading = false, candidates = apps)
@@ -105,7 +106,8 @@ class MatchingViewModel(
         }
         viewModelScope.launch {
             beginMatch()
-            runMatch(MatchQuery.from(app))
+            val installedApp = appSource.find(app.packageName) ?: app
+            runMatch(MatchQuery.from(installedApp), installedApp)
         }
     }
 
@@ -309,7 +311,7 @@ class MatchingViewModel(
     private suspend fun refreshAfterCorrection() {
         val query = lastQuery ?: return
         beginMatch()
-        runMatch(query)
+        runMatch(query, lastInstalledApp)
     }
 
     private fun beginMatch() {
@@ -317,6 +319,7 @@ class MatchingViewModel(
             it.copy(
                 isLoading = true,
                 decision = null,
+                installedApp = null,
                 candidates = emptyList(),
                 error = null,
                 hiddenAlternatives = emptySet(),
@@ -326,14 +329,21 @@ class MatchingViewModel(
         }
     }
 
-    private suspend fun runMatch(query: MatchQuery) {
+    private suspend fun runMatch(query: MatchQuery, installedApp: InstalledApp?) {
         lastQuery = query
+        lastInstalledApp = installedApp
         try {
             val decision = repository.match(
                 query = query,
                 includeAlternatives = includeAlternativesEnabled,
             )
-            _uiState.update { it.copy(isLoading = false, decision = decision) }
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    decision = decision,
+                    installedApp = installedApp,
+                )
+            }
         } catch (cancellation: CancellationException) {
             throw cancellation
         } catch (throwable: Throwable) {

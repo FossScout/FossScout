@@ -33,6 +33,7 @@
     <string name="feature_inventory_title">Installed apps</string>
     <string name="feature_matching_title">Find open-source matches</string>
     <string name="feature_alternatives_title">Alternative suggestions</string>
+    <string name="feature_permission_diff_title">Permission comparison</string>
     <string name="feature_stores_title">Store integration</string>
     <string name="feature_store_search_title">Unified store search</string>
     <string name="feature_index_cache_title">Offline index cache</string>

@@ -146,6 +146,7 @@ object MatchEngine {
                 lastSeenEpochMillis = store.snapshot?.fetchedAtEpochMillis,
                 categories = entry.categories,
                 signatureStatus = store.snapshot?.signatureStatus,
+                permissions = entry.permissions,
             )
         }
 
@@ -194,6 +195,7 @@ object MatchEngine {
             lastSeenEpochMillis = store.snapshot?.fetchedAtEpochMillis,
             categories = entry.categories,
             signatureStatus = store.snapshot?.signatureStatus,
+            permissions = entry.permissions,
         )
     }
 
@@ -250,6 +252,7 @@ object MatchEngine {
                         lastSeenEpochMillis = store.snapshot?.fetchedAtEpochMillis,
                         categories = entry.categories,
                         signatureStatus = store.snapshot?.signatureStatus,
+                        permissions = entry.permissions,
                     )
                 }
             }

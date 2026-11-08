@@ -80,7 +80,9 @@ object AlternativeRanker {
                 summary = entry.summary,
                 license = entry.license,
                 sourceUrl = entry.sourceCode,
+                versionName = entry.versionName,
                 categories = entry.categories,
+                permissions = entry.permissions,
                 score = score,
                 confidence = if (score >= 6) {
                     ConfidenceLabel.MEDIUM

@@ -150,6 +150,7 @@ data class MatchCandidate(
     val lastSeenEpochMillis: Long? = null,
     val categories: List<String> = emptyList(),
     val signatureStatus: SignatureStatus? = null,
+    val permissions: List<String> = emptyList(),
 ) {
     init {
         require(appKey.isNotBlank()) { "Candidate app key is blank" }
@@ -179,7 +180,9 @@ data class AlternativeSuggestion(
     val summary: String = "",
     val license: String? = null,
     val sourceUrl: String? = null,
+    val versionName: String? = null,
     val categories: List<String> = emptyList(),
+    val permissions: List<String> = emptyList(),
     val score: Int,
     val confidence: ConfidenceLabel = ConfidenceLabel.LOW,
     val reasons: List<String> = emptyList(),

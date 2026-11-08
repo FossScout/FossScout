@@ -42,6 +42,10 @@ class SnapshotCatalogSourceTest {
         assertEquals(2L, entry.versionCode)
         assertEquals(listOf("aaaa"), entry.signerSha256)
         assertEquals(listOf("Tracking"), entry.antiFeatures)
+        assertEquals(
+            listOf("android.permission.CAMERA", "android.permission.INTERNET"),
+            entry.permissions,
+        )
         assertTrue(entry.hasLicense)
         assertTrue(entry.hasSource)
     }
@@ -127,6 +131,11 @@ class SnapshotCatalogSourceTest {
                 versionCode = 2,
                 versionName = "1.2.3",
                 signerSha256 = listOf("aaaa"),
+                permissions = listOf(
+                    "android.permission.INTERNET",
+                    "android.permission.CAMERA",
+                    "android.permission.CAMERA",
+                ),
             ),
             StorePackageVersion(
                 fileSha256 = "b".repeat(64),

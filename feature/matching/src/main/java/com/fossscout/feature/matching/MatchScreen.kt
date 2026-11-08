@@ -51,7 +51,11 @@ import com.fossscout.core.matching.MatchCandidate
 import com.fossscout.core.matching.MatchDecision
 import com.fossscout.core.matching.MatchLevel
 import com.fossscout.core.matching.MatchOutcome
+import com.fossscout.core.matching.PermissionAlternative
+import com.fossscout.core.matching.PermissionComparison
 import com.fossscout.core.matching.StoreCoverage
+import com.fossscout.core.matching.comparePermissions
+import com.fossscout.core.matching.toPermissionAlternative
 import com.fossscout.core.model.MAX_NOTE_LENGTH
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -87,7 +91,18 @@ fun MatchScreen(
     onDismissCorrection: () -> Unit = {},
     showCoverage: Boolean = true,
     showAlternatives: Boolean = true,
+    onComparePermissions: ((PermissionComparison) -> Unit)? = null,
 ) {
+    val installedApp = state.installedApp
+    val compareAlternative: ((PermissionAlternative) -> Unit)? =
+        if (onComparePermissions != null && installedApp != null) {
+            { alternative ->
+                onComparePermissions(comparePermissions(installedApp, alternative))
+            }
+        } else {
+            null
+        }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -209,6 +224,9 @@ fun MatchScreen(
                                 PrimaryEvidenceCard(
                                     candidate = primary,
                                     onOpenSource = onOpenSource,
+                                    onComparePermissions = compareAlternative?.let { compare ->
+                                        { compare(primary.toPermissionAlternative()) }
+                                    },
                                 )
                             }
                             if (onOpenCompanion != null) {
@@ -224,6 +242,11 @@ fun MatchScreen(
                                 OtherMatchesCard(
                                     matches = decision.otherMatches,
                                     onOpenSource = onOpenSource,
+                                    onCompare = compareAlternative?.let { compare ->
+                                        { match ->
+                                            compare(match.toPermissionAlternative())
+                                        }
+                                    },
                                 )
                             }
                         }
@@ -233,6 +256,11 @@ fun MatchScreen(
                                     alternatives = state.visibleAlternatives,
                                     onHide = onHideAlternative,
                                     onOpenSource = onOpenSource,
+                                    onCompare = compareAlternative?.let { compare ->
+                                        { suggestion ->
+                                            compare(suggestion.toPermissionAlternative())
+                                        }
+                                    },
                                 )
                             }
                         }
@@ -252,6 +280,9 @@ fun MatchScreen(
                                 PrimaryEvidenceCard(
                                     candidate = primary,
                                     onOpenSource = onOpenSource,
+                                    onComparePermissions = compareAlternative?.let { compare ->
+                                        { compare(primary.toPermissionAlternative()) }
+                                    },
                                 )
                             }
                         }
@@ -260,6 +291,11 @@ fun MatchScreen(
                                 OtherMatchesCard(
                                     matches = decision.otherMatches,
                                     onOpenSource = onOpenSource,
+                                    onCompare = compareAlternative?.let { compare ->
+                                        { match ->
+                                            compare(match.toPermissionAlternative())
+                                        }
+                                    },
                                 )
                             }
                         }
@@ -812,6 +848,7 @@ private fun CorrectionResultRow(
 private fun PrimaryEvidenceCard(
     candidate: MatchCandidate,
     onOpenSource: (String) -> Unit,
+    onComparePermissions: (() -> Unit)? = null,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -909,6 +946,11 @@ private fun PrimaryEvidenceCard(
                     Text(stringResource(R.string.match_open_source))
                 }
             }
+            onComparePermissions?.let { compare ->
+                TextButton(onClick = compare) {
+                    Text(stringResource(R.string.permission_diff_action))
+                }
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -931,6 +973,7 @@ private fun PrimaryEvidenceCard(
 private fun OtherMatchesCard(
     matches: List<MatchCandidate>,
     onOpenSource: (String) -> Unit,
+    onCompare: ((MatchCandidate) -> Unit)? = null,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -985,6 +1028,11 @@ private fun OtherMatchesCard(
                     )
                     TextButton(onClick = { onOpenSource(source) }) {
                         Text(stringResource(R.string.match_open_source))
+                    }
+                }
+                onCompare?.let { compare ->
+                    TextButton(onClick = { compare(match) }) {
+                        Text(stringResource(R.string.permission_diff_action))
                     }
                 }
             }
@@ -1106,6 +1154,7 @@ private fun AlternativesCard(
     alternatives: List<AlternativeSuggestion>,
     onHide: (String) -> Unit,
     onOpenSource: (String) -> Unit,
+    onCompare: ((AlternativeSuggestion) -> Unit)? = null,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1133,6 +1182,7 @@ private fun AlternativesCard(
                     suggestion = suggestion,
                     onHide = { onHide(suggestion.packageName) },
                     onOpenSource = onOpenSource,
+                    onCompare = onCompare?.let { compare -> { compare(suggestion) } },
                 )
             }
         }
@@ -1144,6 +1194,7 @@ private fun AlternativeRow(
     suggestion: AlternativeSuggestion,
     onHide: () -> Unit,
     onOpenSource: (String) -> Unit,
+    onCompare: (() -> Unit)? = null,
 ) {
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1195,6 +1246,11 @@ private fun AlternativeRow(
             suggestion.sourceUrl?.let { source ->
                 TextButton(onClick = { onOpenSource(source) }) {
                     Text(stringResource(R.string.match_open_source))
+                }
+            }
+            onCompare?.let { compare ->
+                TextButton(onClick = compare) {
+                    Text(stringResource(R.string.permission_diff_action))
                 }
             }
             TextButton(onClick = onHide) {

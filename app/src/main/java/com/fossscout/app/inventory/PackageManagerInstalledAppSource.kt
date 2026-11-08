@@ -131,7 +131,8 @@ class PackageManagerInstalledAppSource(
         } else {
             PackageManager.GET_SIGNATURES
         }
-        return signerFlag or PackageManager.MATCH_DISABLED_COMPONENTS
+        return signerFlag or PackageManager.GET_PERMISSIONS or
+            PackageManager.MATCH_DISABLED_COMPONENTS
     }
 
     private fun toInstalledApp(info: PackageInfo): InstalledApp? {
@@ -156,6 +157,7 @@ class PackageManagerInstalledAppSource(
             versionCode = versionCode,
             installerPackage = installerPackage(packageName),
             signerSha256 = signerSha256(info),
+            requestedPermissions = requestedPermissions(info),
             isSystemApp = appInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0,
             isEnabled = appInfo.enabled,
             profile = currentProfile(),
@@ -173,6 +175,13 @@ class PackageManagerInstalledAppSource(
     } catch (_: Exception) {
         null
     }
+
+    private fun requestedPermissions(info: PackageInfo): List<String> =
+        info.requestedPermissions
+            .orEmpty()
+            .map(String::trim)
+            .filter(String::isNotEmpty)
+            .distinct()
 
     @Suppress("DEPRECATION")
     private fun signerSha256(info: PackageInfo): String? {

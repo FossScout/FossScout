@@ -74,6 +74,36 @@ class MatchingViewModelTest {
     }
 
     @Test
+    fun `manual check refreshes installed permissions from package manager`() = runTest(dispatcher) {
+        val fresh = app.copy(
+            requestedPermissions = listOf("android.permission.CAMERA"),
+        )
+        val viewModel = viewModel(
+            source = FakeSource(listOf(fresh)),
+        )
+
+        viewModel.matchApp(app)
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf("android.permission.CAMERA"),
+            viewModel.uiState.value.installedApp?.requestedPermissions,
+        )
+    }
+
+    @Test
+    fun `package input keeps the installed app for comparison`() = runTest(dispatcher) {
+        val viewModel = viewModel(
+            source = FakeSource(listOf(app)),
+        )
+        viewModel.onQueryChange("org.example.app")
+        viewModel.checkInput()
+        advanceUntilIdle()
+
+        assertEquals("org.example.app", viewModel.uiState.value.installedApp?.packageName)
+    }
+
+    @Test
     fun `free text with one installed match checks that app`() = runTest(dispatcher) {
         val viewModel = viewModel(
             source = FakeSource(listOf(app)),

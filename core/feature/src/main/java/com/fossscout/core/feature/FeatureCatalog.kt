@@ -19,6 +19,11 @@ object FeatureCatalog {
             requiredCapabilities = setOf(Capability.STORE_INDEX_NETWORK),
         ),
         FeatureDescriptor(
+            id = FeatureId.PERMISSION_DIFF,
+            availability = Availability.GENERAL,
+            requiredCapabilities = setOf(Capability.STORE_INDEX_NETWORK),
+        ),
+        FeatureDescriptor(
             id = FeatureId.STORES,
             availability = Availability.GENERAL,
             requiredCapabilities = setOf(
