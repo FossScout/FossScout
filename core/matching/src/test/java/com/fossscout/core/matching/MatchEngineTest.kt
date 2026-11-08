@@ -24,6 +24,7 @@ class MatchEngineTest {
         assertTrue(decision.primary!!.isFoss)
         assertEquals("GPL-3.0-only", decision.primary!!.license)
         assertEquals("https://example.org/src", decision.primary!!.sourceUrl)
+        assertEquals(listOf("android.permission.CAMERA"), decision.primary.permissions)
         assertTrue(decision.coverage.complete)
     }
 
@@ -479,6 +480,7 @@ class MatchEngineTest {
             sourceCode = "https://example.org/src",
             versionName = "1.2.3",
             signerSha256 = listOf("aaaa"),
+            permissions = listOf("android.permission.CAMERA"),
         )
     }
 }

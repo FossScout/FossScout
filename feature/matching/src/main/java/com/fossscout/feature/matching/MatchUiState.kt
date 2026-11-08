@@ -37,6 +37,7 @@ data class MatchUiState(
     val query: String = "",
     val isLoading: Boolean = false,
     val decision: MatchDecision? = null,
+    val installedApp: InstalledApp? = null,
     val candidates: List<InstalledApp> = emptyList(),
     val error: MatchError? = null,
     val hiddenAlternatives: Set<String> = emptySet(),

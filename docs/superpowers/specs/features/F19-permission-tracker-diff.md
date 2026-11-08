@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Proposed |
+| Status | Partial — permission comparison implemented; tracker signatures deferred |
 | Availability | **General** |
 | Profiles | `playstore`, `fdroid`, `direct`, `custom` |
 | Required capabilities | Installed-app metadata; optional tracker-data source |
@@ -44,6 +44,29 @@ No permission or tracker data is uploaded.
 - Link every claim to its source.
 - Explain that absence of a tracker match is not proof of no tracking.
 
+## 4a. Implementation status
+
+As of 2026-11-08, the permission-comparison slice is implemented:
+
+- F19-R1: installed requested permissions come from `PackageManager` with
+  `GET_PERMISSIONS`; no new manifest permission is required.
+- F19-R2: alternative permissions come from the latest cached store-index
+  version. An empty or absent store permission list is shown as unknown, never
+  as “none”.
+- F19-R3: the comparison screen shows added, removed, and shared counts, then
+  groups the detailed diff. The entry point is the primary, other-match, or
+  alternative card on the match screen.
+- F19-R5/R6: dangerous and special permissions have short explanations where
+  known, and the tracker section states that no tracker result does not prove
+  the absence of trackers.
+- F19-R7: the permission comparison works without tracker data. The tracker
+  section reports that no dataset is configured rather than implying a clean
+  result.
+
+Tracker signature matching (F19-R4) and audit export (F19-R8) remain deferred.
+No APK is downloaded or analyzed; the comparison uses installed metadata and
+cached store metadata only.
+
 ## 5. Non-goals
 
 - Assigning a single “privacy score” that hides the underlying evidence.
@@ -75,7 +98,10 @@ No permission or tracker data is uploaded.
 
 ## 8. Open questions
 
-1. Which tracker dataset ships first, and under what license?
-2. Should the comparison use installed-app permissions only, or also the
-   alternative APK's manifest when available?
-3. Should the app show a summary count before the detailed diff?
+1. Which tracker dataset ships first, and under what license? This blocks
+   F19-R4 and any tracker badges.
+2. Should a future version also analyze the alternative APK manifest when it is
+   already available locally? V1 uses installed-app permissions and cached store
+   metadata only, and never downloads an APK for this feature.
+3. Resolved: the comparison shows added, removed, and shared summary counts
+   before the detailed diff.

@@ -42,6 +42,7 @@ data class InstalledApp(
     val versionCode: Long = 0L,
     val installerPackage: String? = null,
     val signerSha256: String? = null,
+    val requestedPermissions: List<String> = emptyList(),
     val isSystemApp: Boolean = false,
     val isEnabled: Boolean = true,
     val profile: AppProfile = AppProfile(),
