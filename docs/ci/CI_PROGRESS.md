@@ -2,7 +2,7 @@
 
 Last updated: 2026-11-09
 Branch: main
-Feature baseline: main @ `0eeb156`; F-Droid tag `v0.1.0` @ `e4262a1` predates the vanilla flavor rename; current beta release `v0.1.0-beta.4`. Docs/CI changes after this baseline are tracked below.
+Feature baseline: main @ `ee03deb`; F-Droid tag `v0.1.0` @ `e4262a1` predates the vanilla flavor rename; current beta release `v0.1.0-beta.4`. Docs/CI changes after this baseline are tracked below.
 
 ## Completed
 | Task | Status | Details |
@@ -21,7 +21,7 @@ Feature baseline: main @ `0eeb156`; F-Droid tag `v0.1.0` @ `e4262a1` predates th
 | Play internal AAB build | Done | `.github/workflows/play-internal.yml` builds a signed AAB with dedicated Play upload secrets, verifies it, and uploads it as an artifact; Play Console upload remains manual. |
 | Toolchain upgrade | Done | Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
 | Gradle wrapper 9.8.2 | Done | Wrapper JAR matches the official Gradle SHA-256; `test`, `lint`, and main CI passed. |
-| CI device smoke test | Done | `.github/workflows/device-smoke.yml` is a manual API 36 AOSP x86_64 emulator run. Run [42360149923](https://github.com/FossScout/FossScout/actions/runs/42360149923) passed on `2ff6dc0` with Gradle 9.8.2 and both debug APKs: APK checks, launch/navigation, favourites persistence, rotation, font scale, theme, offline Stores, installer fallbacks, Play limited visibility including a third-party launcher check, and the vanilla full scan. |
+| CI device smoke test | Done | `.github/workflows/device-smoke.yml` is a manual API 36 AOSP x86_64 emulator run. Run [42694212609](https://github.com/FossScout/FossScout/actions/runs/42694212609) passed on `ee03deb` with Gradle 9.8.2 and both debug APKs: APK checks, launch/navigation, favourites persistence, rotation, font scale, theme, offline Stores, installer fallbacks, Play limited visibility including a third-party launcher check, and the vanilla full scan. |
 | F-Droid release readiness | Partial | The previous `assembleFdroidRelease` build passed locally on 2026-11-05 from `v0.1.0` (`e4262a1`). The flavor is now `vanilla` (`com.fossscout.app.vanilla`, version suffix `-vanilla`); a local vanilla release build passed on 2026-11-09, but a new release tag is required before submission. Fastlane listing metadata and the prepared `fdroiddata` entry are tracked in [`docs/FDROID.md`](../FDROID.md) and [`docs/fdroid/`](../fdroid/). |
 | F-Droid stable tag | Pending | `v0.1.0` points at `e4262a1` and predates the vanilla rename. Cut a new tag from the rename merge; F-Droid-hosted signing remains the plan. |
 
