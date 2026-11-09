@@ -69,10 +69,10 @@ android {
             dimension = "distribution"
             applicationId = "com.fossscout.app"
         }
-        create("fdroid") {
+        create("vanilla") {
             dimension = "distribution"
-            applicationId = "com.fossscout.app.fdroid"
-            versionNameSuffix = "-fdroid"
+            applicationId = "com.fossscout.app.vanilla"
+            versionNameSuffix = "-vanilla"
         }
     }
 

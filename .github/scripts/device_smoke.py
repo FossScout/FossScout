@@ -59,7 +59,7 @@ class Smoke:
         self.aapt2_path = args.aapt2 or shutil.which("aapt2")
         self.builds = [
             Build("playstore", "com.fossscout.app", args.play_apk.resolve()),
-            Build("fdroid", "com.fossscout.app.fdroid", args.fdroid_apk.resolve()),
+            Build("vanilla", "com.fossscout.app.vanilla", args.vanilla_apk.resolve()),
         ]
         self.checks: list[Check] = []
         self.device: dict[str, str] = {}
@@ -185,8 +185,8 @@ class Smoke:
         has_query_all = "android.permission.QUERY_ALL_PACKAGES" in permissions
         if scope == "playstore" and has_query_all:
             raise Failure("Play APK must not request QUERY_ALL_PACKAGES")
-        if scope == "fdroid" and not has_query_all:
-            raise Failure("F-Droid APK must request QUERY_ALL_PACKAGES")
+        if scope == "vanilla" and not has_query_all:
+            raise Failure("Vanilla APK must request QUERY_ALL_PACKAGES")
         return "limited visibility" if scope == "playstore" else "broad visibility"
 
     def _check_forbidden_manifest_entries(self, scope: str, manifest: str) -> str:
@@ -681,8 +681,8 @@ class Smoke:
         has_query_all = "android.permission.QUERY_ALL_PACKAGES" in output
         if build.flavor == "playstore" and has_query_all:
             raise Failure("Play build has QUERY_ALL_PACKAGES at runtime")
-        if build.flavor == "fdroid" and not has_query_all:
-            raise Failure("F-Droid build is missing QUERY_ALL_PACKAGES at runtime")
+        if build.flavor == "vanilla" and not has_query_all:
+            raise Failure("Vanilla build is missing QUERY_ALL_PACKAGES at runtime")
         for forbidden in (
             "android.permission.INSTALL_PACKAGES",
             "android.permission.DELETE_PACKAGES",
@@ -820,15 +820,15 @@ class Smoke:
             self.sh("dumpsys", "package", build.package, check=False).stdout,
         )
 
-    def fdroid_specific(self, build: Build) -> None:
+    def vanilla_specific(self, build: Build) -> None:
         self.record(
             build.flavor,
-            "F-Droid package visibility",
+            "Vanilla package visibility",
             lambda: self.runtime_permissions(build),
         )
         self.record(
             build.flavor,
-            "F-Droid full scan",
+            "Vanilla full scan",
             lambda: self.full_scan(build),
         )
 
@@ -900,10 +900,10 @@ class Smoke:
         self.record(play.flavor, "no crash or ANR", lambda: self.check_logcat(play))
 
         self.adb("logcat", "-c")
-        fdroid = self.builds[1]
-        self.common_ui(fdroid)
-        self.fdroid_specific(fdroid)
-        self.record(fdroid.flavor, "no crash or ANR", lambda: self.check_logcat(fdroid))
+        vanilla = self.builds[1]
+        self.common_ui(vanilla)
+        self.vanilla_specific(vanilla)
+        self.record(vanilla.flavor, "no crash or ANR", lambda: self.check_logcat(vanilla))
 
     def write_report(self) -> None:
         date = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
@@ -940,7 +940,7 @@ class Smoke:
             "",
             "## Artifacts",
             "",
-            "- `playstore/` and `fdroid/` screenshots and UI dumps",
+            "- `playstore/` and `vanilla/` screenshots and UI dumps",
             "- `*/logcat.txt`, `*/package-dumpsys.txt`, and `static/` APK inspection",
             "- `installer-fixtures/` package dumps for the installer cases",
             "- `report.md`, `device.txt`, and the emulator log",
@@ -955,7 +955,7 @@ class Smoke:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--play-apk", type=Path, required=True)
-    parser.add_argument("--fdroid-apk", type=Path, required=True)
+    parser.add_argument("--vanilla-apk", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--aapt2")
     parser.add_argument("--static-only", action="store_true")

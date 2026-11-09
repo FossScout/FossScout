@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-      F-Droid builds enumerate installed packages for the full inventory scan.
+      Vanilla builds enumerate installed packages for the full inventory scan.
       This permission must never be merged into the Play Store flavor.
     -->
     <uses-permission

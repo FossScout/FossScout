@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
-Last updated: **2026-11-08**
-Feature baseline: `main` at `8dce751`; F18 unified store search is merged and F19 permission comparison is implemented on `feat/f19-permission-diff`. Current GitHub beta `v0.1.0-beta.4` (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
+Last updated: **2026-11-09**
+Feature baseline: `main` at `0eeb156`; F18 unified store search and the F19 permission comparison are merged. Current GitHub beta `v0.1.0-beta.4` (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
 Pending: device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); Play internal testing and F-Droid delivery.
 Delivery: Toolchain upgraded to Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play internal AAB workflow added; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
@@ -27,8 +27,8 @@ file after every feature session with the new commit, test result, and status.
 | Area | Status |
 | --- | --- |
 | Modular foundation | **Done** |
-| Build profiles (`playstore`, `fdroid`) | **Done** for these two; `direct`/`custom` not implemented |
-| CI and beta release pipeline | **Done for GitHub beta** (`v0.1.0-beta.3` prerelease; Play internal and F-Droid remain pending) |
+| Build profiles (`playstore`, `vanilla`) | **Done** for these two; `direct`/`custom` not implemented |
+| CI and beta release pipeline | **Done for GitHub beta** (`v0.1.0-beta.4` prerelease; Play internal and F-Droid remain pending) |
 | Local favourites, tags, search, installed badge, and collections | **Done** (device badge refresh pending) |
 | Feature configuration | **Done** |
 | Store registry and installed inventory | **Partial** |
@@ -56,8 +56,8 @@ file after every feature session with the new commit, test result, and status.
   global reset, and a read-only versioned snapshot for F13.
 - `FeatureRegistry` is the single source of availability and enabled state;
   build profiles supply capabilities only.
-- Capability-based `playstore` and `fdroid` profiles with separate application
-  IDs (`com.fossscout.app`, `com.fossscout.app.fdroid`).
+- Capability-based `playstore` and `vanilla` profiles with separate application
+  IDs (`com.fossscout.app`, `com.fossscout.app.vanilla`).
 - Local store registry with verified F-Droid and IzzyOnDroid descriptors,
   custom-store add/edit/enable/reorder/delete, link-only fallback, explicit
   HTTP opt-in, and versioned descriptor export.
@@ -72,7 +72,7 @@ file after every feature session with the new commit, test result, and status.
   for store/trust/availability, explicit link-only homepage handoffs, and local
   favourites without an install action.
 - Local installed-app inventory with manual package/label/store-link lookup on
-  both profiles, F-Droid-only full scan, persisted complete snapshots, stale
+  both profiles, vanilla full scan, persisted complete snapshots, stale
   marking, system/disabled/work-profile/hide filters, and production
   FOSS/Unknown/Unavailable classification through the matching engine.
 - FOSS matching over cached indexes: exact package L1, signer/source-derived
@@ -141,7 +141,7 @@ file after every feature session with the new commit, test result, and status.
 
 | ID | Feature | Status | What exists / what is missing | Planned session |
 | --- | --- | --- | --- | --- |
-| F01 | Installed app inventory | **Partial** | Manual package/label/store-link lookup, F-Droid-only full scan, `PackageManager` source, persisted complete snapshots, stale marking, filters, hide list, and inventory UI exist. Production classification selects `FOSS` only for an exact package with license and source evidence; a curated catalog with vendor terms marks known proprietary apps; missing FOSS evidence and unlisted apps stay `UNKNOWN`; missing packages are `UNAVAILABLE`. Real device/emulator `PackageManager`, installer/signer/work-profile, shared-intent, and process-restart checks remain. | S04, S05 |
+| F01 | Installed app inventory | **Partial** | Manual package/label/store-link lookup, vanilla full scan, `PackageManager` source, persisted complete snapshots, stale marking, filters, hide list, and inventory UI exist. Production classification selects `FOSS` only for an exact package with license and source evidence; a curated catalog with vendor terms marks known proprietary apps; missing FOSS evidence and unlisted apps stay `UNKNOWN`; missing packages are `UNAVAILABLE`. Real device/emulator `PackageManager`, installer/signer/work-profile, shared-intent, and process-restart checks remain. | S04, S05 |
 | F02 | FOSS matching | **Done** | Pure-JVM matching engine with L0–L3, package identity first, source-URL/signer-derived L2, missing-metadata L0, offline cached indexes, evidence cards (store, package, license, source, version, signer), and inventory classification integration. Report-wrong-match (R7) is covered by the S11 contribution action; pinned source (R8) remains deferred. | S05, S11 |
 | F03 | Alternative suggestions | **Done** | Alternatives only when no L1/L2 exists, always labelled as a different app, with category/tag/description reasons, enabled-store and coverage awareness, relevance ranking, a cap of five, and session-only hide/undo. Side-by-side comparison (R7 MAY) is deferred. | S05 |
 | F04 | Store registry and adapters | **Partial** | Pure-Kotlin store/adapter contracts, verified built-in F-Droid and IzzyOnDroid descriptors, versioned registry persistence, custom-store CRUD, link-only fallback, HTTP opt-in, descriptor export, Stores UI, real cached-index adapter, and F04-R2 post-sync usability exist. Health history and import preview remain. | S02, S03 |
@@ -277,9 +277,9 @@ environment has no attached device or emulator.
   implemented in S10.
 - Play package visibility is not finally decided. The implementation now follows
   the planning assumption: manual/selected inventory on Play with no
-  `QUERY_ALL_PACKAGES`; F-Droid performs the full scan. A Play policy review and
+  `QUERY_ALL_PACKAGES`; the vanilla profile performs the full scan. A Play policy review and
   device verification are still required before release.
-- Only `playstore` and `fdroid` profiles exist. `direct` and `custom` remain
+- Only `playstore` and `vanilla` profiles exist. `direct` and `custom` remain
   future profiles.
 - F22's verified Liberapay team URL is `https://liberapay.com/FossScout/`.
   The About support section is enabled and the README links to the same URL.

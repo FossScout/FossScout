@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | None |
 | Depends on | Build profiles |
 | Related | All features |

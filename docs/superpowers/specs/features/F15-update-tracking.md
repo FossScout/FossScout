@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft |
 | Availability | **General + restricted enhancement** |
-| Profiles | `playstore` (notify + handoff), `fdroid` (notify + install), `direct` (notify + install) |
+| Profiles | `playstore` (notify + handoff), `vanilla` (notify + install), `direct` (notify + install) |
 | Required capabilities | `BACKGROUND_UPDATE_CHECK`; `DIRECT_APK_INSTALL` for in-app install |
 | Depends on | F01, F05, F09 |
 | Related | F07, F11 |

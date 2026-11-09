@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft (v1 guidance/handoff implemented in S08; direct install remains deferred to F09) |
 | Availability | **General** (guidance); direct action depends on F09 |
-| Profiles | `playstore` (handoff), `fdroid` (install), `direct` (install), `custom` |
+| Profiles | `playstore` (handoff), `vanilla` (install), `direct` (install), `custom` |
 | Required capabilities | `MANUAL_PACKAGE_SELECTION`; `DIRECT_APK_INSTALL` for in-app install |
 | Depends on | F02, F09, F14 |
 | Related | F11, F15 |

@@ -16,7 +16,7 @@ requirements, acceptance criteria, data/privacy notes, and open questions.
 | --- | --- |
 | **General** | Play-safe baseline; included in the `playstore` profile. |
 | **Restricted** | Requires a restricted capability; excluded from `playstore`. |
-| **General + restricted enhancement** | Play-safe baseline plus extra behaviour in `fdroid`/`direct`. |
+| **General + restricted enhancement** | Play-safe baseline plus extra behaviour in `vanilla`/`direct`. |
 
 ## Feature matrix
 
@@ -51,7 +51,7 @@ requirements, acceptance criteria, data/privacy notes, and open questions.
   location. A general feature can have restricted enhancements when a capability
   exists.
 - A profile may expose the same feature with a smaller scope. For example, F01 is
-  a manual check in `playstore` and a full inventory in `fdroid`.
+  a manual check in `playstore` and a full inventory in `vanilla`.
 - Every feature document must state whether its requirements are **MUST**,
   **SHOULD**, or **MAY**, and must include acceptance criteria.
 - F18–F21 were added after the first feature library as quality/completeness

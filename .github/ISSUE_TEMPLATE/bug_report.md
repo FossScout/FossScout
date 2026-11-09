@@ -26,7 +26,7 @@ If applicable, add screenshots to help explain your problem.
 - Device: [e.g. Pixel 7]
 - OS: [e.g. Android 14]
 - App version: [e.g. 0.1.0]
-- Build flavor: [e.g. playstore/fdroid]
+- Build flavor: [e.g. playstore/vanilla]
 
 **Additional context**
 Add any other context about the problem here.

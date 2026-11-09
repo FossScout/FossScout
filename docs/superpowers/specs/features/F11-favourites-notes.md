@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | None beyond local storage |
 | Depends on | F02 |
 | Related | F12, F13 |

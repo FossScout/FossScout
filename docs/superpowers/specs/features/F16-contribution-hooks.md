@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft (v1 contribution hooks implemented in S11; tracker URL remains configurable) |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | None beyond local export |
 | Depends on | F04, F06 |
 | Related | F04, F12 |

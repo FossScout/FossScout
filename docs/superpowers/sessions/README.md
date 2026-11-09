@@ -49,10 +49,11 @@ session map; the verified Liberapay team URL is configured in this change.
 Store-scoped overrides, shareable corrections, low-confidence prompts, and
 device/UI verification remain deferred.
 
-No next post-v1 feature is selected. F18 unified store search is implemented;
-F19/F21 still need approved briefs and heavier dataset/evidence decisions. If
-multiple sessions run in parallel in future, use the wave table and avoid
-editing the same app wiring files without coordinating.
+No next post-v1 feature is selected. F18 unified store search and the F19
+permission comparison are implemented; F19 tracker signatures and F21 still need
+approved dataset/evidence decisions. If multiple sessions run in parallel in
+future, use the wave table and avoid editing the same app wiring files without
+coordinating.
 
 ## Planning assumptions
 
@@ -60,11 +61,11 @@ These are the least-risk assumptions that make the sessions executable. They do
 not create new product decisions; confirm or override them before the affected
 session starts.
 
-1. **v1 ships `playstore` and `fdroid` only.** `direct` and `custom` are future
+1. **v1 ships `playstore` and `vanilla` only.** `direct` and `custom` are future
    profiles.
 2. **Play inventory is manual/selected only.** Do not request
-   `QUERY_ALL_PACKAGES` in the Play profile. The F-Droid profile may declare the
-   broad visibility it needs, but only in the F-Droid manifest.
+   `QUERY_ALL_PACKAGES` in the Play profile. The vanilla profile may declare the
+   broad visibility it needs, but only in the vanilla manifest.
 3. **v1 still does not install APKs and has no AccessibilityService.** F09 and
    F10 stay deferred.
 4. **F07 is guidance and handoff only in v1.** No install or uninstall action.
@@ -100,7 +101,7 @@ session starts.
 - [ ] The session's MUST acceptance criteria are implemented or explicitly
       recorded as deferred with a reason.
 - [ ] New behavior has unit tests; persistence has codec/repository tests.
-- [ ] `./gradlew test assemblePlaystoreDebug assembleFdroidDebug` passes.
+- [ ] `./gradlew test assemblePlaystoreDebug assembleVanillaDebug` passes.
 - [ ] Play merged manifest contains no restricted capability added by the work.
 - [ ] `STATUS.md` is updated with the baseline commit, status, tests, and gaps.
 - [ ] The session brief is updated if scope was split or changed.

@@ -26,8 +26,8 @@ sdk.dir=/path/to/android/sdk
 
 ## Flavors
 FossScout has two flavors:
-- `playstore` - Play Store build
-- `fdroid` - F-Droid build
+- `playstore` - Play-safe build
+- `vanilla` - Full-feature build used for F-Droid and direct distribution
 
 See [docs/FLAVORS.md](FLAVORS.md) for details.
 
@@ -35,10 +35,10 @@ See [docs/FLAVORS.md](FLAVORS.md) for details.
 ```bash
 # Debug builds
 ./gradlew assemblePlaystoreDebug
-./gradlew assembleFdroidDebug
+./gradlew assembleVanillaDebug
 
 # Both flavors debug
-./gradlew assemblePlaystoreDebug assembleFdroidDebug
+./gradlew assemblePlaystoreDebug assembleVanillaDebug
 
 # Tests
 ./gradlew test

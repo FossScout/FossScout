@@ -11,7 +11,7 @@ and reviewed contribution reports, all in a Material 3 Compose UI.
 [![CI](https://github.com/FossScout/FossScout/actions/workflows/ci.yml/badge.svg)](https://github.com/FossScout/FossScout/actions/workflows/ci.yml)
 
 The modular foundation for v1 is implemented. The app is split into core and
-feature modules, ships as `playstore` and `fdroid` build profiles, and persists
+feature modules, ships as `playstore` and `vanilla` build profiles, and persists
 favourites, collections, settings, and match corrections locally with DataStore.
 
 Current implementation status:
@@ -98,7 +98,7 @@ The app has two product flavors on the `distribution` dimension:
 | Flavor | Application ID | Notes |
 | --- | --- | --- |
 | `playstore` | `com.fossscout.app` | Play-safe capability set. Manual checks use launcher visibility; no install-packages permission, no broad package visibility, and no accessibility service. |
-| `fdroid` | `com.fossscout.app.fdroid` | Version name suffixed `-fdroid`. Profile adds the broad package visibility capability and declares `QUERY_ALL_PACKAGES` for the full inventory scan. |
+| `vanilla` | `com.fossscout.app.vanilla` | Version name suffixed `-vanilla`. Full-feature build for F-Droid and direct distribution; adds the broad package visibility capability and declares `QUERY_ALL_PACKAGES` for the full inventory scan. |
 
 Both profiles currently enable the same features. Each flavor supplies its own
 `ProfileFeatures` object under `app/src/<flavor>/java/`, which maps the build
@@ -128,7 +128,7 @@ Build a debug APK for a specific profile:
 
 ```sh
 ./gradlew assemblePlaystoreDebug
-./gradlew assembleFdroidDebug
+./gradlew assembleVanillaDebug
 ```
 
 The APKs are written under `app/build/outputs/apk/<flavor>/debug/`.
@@ -143,7 +143,7 @@ Install a profile on a connected device or emulator:
 
 ```sh
 ./gradlew installPlaystoreDebug
-./gradlew installFdroidDebug
+./gradlew installVanillaDebug
 ```
 
 If you build outside Android Studio, create a `local.properties` file with the
@@ -162,7 +162,7 @@ FossScout/
 ├── app/                        # Composition root: activity, navigation shell, DI, flavors
 │   ├── src/main/
 │   ├── src/playstore/          # Play profile capabilities and enabled features
-│   └── src/fdroid/             # F-Droid profile capabilities and enabled features
+│   └── src/vanilla/            # Full-feature profile capabilities and enabled features
 ├── core/
 │   ├── model/                  # Domain types: AppKey, Favourite, AppCollection, MatchOverride
 │   ├── feature/                # Capability, feature descriptors, registry, feature catalog
@@ -202,7 +202,7 @@ depend on `:app` or on each other.
 - Complete device/emulator verification for inventory, store intents, backup,
   trust details, and contribution actions
 - Complete Play internal testing
-- Open the F-Droid metadata merge request for `v0.1.0`
+- Cut a vanilla release tag and open the F-Droid metadata merge request
   ([runbook](docs/FDROID.md))
 
 Direct APK download/install and the install-time accessibility prompt are

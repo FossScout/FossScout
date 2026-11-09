@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Done |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | Store index/network capability for indexed stores; deep links for link-only stores |
 | Depends on | F04, F05 |
 | Related | F02, F03, F08, F20 |

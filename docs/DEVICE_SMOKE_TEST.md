@@ -15,10 +15,10 @@ blocker unless the release owner records a specific exception.
 | --- | --- | --- |
 | GitHub beta | `com.fossscout.app.beta` | Beta APK from the GitHub prerelease |
 | Play | `com.fossscout.app` | Play internal-testing AAB |
-| F-Droid | `com.fossscout.app.fdroid` | F-Droid build with the full inventory scan |
+| F-Droid (vanilla) | `com.fossscout.app.vanilla` | Full-feature vanilla build with the full inventory scan |
 
 Do not mix results between builds. The Play build uses manual package checks and
-limited package visibility; the F-Droid build uses the full inventory scan.
+limited package visibility; the vanilla build uses the full inventory scan.
 
 ## CI emulator baseline (partial)
 
@@ -41,7 +41,7 @@ Covered:
 - Play limited visibility, manual package check against both FossScout and a
   separately installed third-party launcher app, no full-scan action, and
   installer fallback.
-- F-Droid full scan with status and last-checked time, plus installed-package
+- Vanilla full scan with status and last-checked time, plus installed-package
   fixtures for the ADB fallback, a known installer (friendly name), an unknown
   installer (raw package), and a preinstalled system app.
 

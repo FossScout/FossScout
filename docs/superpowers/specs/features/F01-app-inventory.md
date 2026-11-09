@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft |
 | Availability | **General + restricted enhancement** |
-| Profiles | `playstore` (manual/selected), `fdroid` (full), `direct` (full), `custom` |
+| Profiles | `playstore` (manual/selected), `vanilla` (full), `direct` (full), `custom` |
 | Required capabilities | `MANUAL_PACKAGE_SELECTION`; `BROAD_PACKAGE_VISIBILITY` for full scan |
 | Depends on | F02 |
 | Related | F06, F10, F15 |
@@ -45,7 +45,7 @@ permission.
 
 ## 5. Behaviour
 
-### 5.1 Full scan (`fdroid`, `direct`)
+### 5.1 Full scan (`vanilla`, `direct`)
 
 1. Request or verify the broad package visibility capability.
 2. Enumerate installed packages and their versions.

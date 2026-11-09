@@ -8,7 +8,7 @@ remain intentionally disabled.
 | Flavor | Application ID | Purpose | Notes |
 |---|---|---|---|
 | `playstore` | `com.fossscout.app` | Google Play Store | Play-safe feature set |
-| `fdroid` | `com.fossscout.app.fdroid` | F-Droid | F-Droid-safe feature set; source build verified, submission pending |
+| `vanilla` | `com.fossscout.app.vanilla` | F-Droid and direct distribution | Full-feature set; broad package visibility and full installed-app scan; version suffixed `-vanilla` |
 
 ## Beta Variant
 - `playstoreBeta` variant uses application ID `com.fossscout.app.beta` with `-beta` version suffix
@@ -21,9 +21,9 @@ remain intentionally disabled.
 ./gradlew assemblePlaystoreDebug
 ./gradlew assemblePlaystoreRelease
 
-# F-Droid
-./gradlew assembleFdroidDebug
-./gradlew assembleFdroidRelease
+# Vanilla
+./gradlew assembleVanillaDebug
+./gradlew assembleVanillaRelease
 
 # Beta (PlayStore beta)
 ./gradlew assemblePlaystoreBeta

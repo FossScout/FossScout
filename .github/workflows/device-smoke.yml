@@ -51,7 +51,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build debug APKs
-        run: ./gradlew assemblePlaystoreDebug assembleFdroidDebug
+        run: ./gradlew assemblePlaystoreDebug assembleVanillaDebug
 
       - name: Boot emulator and run smoke test
         run: |
@@ -101,7 +101,7 @@ jobs:
           python3 .github/scripts/device_smoke.py \
             --output "$RUNNER_TEMP/device-smoke" \
             --play-apk app/build/outputs/apk/playstore/debug/app-playstore-debug.apk \
-            --fdroid-apk app/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk \
+            --vanilla-apk app/build/outputs/apk/vanilla/debug/app-vanilla-debug.apk \
             --aapt2 "$ANDROID_HOME/build-tools/36.0.0/aapt2"
 
       - name: Publish smoke report
