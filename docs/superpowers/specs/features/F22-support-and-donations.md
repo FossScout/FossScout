@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Done (verified Liberapay team URL configured) |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | None |
 | Depends on | None |
 | Related | F16, F17 |

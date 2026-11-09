@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | **Done** (F20-R8 deferred) |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | None beyond local storage |
 | Depends on | F02 |
 | Related | F03, F12, F13, F18 |

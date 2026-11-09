@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | `STORE_INDEX_NETWORK`; local storage |
 | Depends on | F04 |
 | Related | F02, F06, F14 |

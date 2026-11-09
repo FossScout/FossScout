@@ -1,11 +1,11 @@
 # F-Droid build metadata prepared for submission to fdroiddata.
 #
-# Stable tag: v0.1.0
-# Commit: e4262a13eb6eab09ff2fa4674e3f4d705999053c
+# Stable tag: pending; v0.1.0 predates the vanilla flavor rename.
+# Commit: main is temporary; replace it with the vanilla release tag or hash.
 # Signing: F-Droid-hosted; do not add Binaries or AllowedAPKSigningKeys.
 #
-# The F-Droid flavor appends "-fdroid" to the version name, so versionName
-# below is 0.1.0-fdroid.
+# The vanilla flavor appends "-vanilla" to the version name, so versionName
+# below is 0.1.0-vanilla.
 
 Categories:
   - Internet
@@ -19,20 +19,20 @@ RepoType: git
 Repo: https://github.com/FossScout/FossScout.git
 
 Builds:
-  - versionName: '0.1.0-fdroid'
+  - versionName: '0.1.0-vanilla'
     versionCode: 1
-    commit: e4262a13eb6eab09ff2fa4674e3f4d705999053c
+    commit: main
     submodules: true
     gradle:
-      - fdroid
-    output: app/build/outputs/apk/fdroid/release/app-fdroid-release-unsigned.apk
+      - vanilla
+    output: app/build/outputs/apk/vanilla/release/app-vanilla-release-unsigned.apk
 
 RequiresRoot: false
 UpdateCheckMode: Static
-CurrentVersion: '0.1.0-fdroid'
+CurrentVersion: '0.1.0-vanilla'
 CurrentVersionCode: 1
 MaintainerNotes: |
-  The F-Droid build declares QUERY_ALL_PACKAGES solely to enumerate installed
+  The vanilla build declares QUERY_ALL_PACKAGES solely to enumerate installed
   apps for the local full scan. The scan stays on-device. The app has no install,
   uninstall, or accessibility permissions. The Play flavor does not declare
   QUERY_ALL_PACKAGES.

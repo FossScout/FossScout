@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | `CUSTOM_STORE_ADAPTERS`, `STORE_INDEX_NETWORK`; `DIRECT_APK_INSTALL` only for the install step |
 | Depends on | F05 |
 | Related | F06, F08, F09, F14, F16 |

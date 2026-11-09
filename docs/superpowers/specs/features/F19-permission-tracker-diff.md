@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Partial — permission comparison implemented; tracker signatures deferred |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | Installed-app metadata; optional tracker-data source |
 | Depends on | F02, F03, F06 |
 | Related | F07, F14, F21 |

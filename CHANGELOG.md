@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Project detail screens with description, license, tags, stars, website, and save action.
 
+### Changed
+
+- Renamed the `fdroid` product flavor to `vanilla`; F-Droid and direct builds now use `com.fossscout.app.vanilla` and a `-vanilla` version suffix.
+
 ## [0.1.0-beta.4] - 2026-11-06
 
 ### Added

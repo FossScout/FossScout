@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft (v1 index trust UI/audit implemented; post-v1 APK checks deferred) |
 | Availability | **General** for verification; **Restricted** for direct install |
-| Profiles | `playstore` (verify/handoff), `fdroid` (verify/install), `direct` (verify/install), `custom` |
+| Profiles | `playstore` (verify/handoff), `vanilla` (verify/install), `direct` (verify/install), `custom` |
 | Required capabilities | `STORE_INDEX_NETWORK`; `DIRECT_APK_INSTALL` only for install |
 | Depends on | F04, F05 |
 | Related | F07, F09, F10 |

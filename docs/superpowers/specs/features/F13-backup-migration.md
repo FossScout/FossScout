@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft (v1 backup implemented in S09; per-item conflict resolution remains deferred) |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | `SHARE_IMPORT_EXPORT` |
 | Depends on | F11, F12 |
 | Related | F04 |

@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Proposed |
 | Availability | **General** |
-| Profiles | `playstore`, `fdroid`, `direct`, `custom` |
+| Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | Store index metadata; signer verification where available |
 | Depends on | F04, F05, F14 |
 | Related | F03, F07, F19 |

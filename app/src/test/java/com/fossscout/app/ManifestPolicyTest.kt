@@ -69,9 +69,9 @@ class ManifestPolicyTest {
     }
 
     @Test
-    fun `fdroid manifest declares broad package visibility`() {
-        val (_, contents) = manifest("src/fdroid/AndroidManifest.xml")
-            ?: error("F-Droid manifest is missing")
+    fun `vanilla manifest declares broad package visibility`() {
+        val (_, contents) = manifest("src/vanilla/AndroidManifest.xml")
+            ?: error("Vanilla manifest is missing")
 
         assertTrue(contents.contains("android.permission.QUERY_ALL_PACKAGES"))
     }

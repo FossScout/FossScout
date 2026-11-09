@@ -5,7 +5,7 @@ import com.fossscout.core.feature.Capability
 
 object ProfileFeatures {
     val profile = BuildProfile(
-        name = "fdroid",
+        name = "vanilla",
         capabilities = setOf(
             Capability.MANUAL_PACKAGE_SELECTION,
             Capability.STORE_INDEX_NETWORK,

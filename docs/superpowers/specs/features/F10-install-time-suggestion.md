@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | Draft |
 | Availability | **Restricted** |
-| Profiles | `fdroid`, `direct`, `custom` (never `playstore`) |
+| Profiles | `vanilla`, `direct`, `custom` (never `playstore`) |
 | Required capabilities | `ACCESSIBILITY_INSTALL_PROMPT`, `ACCESSIBILITY_SERVICE`, `MANUAL_PACKAGE_SELECTION` |
 | Depends on | F01, F02, F08 |
 | Related | F06, F07 |
