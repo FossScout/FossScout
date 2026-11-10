@@ -1,8 +1,8 @@
 # FossScout Implementation Status
 
-Last updated: **2026-11-09**
+Last updated: **2026-11-10**
 Feature baseline: `main` at `4c17e92`; F18 unified store search, the F19 permission comparison, and the vanilla flavor rename are merged. Current GitHub beta `v0.1.0-beta.4`; the F-Droid source tag `v0.1.0-vanilla` is prepared (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
-Pending: real-device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passed on `ee03deb` (run [42694212609](https://github.com/FossScout/FossScout/actions/runs/42694212609)), while Play internal testing and F-Droid submission remain pending.
+Pending: real-device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passed on `ee03deb` (run [42694212609](https://github.com/FossScout/FossScout/actions/runs/42694212609)), while Play internal testing and F-Droid submission remain pending. The F-Droid buildserver API 37 check is complete.
 Delivery: Toolchain upgraded to Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play internal AAB workflow added; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F22`](F22-support-and-donations.md)
@@ -28,7 +28,7 @@ file after every feature session with the new commit, test result, and status.
 | --- | --- |
 | Modular foundation | **Done** |
 | Build profiles (`playstore`, `vanilla`) | **Done** for these two; `direct`/`custom` not implemented |
-| CI and beta release pipeline | **Done for GitHub beta** (`v0.1.0-beta.4` prerelease); F-Droid source tag `v0.1.0-vanilla` prepared; Play internal and F-Droid submission remain pending |
+| CI and beta release pipeline | **Done for GitHub beta** (`v0.1.0-beta.4` prerelease); F-Droid source tag `v0.1.0-vanilla` prepared and API 37 confirmed; Play internal and F-Droid submission remain pending |
 | Local favourites, tags, search, installed badge, and collections | **Done** (device badge refresh pending) |
 | Feature configuration | **Done** |
 | Store registry and installed inventory | **Partial** |
@@ -40,7 +40,7 @@ file after every feature session with the new commit, test result, and status.
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
 | Feature completion | **14 of 21 fully done; 3 partial; 3 deferred; 1 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passes. Then prepare Play internal testing and open the F-Droid metadata merge request. F18 unified store search, F20 matching correction, and F22 support link are complete. F19 now has a permission-only comparison; its tracker signatures still need a licensed dataset, and F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passes. Then prepare Play internal testing and open the F-Droid metadata merge request. The F-Droid buildserver API 37 check is complete; watch the first build for the `android-37` resolution workaround. F18 unified store search, F20 matching correction, and F22 support link are complete. F19 now has a permission-only comparison; its tracker signatures still need a licensed dataset, and F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ## What works today
 

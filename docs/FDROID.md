@@ -17,11 +17,11 @@ variant is a separate package built from source with the `vanilla` flavor.
 | --- | --- |
 | Vanilla flavor | Ready: `com.fossscout.app.vanilla`, full installed-app scan |
 | Stable tag | **Done**: `v0.1.0-vanilla` contains the vanilla rename and refreshed metadata |
-| F-Droid release build | Vanilla local build verified on 2026-11-09; rerun `assembleVanillaRelease` from the tag before submission |
+| F-Droid release build | **Done**: clean `v0.1.0-vanilla` tag build passed locally on 2026-11-10; rerun only if the tagged source changes |
 | Fastlane listing metadata | Added under `fastlane/metadata/android/en-US/` |
 | `fdroiddata` metadata | Prepared in [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml); `commit` points to `v0.1.0-vanilla` |
 | F-Droid signing | F-Droid-hosted signing; no project key |
-| F-Droid submission | **Pending**: open the `fdroiddata` merge request after confirming buildserver API 37 |
+| F-Droid submission | **Pending**: open the `fdroiddata` merge request after real-device verification; buildserver API 37 is confirmed |
 
 ## Previous v0.1.0 build (before rename)
 
@@ -52,13 +52,17 @@ Run from the `v0.1.0-vanilla` tag:
 ./gradlew assembleVanillaRelease
 ```
 
-The build was verified locally on 2026-11-09 and produced this **unsigned** APK:
+A clean build from the `v0.1.0-vanilla` tag was verified locally on 2026-11-10
+and produced this **unsigned** APK:
 
 - Path: `app/build/outputs/apk/vanilla/release/app-vanilla-release-unsigned.apk`
 - Package: `com.fossscout.app.vanilla`
 - Version name: `0.1.0-vanilla`
 - Version code: `1`
-- SHA-256: `fa7c60900a651ae265d4e12820ad89e14b9407799152aaedc4f1fcfdcd240f57`
+- SHA-256: `fd1160b817bc4a14a5568f68518438cdef205fed50e5a458878288a49d589cd9`
+
+Local build checksums vary with the build environment. This one records the tag
+check only; it is not a release artifact or a reproducibility claim.
 
 The vanilla merged manifest uses `QUERY_ALL_PACKAGES` and `INTERNET`, plus
 AndroidX's dynamic-receiver permission. It must not contain install, uninstall,
@@ -73,10 +77,14 @@ and sign its own APK.
 1. **Use the `v0.1.0-vanilla` tag.** It contains the vanilla rename and the
    refreshed metadata. Confirm the metadata `commit`, `CurrentVersion`, and
    `versionCode` still match the tagged build before opening the merge request.
-2. **Confirm the F-Droid build server supports API 37.** The app uses
-   `compileSdk = 37`. Check the current buildserver image before opening the
-   submission; if platform 37 is unavailable, wait for it rather than lowering
-   the SDK only for F-Droid.
+2. **API 37 is available on the F-Droid buildserver.** The app uses
+   `compileSdk = 37`. F-Droid's
+   [`sdkmanager`](https://gitlab.com/fdroid/sdkmanager/-/blob/master/.gitlab-ci.yml)
+   installs `platforms;android-37.0` (verified 2026-11-10). If the first
+   buildserver build cannot resolve `android-37`, add the known `fdroiddata`
+   workaround to the build entry:
+   `ln -s $$SDK$$/platforms/android-37.0 $$SDK$$/platforms/android-37`. Do not
+   lower the SDK only for F-Droid.
 3. **Review the listing.** The Fastlane text and graphics are in
    `fastlane/metadata/android/en-US/`. The screenshots are shared with the Play
    listing. Recapture the full-scan screen from the vanilla build if it adds
@@ -151,7 +159,8 @@ The project does not have GitLab access in this environment. Opening the
 
 ## Open items
 
-- Confirm that the F-Droid buildserver has Android API 37 before submitting.
+- Watch the first F-Droid build for the `android-37` resolution workaround;
+  API 37 packages are available on the buildserver.
 - Open the `fdroiddata` merge request and respond to review.
 - Decide whether to add F-Droid-specific full-scan screenshots.
 - Revisit `UpdateCheckMode` after the first stable vanilla build and metadata
