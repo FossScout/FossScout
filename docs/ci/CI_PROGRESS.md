@@ -22,7 +22,7 @@ Feature baseline: main @ `4c17e92`; F-Droid source tag `v0.1.0-vanilla`; current
 | Toolchain upgrade | Done | Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
 | Gradle wrapper 9.8.2 | Done | Wrapper JAR matches the official Gradle SHA-256; `test`, `lint`, and main CI passed. |
 | CI device smoke test | Done | `.github/workflows/device-smoke.yml` is a manual API 36 AOSP x86_64 emulator run. Run [42694212609](https://github.com/FossScout/FossScout/actions/runs/42694212609) passed on `ee03deb` with Gradle 9.8.2 and both debug APKs: APK checks, launch/navigation, favourites persistence, rotation, font scale, theme, offline Stores, installer fallbacks, Play limited visibility including a third-party launcher check, and the vanilla full scan. |
-| F-Droid release readiness | Ready for submission | The previous `assembleFdroidRelease` build passed locally on 2026-11-05 from `v0.1.0` (`e4262a1`). The flavor is now `vanilla` (`com.fossscout.app.vanilla`, version suffix `-vanilla`); a local vanilla release build passed on 2026-11-09. The `v0.1.0-vanilla` tag and refreshed `fdroiddata` metadata are prepared. Fastlane listing metadata and the prepared entry are tracked in [`docs/FDROID.md`](../FDROID.md) and [`docs/fdroid/`](../fdroid/). |
+| F-Droid release readiness | Ready for `fdroiddata` MR after device verification | The previous `assembleFdroidRelease` build passed locally on 2026-11-05 from `v0.1.0` (`e4262a1`). The flavor is now `vanilla` (`com.fossscout.app.vanilla`, version suffix `-vanilla`); a clean build from the `v0.1.0-vanilla` tag passed locally on 2026-11-10. The tag and refreshed `fdroiddata` metadata are prepared. F-Droid's `sdkmanager` includes `platforms;android-37.0`, so buildserver API 37 support is confirmed. Fastlane listing metadata and the prepared entry are tracked in [`docs/FDROID.md`](../FDROID.md) and [`docs/fdroid/`](../fdroid/). |
 | F-Droid stable tag | Done | `v0.1.0-vanilla` tags the vanilla release after the flavor rename; the `fdroiddata` metadata commit points to it. F-Droid-hosted signing remains the plan. |
 
 ## Pending / Manual
@@ -36,7 +36,7 @@ Feature baseline: main @ `4c17e92`; F-Droid source tag `v0.1.0-vanilla`; current
 | Release notes/changelog | Partial | `CHANGELOG.md` is maintained manually; automation remains optional |
 | Play Console setup | Pending | App entry, Play App Signing, declarations, store listing, internal track, and tester setup remain manual |
 | Play upload automation | Pending | Requires a Play Developer API service account and an approved upload action or dependency |
-| F-Droid submission | Pending | Needs an `fdroiddata` merge request and buildserver API 37 confirmation; the vanilla tag and metadata are ready. See [`docs/FDROID.md`](../FDROID.md). |
+| F-Droid submission | Pending | Needs an `fdroiddata` merge request after real-device verification; the vanilla tag, metadata, and buildserver API 37 check are ready. See [`docs/FDROID.md`](../FDROID.md). |
 | Compose BOM 2026.09.00 | Done | `compileSdk = 37`; CI, release, and Play workflows install `platforms;android-37.0` |
 | Built-in Kotlin migration | Pending | AGP 9.5 bundles Kotlin 2.2.10; the project opts out to keep Kotlin 2.4.21. Revisit before AGP 10 |
 | Coverage reporting | Pending | Optional: add jacoco/report upload |
@@ -62,4 +62,4 @@ CI_VERSION_CODE=123 CI_VERSION_NAME=1.0.0 ./gradlew :app:printVersion 2>&1 | tai
 - Versioning/flavors/variants: **Complete** (CI-driven, flavor support, beta application ID)
 - Issues/PR/workflow: **Complete** (templates + dependabot + branch workflow guidance)
 - Release/signing: **Complete for GitHub beta and the F-Droid source tag**; Play AAB build uses dedicated secrets, but Play Console upload and F-Droid submission remain pending
-- Documentation: **Complete for the beta channel, Play AAB build, CI device smoke baseline, and F-Droid submission preparation**; the real-device checklist and `fdroiddata` merge request remain pending
+- Documentation: **Complete for the beta channel, Play AAB build, CI device smoke baseline, and F-Droid submission preparation, including API 37 confirmation**; the real-device checklist and `fdroiddata` merge request remain pending
