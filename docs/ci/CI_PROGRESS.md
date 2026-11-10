@@ -1,8 +1,8 @@
 # CI Progress & Status
 
-Last updated: 2026-11-09
+Last updated: 2026-11-10
 Branch: main
-Feature baseline: main @ `ee03deb`; F-Droid tag `v0.1.0` @ `e4262a1` predates the vanilla flavor rename; current beta release `v0.1.0-beta.4`. Docs/CI changes after this baseline are tracked below.
+Feature baseline: main @ `4c17e92`; F-Droid source tag `v0.1.0-vanilla`; current beta release `v0.1.0-beta.4`. Docs/CI changes after this baseline are tracked below.
 
 ## Completed
 | Task | Status | Details |
@@ -22,8 +22,8 @@ Feature baseline: main @ `ee03deb`; F-Droid tag `v0.1.0` @ `e4262a1` predates th
 | Toolchain upgrade | Done | Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
 | Gradle wrapper 9.8.2 | Done | Wrapper JAR matches the official Gradle SHA-256; `test`, `lint`, and main CI passed. |
 | CI device smoke test | Done | `.github/workflows/device-smoke.yml` is a manual API 36 AOSP x86_64 emulator run. Run [42694212609](https://github.com/FossScout/FossScout/actions/runs/42694212609) passed on `ee03deb` with Gradle 9.8.2 and both debug APKs: APK checks, launch/navigation, favourites persistence, rotation, font scale, theme, offline Stores, installer fallbacks, Play limited visibility including a third-party launcher check, and the vanilla full scan. |
-| F-Droid release readiness | Partial | The previous `assembleFdroidRelease` build passed locally on 2026-11-05 from `v0.1.0` (`e4262a1`). The flavor is now `vanilla` (`com.fossscout.app.vanilla`, version suffix `-vanilla`); a local vanilla release build passed on 2026-11-09, but a new release tag is required before submission. Fastlane listing metadata and the prepared `fdroiddata` entry are tracked in [`docs/FDROID.md`](../FDROID.md) and [`docs/fdroid/`](../fdroid/). |
-| F-Droid stable tag | Pending | `v0.1.0` points at `e4262a1` and predates the vanilla rename. Cut a new tag from the rename merge; F-Droid-hosted signing remains the plan. |
+| F-Droid release readiness | Ready for submission | The previous `assembleFdroidRelease` build passed locally on 2026-11-05 from `v0.1.0` (`e4262a1`). The flavor is now `vanilla` (`com.fossscout.app.vanilla`, version suffix `-vanilla`); a local vanilla release build passed on 2026-11-09. The `v0.1.0-vanilla` tag and refreshed `fdroiddata` metadata are prepared. Fastlane listing metadata and the prepared entry are tracked in [`docs/FDROID.md`](../FDROID.md) and [`docs/fdroid/`](../fdroid/). |
+| F-Droid stable tag | Done | `v0.1.0-vanilla` tags the vanilla release after the flavor rename; the `fdroiddata` metadata commit points to it. F-Droid-hosted signing remains the plan. |
 
 ## Pending / Manual
 | Task | Status | Details |
@@ -36,7 +36,7 @@ Feature baseline: main @ `ee03deb`; F-Droid tag `v0.1.0` @ `e4262a1` predates th
 | Release notes/changelog | Partial | `CHANGELOG.md` is maintained manually; automation remains optional |
 | Play Console setup | Pending | App entry, Play App Signing, declarations, store listing, internal track, and tester setup remain manual |
 | Play upload automation | Pending | Requires a Play Developer API service account and an approved upload action or dependency |
-| F-Droid submission | Pending | Needs a vanilla release tag, refreshed metadata, an `fdroiddata` merge request, and buildserver API 37 confirmation. See [`docs/FDROID.md`](../FDROID.md). |
+| F-Droid submission | Pending | Needs an `fdroiddata` merge request and buildserver API 37 confirmation; the vanilla tag and metadata are ready. See [`docs/FDROID.md`](../FDROID.md). |
 | Compose BOM 2026.09.00 | Done | `compileSdk = 37`; CI, release, and Play workflows install `platforms;android-37.0` |
 | Built-in Kotlin migration | Pending | AGP 9.5 bundles Kotlin 2.2.10; the project opts out to keep Kotlin 2.4.21. Revisit before AGP 10 |
 | Coverage reporting | Pending | Optional: add jacoco/report upload |

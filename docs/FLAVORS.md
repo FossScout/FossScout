@@ -1,8 +1,9 @@
 # Flavors - FossScout
 
 FossScout supports two build flavors with different distribution channels.
-The GitHub beta is the only enabled release path; Play and F-Droid releases
-remain intentionally disabled.
+The GitHub beta is the only published release path; the F-Droid source tag
+`v0.1.0-vanilla` is prepared, while Play and F-Droid publication remain
+intentionally disabled.
 
 ## Flavors
 | Flavor | Application ID | Purpose | Notes |
