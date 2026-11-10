@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-vanilla] - 2026-11-10
+
+First F-Droid source tag for the vanilla flavor, including the F18, F19, F20,
+and F22 post-v1 work. F-Droid publication is pending.
+
 ### Added
 
 - Project detail screens with description, license, tags, stars, website, and save action.
+- F-Droid submission metadata for `com.fossscout.app.vanilla` targeting `v0.1.0-vanilla`.
 
 ### Changed
 
@@ -77,7 +83,8 @@ channel remains at `0.1.0-beta.3`.
 - Beta build type with application ID `com.fossscout.app.beta`.
 - Signed GitHub prerelease workflow for `v*-beta*` tags.
 
-[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.0-beta.4...HEAD
+[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.0-vanilla...HEAD
+[0.1.0-vanilla]: https://github.com/FossScout/FossScout/tree/v0.1.0-vanilla
 [0.1.0]: https://github.com/FossScout/FossScout/tree/v0.1.0
 [0.1.0-beta.4]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.4
 [0.1.0-beta.3]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.3

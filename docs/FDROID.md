@@ -1,13 +1,12 @@
 # F-Droid Release Readiness
 
 F-Droid is the second distribution channel after the GitHub beta. The source
-build, listing metadata, and submission metadata are prepared, but the stable
-tag predates the vanilla flavor rename. The `fdroiddata` merge request is not
-open yet.
+build, listing metadata, submission metadata, and the `v0.1.0-vanilla` source
+tag are prepared. The `fdroiddata` merge request is not open yet.
 
-The GitHub beta channel remains at `v0.1.0-beta.4`. The existing `v0.1.0`
-stable tag is for the previous `fdroid` flavor and does not contain the current
-`vanilla` flavor. Cut a new tag before submitting.
+The GitHub beta channel remains at `v0.1.0-beta.4`. The old `v0.1.0` tag is for
+the previous `fdroid` flavor; the `v0.1.0-vanilla` tag contains the current
+`vanilla` flavor and the refreshed F-Droid metadata.
 
 Do not publish the GitHub beta APK or the Play AAB to F-Droid. The F-Droid
 variant is a separate package built from source with the `vanilla` flavor.
@@ -17,12 +16,12 @@ variant is a separate package built from source with the `vanilla` flavor.
 | Item | Status |
 | --- | --- |
 | Vanilla flavor | Ready: `com.fossscout.app.vanilla`, full installed-app scan |
-| Stable tag | **Pending**: `v0.1.0` at `e4262a13eb6eab09ff2fa4674e3f4d705999053c` predates the vanilla rename |
-| F-Droid release build | Vanilla local build verified on 2026-11-09; rerun `assembleVanillaRelease` from the new tag before submission |
+| Stable tag | **Done**: `v0.1.0-vanilla` contains the vanilla rename and refreshed metadata |
+| F-Droid release build | Vanilla local build verified on 2026-11-09; rerun `assembleVanillaRelease` from the tag before submission |
 | Fastlane listing metadata | Added under `fastlane/metadata/android/en-US/` |
-| `fdroiddata` metadata | Prepared in [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml); `commit: main` is temporary until a release tag exists |
+| `fdroiddata` metadata | Prepared in [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml); `commit` points to `v0.1.0-vanilla` |
 | F-Droid signing | F-Droid-hosted signing; no project key |
-| F-Droid submission | **Blocked**: cut a vanilla release tag and refresh the metadata before opening the merge request |
+| F-Droid submission | **Pending**: open the `fdroiddata` merge request after confirming buildserver API 37 |
 
 ## Previous v0.1.0 build (before rename)
 
@@ -47,7 +46,7 @@ permission, and no install, uninstall, or accessibility entries.
 
 ## Current vanilla build
 
-Run from the commit or tag that contains the rename:
+Run from the `v0.1.0-vanilla` tag:
 
 ```sh
 ./gradlew assembleVanillaRelease
@@ -71,9 +70,9 @@ and sign its own APK.
 
 ## Before submission
 
-1. **Cut a new stable tag after the vanilla rename.** `v0.1.0` predates the
-   rename. Update the metadata `commit`, `CurrentVersion`, and `versionCode`
-   before opening the merge request.
+1. **Use the `v0.1.0-vanilla` tag.** It contains the vanilla rename and the
+   refreshed metadata. Confirm the metadata `commit`, `CurrentVersion`, and
+   `versionCode` still match the tagged build before opening the merge request.
 2. **Confirm the F-Droid build server supports API 37.** The app uses
    `compileSdk = 37`. Check the current buildserver image before opening the
    submission; if platform 37 is unavailable, wait for it rather than lowering
@@ -105,8 +104,7 @@ Use
 [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml).
 The prepared file contains:
 
-- `commit: main` as a temporary ref; replace it with the vanilla release tag or
-  commit hash before submission;
+- `commit: v0.1.0-vanilla`, the stable source tag;
 - `versionName: '0.1.0-vanilla'` because the vanilla flavor appends the suffix;
 - `versionCode: 1`;
 - `UpdateCheckMode: Static` until automatic version extraction is tested;
@@ -153,7 +151,6 @@ The project does not have GitLab access in this environment. Opening the
 
 ## Open items
 
-- Cut a vanilla release tag and update the metadata commit and version code.
 - Confirm that the F-Droid buildserver has Android API 37 before submitting.
 - Open the `fdroiddata` merge request and respond to review.
 - Decide whether to add F-Droid-specific full-scan screenshots.

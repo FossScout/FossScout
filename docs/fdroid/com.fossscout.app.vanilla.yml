@@ -1,7 +1,6 @@
 # F-Droid build metadata prepared for submission to fdroiddata.
 #
-# Stable tag: pending; v0.1.0 predates the vanilla flavor rename.
-# Commit: main is temporary; replace it with the vanilla release tag or hash.
+# Stable tag: v0.1.0-vanilla.
 # Signing: F-Droid-hosted; do not add Binaries or AllowedAPKSigningKeys.
 #
 # The vanilla flavor appends "-vanilla" to the version name, so versionName
@@ -21,7 +20,7 @@ Repo: https://github.com/FossScout/FossScout.git
 Builds:
   - versionName: '0.1.0-vanilla'
     versionCode: 1
-    commit: main
+    commit: v0.1.0-vanilla
     submodules: true
     gradle:
       - vanilla
