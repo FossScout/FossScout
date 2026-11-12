@@ -27,6 +27,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.fossscout.core.matching.AlternativeApkManifest
 import com.fossscout.core.matching.PermissionCategory
 import com.fossscout.core.matching.PermissionComparison
 import com.fossscout.core.matching.PermissionDetail
@@ -46,6 +47,9 @@ fun PermissionDiffScreen(
     onBack: () -> Unit,
     onOpenSource: (String) -> Unit,
     onExportAudit: (() -> Unit)? = null,
+    onPickAlternativeApk: (() -> Unit)? = null,
+    isReadingAlternativeApk: Boolean = false,
+    alternativeManifestError: String? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -78,6 +82,16 @@ fun PermissionDiffScreen(
         ) {
             item(key = "apps") {
                 AppComparisonHeader(comparison)
+            }
+            if (onPickAlternativeApk != null) {
+                item(key = "alternative_manifest") {
+                    AlternativeManifestCard(
+                        manifest = comparison.alternativeManifest,
+                        isReading = isReadingAlternativeApk,
+                        error = alternativeManifestError,
+                        onPick = onPickAlternativeApk,
+                    )
+                }
             }
             item(key = "summary") {
                 PermissionSummary(comparison)
@@ -245,6 +259,86 @@ private fun AppCard(
                     text = stringResource(relationship.labelRes()),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AlternativeManifestCard(
+    manifest: AlternativeApkManifest?,
+    isReading: Boolean,
+    error: String?,
+    onPick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.permission_diff_manifest_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = if (manifest == null) {
+                    stringResource(R.string.permission_diff_manifest_body)
+                } else {
+                    stringResource(R.string.permission_diff_manifest_selected)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (manifest != null) {
+                val version = manifest.versionName
+                    ?: stringResource(R.string.permission_diff_manifest_unknown)
+                Text(
+                    text = stringResource(R.string.permission_diff_manifest_version, version),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.permission_diff_manifest_permissions,
+                        manifest.permissions.size,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(R.string.permission_diff_manifest_limitation),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (isReading) {
+                Text(
+                    text = stringResource(R.string.permission_diff_manifest_reading),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            error?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            TextButton(onClick = onPick, enabled = !isReading) {
+                Text(
+                    stringResource(
+                        if (manifest == null) {
+                            R.string.permission_diff_manifest_choose
+                        } else {
+                            R.string.permission_diff_manifest_replace
+                        },
+                    ),
                 )
             }
         }
@@ -706,29 +800,37 @@ private fun PermissionSourcesCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(
-                text = stringResource(
-                    R.string.permission_diff_alternative_source,
-                    comparison.alternative.storeName.orEmpty(),
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = stringResource(R.string.permission_diff_cached_note),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (comparison.alternativeManifest == null) {
+                Text(
+                    text = stringResource(
+                        R.string.permission_diff_alternative_source,
+                        comparison.alternative.storeName.orEmpty(),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(R.string.permission_diff_cached_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                comparison.alternativeSourceUrl?.let { source ->
+                    TextButton(onClick = { onOpenSource(source) }) {
+                        Text(stringResource(R.string.permission_diff_open_source))
+                    }
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.permission_diff_alternative_manifest_source),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Text(
                 text = stringResource(R.string.permission_diff_no_upload),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            comparison.alternativeSourceUrl?.let { source ->
-                TextButton(onClick = { onOpenSource(source) }) {
-                    Text(stringResource(R.string.permission_diff_open_source))
-                }
-            }
         }
     }
 }

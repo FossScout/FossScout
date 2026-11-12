@@ -64,6 +64,28 @@ class PermissionComparisonAuditTest {
     }
 
     @Test
+    fun `selected local APK manifest is identified in the audit`() {
+        val comparison = comparison(tracker = null).withAlternativeManifest(
+            AlternativeApkManifest(
+                packageName = "org.example.new",
+                versionName = "2.1",
+                versionCode = 21,
+                permissions = listOf(CAMERA, RECORD_AUDIO),
+            ),
+        )
+
+        val audit = builder.build(comparison, EXPORTED_AT)
+        val json = builder.encode(audit)
+
+        assertEquals("selected_local_apk_manifest", audit.sources.alternative)
+        assertEquals("2.1", audit.alternative.versionName)
+        assertEquals(21L, audit.alternativeManifest?.versionCode)
+        assertTrue(audit.limitations.any { it.contains("signature-verified") })
+        assertTrue(json.contains("\"alternativeManifest\""))
+        assertTrue(json.contains("\"versionCode\": 21"))
+    }
+
+    @Test
     fun `unknown alternative permissions and missing tracker stay explicit`() {
         val comparison = comparison(
             alternativePermissionsKnown = false,
