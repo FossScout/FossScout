@@ -54,6 +54,7 @@ import com.fossscout.core.matching.MatchOutcome
 import com.fossscout.core.matching.PermissionAlternative
 import com.fossscout.core.matching.PermissionComparison
 import com.fossscout.core.matching.StoreCoverage
+import com.fossscout.core.matching.TrackerReport
 import com.fossscout.core.matching.comparePermissions
 import com.fossscout.core.matching.toPermissionAlternative
 import com.fossscout.core.model.MAX_NOTE_LENGTH
@@ -91,13 +92,22 @@ fun MatchScreen(
     onDismissCorrection: () -> Unit = {},
     showCoverage: Boolean = true,
     showAlternatives: Boolean = true,
+    tracker: TrackerReport? = null,
+    isTrackerScanning: Boolean = false,
     onComparePermissions: ((PermissionComparison) -> Unit)? = null,
 ) {
     val installedApp = state.installedApp
     val compareAlternative: ((PermissionAlternative) -> Unit)? =
         if (onComparePermissions != null && installedApp != null) {
             { alternative ->
-                onComparePermissions(comparePermissions(installedApp, alternative))
+                onComparePermissions(
+                    comparePermissions(
+                        installed = installedApp,
+                        alternative = alternative,
+                        tracker = tracker,
+                        trackerScanInProgress = isTrackerScanning,
+                    ),
+                )
             }
         } else {
             null

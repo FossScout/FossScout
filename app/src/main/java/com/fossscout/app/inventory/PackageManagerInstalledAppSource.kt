@@ -12,6 +12,7 @@ import com.fossscout.core.inventory.AppProfile
 import com.fossscout.core.inventory.InstalledApp
 import com.fossscout.core.inventory.InstalledAppSource
 import com.fossscout.core.inventory.InventoryEnumeration
+import java.io.File
 import java.security.MessageDigest
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ import kotlinx.coroutines.withContext
 class PackageManagerInstalledAppSource(
     context: Context,
     override val supportsFullScan: Boolean,
-) : InstalledAppSource {
+) : InstalledAppSource, InstalledApkSource {
     private val appContext = context.applicationContext
     private val packageManager = appContext.packageManager
     private val userManager = appContext.getSystemService(Context.USER_SERVICE) as? UserManager
@@ -38,6 +39,19 @@ class PackageManagerInstalledAppSource(
         val info = packageInfo(packageName) ?: return@withContext null
         toInstalledApp(info)
     }
+
+    override suspend fun apkFiles(packageName: String): List<File> =
+        withContext(Dispatchers.IO) {
+            val info = packageInfo(packageName) ?: return@withContext emptyList()
+            val appInfo = info.applicationInfo ?: return@withContext emptyList()
+            buildList {
+                add(appInfo.sourceDir)
+                appInfo.splitSourceDirs?.forEach { add(it) }
+            }
+                .map { path -> File(path) }
+                .filter(File::isFile)
+                .distinctBy(File::getAbsolutePath)
+        }
 
     override suspend fun search(query: String, limit: Int): List<InstalledApp> =
         withContext(Dispatchers.IO) {

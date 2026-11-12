@@ -50,10 +50,10 @@ Store-scoped overrides, shareable corrections, low-confidence prompts, and
 device/UI verification remain deferred.
 
 No next post-v1 feature is selected. F18 unified store search and the F19
-permission comparison are implemented; F19 tracker signatures and F21 still need
-approved dataset/evidence decisions. If multiple sessions run in parallel in
-future, use the wave table and avoid editing the same app wiring files without
-coordinating.
+permission/tracker comparison are implemented; F19-R8 audit export is deferred,
+and F21 still needs an evidence-source decision. If multiple sessions run in
+parallel in future, use the wave table and avoid editing the same app wiring
+files without coordinating.
 
 ## Planning assumptions
 

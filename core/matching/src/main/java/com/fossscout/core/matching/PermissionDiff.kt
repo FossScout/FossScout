@@ -62,6 +62,8 @@ data class PermissionComparison(
     val relationship: PermissionRelationship,
     val diff: PermissionDiff? = null,
     val alternativeSourceUrl: String? = null,
+    val tracker: TrackerReport? = null,
+    val trackerScanInProgress: Boolean = false,
 )
 
 /** Store-side input for a comparison. */
@@ -80,6 +82,8 @@ data class PermissionAlternative(
 fun comparePermissions(
     installed: InstalledApp,
     alternative: PermissionAlternative,
+    tracker: TrackerReport? = null,
+    trackerScanInProgress: Boolean = false,
 ): PermissionComparison {
     val installedDetails = permissionDetails(installed.requestedPermissions)
     val alternativeDetails = permissionDetails(alternative.permissions)
@@ -120,6 +124,8 @@ fun comparePermissions(
         relationship = alternative.relationship,
         diff = diff,
         alternativeSourceUrl = alternative.sourceUrl,
+        tracker = tracker,
+        trackerScanInProgress = trackerScanInProgress,
     )
 }
 

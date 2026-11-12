@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.datastore.preferences.preferencesDataStore
 import com.fossscout.app.handoff.InventoryCompanionStoreDetector
 import com.fossscout.app.inventory.PackageManagerInstalledAppSource
+import com.fossscout.app.inventory.PackageManagerTrackerScanSource
 import com.fossscout.app.profile.ProfileFeatures
 import com.fossscout.core.contribution.ContributionEnvironment
 import com.fossscout.core.contribution.ContributionReportBuilder
@@ -38,6 +39,7 @@ import com.fossscout.core.inventory.InventoryRepository
 import com.fossscout.core.matching.KnownProprietaryApps
 import com.fossscout.core.matching.MatchingRepository
 import com.fossscout.core.matching.SnapshotCatalogSource
+import com.fossscout.core.matching.TrackerDatasetLoader
 import java.io.File
 import kotlinx.coroutines.flow.first
 
@@ -153,6 +155,13 @@ class AppContainer(context: Context) {
         context = context.applicationContext,
         supportsFullScan = broadPackageVisibility,
     )
+
+    val trackerScanSource by lazy {
+        PackageManagerTrackerScanSource(
+            apkSource = installedAppSource,
+            dataset = TrackerDatasetLoader.loadBundled(),
+        )
+    }
 
     val companionStoreDetector = InventoryCompanionStoreDetector(installedAppSource)
 

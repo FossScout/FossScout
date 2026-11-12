@@ -551,6 +551,7 @@ fun FossScoutApp(
                                     }
                                 },
                                 removeCorrection = container.matchOverridesRepository::remove,
+                                trackerScanSource = container.trackerScanSource,
                             )
                         }
                     },
@@ -560,6 +561,18 @@ fun FossScoutApp(
                 }
                 val matchingState by
                     matchingViewModel.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(matchingState.tracker, matchingState.isTrackerScanning) {
+                    val current = permissionComparison ?: return@LaunchedEffect
+                    if (
+                        current.tracker != matchingState.tracker ||
+                        current.trackerScanInProgress != matchingState.isTrackerScanning
+                    ) {
+                        permissionComparison = current.copy(
+                            tracker = matchingState.tracker,
+                            trackerScanInProgress = matchingState.isTrackerScanning,
+                        )
+                    }
+                }
 
                 val companionViewModel: CompanionViewModel = viewModel(
                     factory = viewModelFactory {
@@ -656,8 +669,16 @@ fun FossScoutApp(
                             modifier = screenModifier,
                             showCoverage = FeatureId.COVERAGE in enabledFeatures,
                             showAlternatives = alternativesEnabled,
+                            tracker = matchingState.tracker,
+                            isTrackerScanning = matchingState.isTrackerScanning,
                             onComparePermissions = if (permissionDiffEnabled) {
-                                { comparison -> permissionComparison = comparison }
+                                { comparison ->
+                                    val scanning = matchingViewModel.startTrackerScan()
+                                    permissionComparison = comparison.copy(
+                                        tracker = matchingState.tracker,
+                                        trackerScanInProgress = scanning,
+                                    )
+                                }
                             } else {
                                 null
                             },

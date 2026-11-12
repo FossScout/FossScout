@@ -8,6 +8,9 @@ import com.fossscout.core.inventory.InstalledAppSource
 import com.fossscout.core.matching.CatalogSearchResult
 import com.fossscout.core.matching.MatchQuery
 import com.fossscout.core.matching.MatchingRepository
+import com.fossscout.core.matching.TrackerReport
+import com.fossscout.core.matching.TrackerScanResult
+import com.fossscout.core.matching.TrackerScanSource
 import com.fossscout.core.matching.forInput
 import com.fossscout.core.matching.from
 import com.fossscout.core.matching.looksLikePackageName
@@ -34,12 +37,14 @@ class MatchingViewModel(
     initialApp: InstalledApp? = null,
     private val setCorrection: (suspend (AppKey, MatchOverrideTarget?, String) -> Unit)? = null,
     private val removeCorrection: (suspend (AppKey) -> Unit)? = null,
+    private val trackerScanSource: TrackerScanSource? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MatchUiState())
     val uiState: StateFlow<MatchUiState> = _uiState.asStateFlow()
     private var includeAlternativesEnabled: Boolean = includeAlternatives
     private var lastQuery: MatchQuery? = null
     private var lastInstalledApp: InstalledApp? = null
+    private var matchGeneration: Int = 0
 
     init {
         when {
@@ -67,7 +72,7 @@ class MatchingViewModel(
             return
         }
         viewModelScope.launch {
-            beginMatch()
+            val generation = beginMatch()
             val apps = try {
                 if (looksLikePackageName(input)) {
                     listOfNotNull(appSource.find(input))
@@ -85,11 +90,11 @@ class MatchingViewModel(
             }
 
             when {
-                apps.isEmpty() -> runMatch(MatchQuery.forInput(input), null)
+                apps.isEmpty() -> runMatch(MatchQuery.forInput(input), null, generation)
                 apps.size == 1 -> {
                     val app = apps.single()
                     _uiState.update { it.copy(query = app.packageName) }
-                    runMatch(MatchQuery.from(app), app)
+                    runMatch(MatchQuery.from(app), app, generation)
                 }
                 else -> _uiState.update {
                     it.copy(isLoading = false, candidates = apps)
@@ -105,9 +110,9 @@ class MatchingViewModel(
             it.copy(query = app.packageName, candidates = emptyList())
         }
         viewModelScope.launch {
-            beginMatch()
+            val generation = beginMatch()
             val installedApp = appSource.find(app.packageName) ?: app
-            runMatch(MatchQuery.from(installedApp), installedApp)
+            runMatch(MatchQuery.from(installedApp), installedApp, generation)
         }
     }
 
@@ -310,11 +315,12 @@ class MatchingViewModel(
 
     private suspend fun refreshAfterCorrection() {
         val query = lastQuery ?: return
-        beginMatch()
-        runMatch(query, lastInstalledApp)
+        val generation = beginMatch()
+        runMatch(query, lastInstalledApp, generation)
     }
 
-    private fun beginMatch() {
+    private fun beginMatch(): Int {
+        matchGeneration += 1
         _uiState.update {
             it.copy(
                 isLoading = true,
@@ -325,11 +331,18 @@ class MatchingViewModel(
                 hiddenAlternatives = emptySet(),
                 lastHiddenAlternative = null,
                 correctionEditor = null,
+                tracker = null,
+                isTrackerScanning = false,
             )
         }
+        return matchGeneration
     }
 
-    private suspend fun runMatch(query: MatchQuery, installedApp: InstalledApp?) {
+    private suspend fun runMatch(
+        query: MatchQuery,
+        installedApp: InstalledApp?,
+        generation: Int,
+    ) {
         lastQuery = query
         lastInstalledApp = installedApp
         try {
@@ -337,6 +350,9 @@ class MatchingViewModel(
                 query = query,
                 includeAlternatives = includeAlternativesEnabled,
             )
+            if (generation != matchGeneration) {
+                return
+            }
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -348,10 +364,57 @@ class MatchingViewModel(
             throw cancellation
         } catch (throwable: Throwable) {
             Log.e(TAG, "Matching failed", throwable)
-            _uiState.update {
-                it.copy(isLoading = false, error = MatchError.MATCH_FAILED)
+            if (generation == matchGeneration) {
+                _uiState.update {
+                    it.copy(isLoading = false, error = MatchError.MATCH_FAILED)
+                }
             }
         }
+    }
+
+    /**
+     * Starts the local tracker scan only when the user opens the comparison.
+     * Returns false when no tracker source or installed app is available.
+     */
+    fun startTrackerScan(): Boolean {
+        val source = trackerScanSource ?: return false
+        val installedApp = _uiState.value.installedApp ?: return false
+        if (_uiState.value.isTrackerScanning) {
+            return true
+        }
+        val generation = matchGeneration
+        _uiState.update {
+            it.copy(
+                tracker = TrackerReport(
+                    dataset = source.datasetInfo,
+                    installed = TrackerScanResult(),
+                ),
+                isTrackerScanning = true,
+            )
+        }
+        viewModelScope.launch {
+            val result = try {
+                source.scan(installedApp.packageName)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                Log.e(TAG, "Tracker scan failed", throwable)
+                TrackerScanResult()
+            }
+            if (generation != matchGeneration) {
+                return@launch
+            }
+            _uiState.update {
+                it.copy(
+                    tracker = TrackerReport(
+                        dataset = source.datasetInfo,
+                        installed = result,
+                    ),
+                    isTrackerScanning = false,
+                )
+            }
+        }
+        return true
     }
 
     private companion object {

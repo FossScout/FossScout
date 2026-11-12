@@ -11,6 +11,12 @@ import com.fossscout.core.matching.MatchOutcome
 import com.fossscout.core.matching.MatchingRepository
 import com.fossscout.core.matching.StoreCatalog
 import com.fossscout.core.matching.StoreCatalogData
+import com.fossscout.core.matching.TrackerConfidence
+import com.fossscout.core.matching.TrackerDatasetInfo
+import com.fossscout.core.matching.TrackerMatch
+import com.fossscout.core.matching.TrackerScanResult
+import com.fossscout.core.matching.TrackerScanSource
+import com.fossscout.core.matching.TrackerScanStatus
 import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.MatchOverride
 import com.fossscout.core.model.MatchOverrideTarget
@@ -321,6 +327,57 @@ class MatchingViewModelTest {
         )
     }
 
+    @Test
+    fun `tracker scan exposes dataset and installed matches`() = runTest(dispatcher) {
+        val source = FakeTrackerScanSource(
+            result = TrackerScanResult(
+                status = TrackerScanStatus.COMPLETE,
+                matches = listOf(
+                    TrackerMatch(
+                        name = "Analytics",
+                        confidence = TrackerConfidence.KNOWN,
+                        matchedSignatures = listOf("com.example.tracker."),
+                    ),
+                ),
+                scannedFiles = 1,
+            ),
+        )
+
+        val viewModel = viewModel(
+            initialApp = app,
+            trackerScanSource = source,
+        )
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.tracker)
+        assertTrue(viewModel.startTrackerScan())
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("2026-11-10", state.tracker?.dataset?.version)
+        assertEquals(listOf("Analytics"), state.tracker?.installed?.matches?.map(TrackerMatch::name))
+        assertFalse(state.isTrackerScanning)
+    }
+
+    @Test
+    fun `tracker scan failure does not fail the match`() = runTest(dispatcher) {
+        val source = FakeTrackerScanSource(failure = true)
+
+        val viewModel = viewModel(
+            initialApp = app,
+            trackerScanSource = source,
+        )
+        advanceUntilIdle()
+
+        assertTrue(viewModel.startTrackerScan())
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(MatchOutcome.MATCH, state.decision?.outcome)
+        assertEquals(TrackerScanStatus.UNAVAILABLE, state.tracker?.installed?.status)
+        assertFalse(state.isTrackerScanning)
+    }
+
     private fun viewModel(
         source: FakeSource = FakeSource(listOf(app)),
         storeEntries: Flow<List<StoreEntry>> = flowOf(listOf(entry())),
@@ -330,6 +387,7 @@ class MatchingViewModelTest {
         overrides: Flow<List<MatchOverride>> = flowOf(emptyList()),
         setCorrection: (suspend (AppKey, MatchOverrideTarget?, String) -> Unit)? = null,
         removeCorrection: (suspend (AppKey) -> Unit)? = null,
+        trackerScanSource: TrackerScanSource? = null,
     ): MatchingViewModel = MatchingViewModel(
         repository = MatchingRepository(
             storeEntries = storeEntries,
@@ -345,6 +403,7 @@ class MatchingViewModelTest {
         initialApp = initialApp,
         setCorrection = setCorrection,
         removeCorrection = removeCorrection,
+        trackerScanSource = trackerScanSource,
     )
 
     private fun entry() = StoreEntry(
@@ -413,6 +472,24 @@ class MatchingViewModelTest {
         }
 
         override suspend fun enumerate(): InventoryEnumeration = InventoryEnumeration(apps)
+    }
+
+    private class FakeTrackerScanSource(
+        private val result: TrackerScanResult = TrackerScanResult(),
+        private val failure: Boolean = false,
+    ) : TrackerScanSource {
+        override val datasetInfo = TrackerDatasetInfo(
+            name = "Test dataset",
+            version = "2026-11-10",
+            licenseName = "ODbL 1.0",
+            licenseUrl = "https://example.org/license",
+            sourceUrl = "https://example.org/source",
+        )
+
+        override suspend fun scan(packageName: String): TrackerScanResult {
+            if (failure) error("scan failed")
+            return result
+        }
     }
 
     private companion object {
