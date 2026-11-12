@@ -57,6 +57,9 @@ The tracker scan is user-initiated and local-only:
 - It never scans the store alternative. FossScout does not download APKs for
   this feature.
 - APK bytes, class names, and match results are not uploaded or persisted.
+- The optional comparison audit export is a local JSON file created only after
+  the user taps the export action. It contains the dataset metadata, evidence,
+  sources, and an export timestamp; it is not uploaded.
 - A signature match is static evidence that a class signature is present. It is
   not proof that the tracker runs or sends data. A missing match is not proof
   that the app has no trackers.

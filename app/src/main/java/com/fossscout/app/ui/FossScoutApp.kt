@@ -55,6 +55,8 @@ import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.matching.MatchDecision
 import com.fossscout.core.matching.PermissionComparison
+import com.fossscout.core.matching.PermissionComparisonAudit
+import com.fossscout.core.matching.PermissionComparisonAuditBuilder
 import com.fossscout.core.matching.StoreSearchGroup
 import com.fossscout.feature.backup.BackupExportRequest
 import com.fossscout.feature.backup.BackupScreen
@@ -607,6 +609,18 @@ fun FossScoutApp(
                             comparison = comparison,
                             onBack = { permissionComparison = null },
                             onOpenSource = { url -> context.openWebsite(url) },
+                            onExportAudit = {
+                                val builder = PermissionComparisonAuditBuilder()
+                                val audit = builder.build(
+                                    comparison = comparison,
+                                    exportedAtEpochMillis = System.currentTimeMillis(),
+                                )
+                                context.shareComparisonAudit(
+                                    comparison = comparison,
+                                    audit = audit,
+                                    json = builder.encode(audit),
+                                )
+                            },
                             modifier = screenModifier,
                         )
                     } else if (showCompanion) {
@@ -1001,6 +1015,25 @@ private fun Context.copyCompanionText(text: String) {
     Toast.makeText(this, R.string.companion_copied, Toast.LENGTH_SHORT).show()
 }
 
+private fun Context.shareComparisonAudit(
+    comparison: PermissionComparison,
+    audit: PermissionComparisonAudit,
+    json: String,
+) {
+    shareExportContent(
+        subject = getString(
+            R.string.share_comparison_subject,
+            comparison.installed.label,
+            comparison.alternative.label,
+        ),
+        fileName = "fossscout-comparison-" +
+            "${comparison.installed.packageName}-${audit.exportedAtEpochMillis}.json",
+        mimeType = "application/json",
+        content = json,
+        chooserTitle = getString(R.string.share_comparison_chooser),
+    )
+}
+
 private fun Context.shareStoreDescriptor(request: StoreExportRequest) {
     val send = Intent(Intent.ACTION_SEND).apply {
         type = "application/json"
@@ -1042,6 +1075,7 @@ private fun Context.shareExportContent(
     fileName: String,
     mimeType: String,
     content: String,
+    chooserTitle: String = getString(R.string.share_export_chooser),
 ) {
     val exportDir = File(cacheDir, "exports").apply { mkdirs() }
     val file = File(exportDir, fileName)
@@ -1058,7 +1092,7 @@ private fun Context.shareExportContent(
     }
     runCatching {
         startActivity(
-            Intent.createChooser(send, getString(R.string.share_export_chooser)),
+            Intent.createChooser(send, chooserTitle),
         )
     }
 }

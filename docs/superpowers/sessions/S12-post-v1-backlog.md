@@ -65,9 +65,9 @@ results, and link-only handoff presentation.
 
 ## F19 — Permission and tracker diff
 
-**Status:** Implemented in S17 and the F19 tracker-signature follow-up. The
-permission comparison and local tracker matching are complete; audit export (R8)
-remains deferred.
+**Status:** Implemented in S17, the F19 tracker-signature follow-up, and the
+F19-R8 audit export. The permission comparison, local tracker matching, and
+local JSON audit export are complete.
 
 **Prerequisites:** F01/F03/F06 and installed permission metadata.
 
@@ -79,8 +79,8 @@ does not infer runtime tracking, upload scan data, or persist match results.
 Dataset update and scan policy are documented in
 [`docs/TRACKER_DATASET.md`](../../TRACKER_DATASET.md).
 
-**Deferred:** F19-R8 audit export, alternative APK manifest analysis, and
-real-device/UI verification of the tracker section.
+**Deferred:** Alternative APK manifest analysis and real-device/UI verification
+of the tracker section and audit export.
 
 ## F20 — Matching correction
 

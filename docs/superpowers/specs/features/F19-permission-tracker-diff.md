@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Done** (F19-R8 audit export deferred) |
+| Status | **Done** |
 | Availability | **General** |
 | Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | Installed-app metadata; optional tracker-data source |
@@ -50,6 +50,8 @@ No permission or tracker data is uploaded.
 - Explain that absence of a tracker match is not proof of no tracking.
 - Scan only the selected installed app's local DEX files; never download the
   alternative APK for this feature.
+- Export the comparison as a local JSON audit report with the data sources,
+  evidence limitations, and an export timestamp.
 
 ## 4a. Implementation status
 
@@ -89,8 +91,20 @@ As of 2026-11-10, the permission and tracker-comparison slices are implemented:
 - The snapshot update procedure and APK scan policy are in
   [`docs/TRACKER_DATASET.md`](../../../TRACKER_DATASET.md).
 
-F19-R8 audit export remains deferred. Real-device/UI verification of the tracker
-section is still pending.
+### Audit export (F19-R8)
+
+- The comparison screen can share a local JSON audit report through the Android
+  share sheet. The export starts only from an explicit user action.
+- The report contains both permission sets, the diff, the tracker evidence and
+  dataset metadata when available, the store source URL, the installed-app
+  source, an export timestamp, and the static-evidence limitations.
+- Unknown alternative permissions and a missing tracker result stay explicit;
+  the export never turns missing evidence into a clean result.
+- The report is written to the app cache for the share-sheet grant only. It is
+  not uploaded or persisted elsewhere.
+
+Real-device/UI verification of the tracker section and the audit export is still
+pending.
 
 ## 5. Non-goals
 
@@ -133,4 +147,6 @@ section is still pending.
    never downloads the alternative APK.
 3. Resolved: the comparison shows added, removed, and shared summary counts
    before the detailed diff.
-4. F19-R8 audit export remains deferred; it is the only open scope item.
+4. Resolved: F19-R8 exports a local JSON audit report from the comparison
+   screen. It includes sources, a timestamp, and the evidence limitations, and
+   it never uploads the report.

@@ -167,6 +167,9 @@
     <string name="permission_diff_cached_note">Cached store metadata may be older than the installed app or the version you install.</string>
     <string name="permission_diff_no_upload">Permission and tracker scan data stay on this device. Nothing is uploaded.</string>
     <string name="permission_diff_open_source">Open source page</string>
+    <string name="permission_diff_audit_title">Audit report</string>
+    <string name="permission_diff_audit_body">Export a local JSON report with both permission sets, tracker evidence, sources, and a timestamp. It includes app and package names. Nothing is uploaded.</string>
+    <string name="permission_diff_audit_action">Export audit report</string>
     <string name="permission_diff_category_dangerous">Dangerous permission</string>
     <string name="permission_diff_category_special">Special app access</string>
     <string name="permission_diff_category_signature">Signature permission</string>
