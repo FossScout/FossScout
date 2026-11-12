@@ -2,9 +2,10 @@
 
 FossScout is an Android app for discovering free and open source software. It
 combines a bundled project catalog with installed-app inventory, FOSS matching
-against verified store indexes, replacement guidance and companion-store
-handoff, favourites and collections, local sharing/import, backup/migration,
-and reviewed contribution reports, all in a Material 3 Compose UI.
+against verified store indexes, permission and local tracker-signature
+comparison, replacement guidance and companion-store handoff, favourites and
+collections, local sharing/import, backup/migration, and reviewed contribution
+reports, all in a Material 3 Compose UI.
 
 ## Status
 
@@ -50,6 +51,10 @@ Direct APK install and the install-time accessibility prompt are deferred.
   issue URL, or opt into redacted debug JSON without automatic uploads
 - Inspect installed apps on the device and match them against verified F-Droid
   and IzzyOnDroid indexes, with coverage gaps and clearly labelled alternatives
+- Compare installed permissions with a store alternative and scan the installed
+  app's local DEX files for known tracker signatures; the bundled Exodus ETIP
+  snapshot, version, license, match confidence, and evidence are shown locally,
+  with no upload and no alternative APK download
 - Correct a wrong match locally: search cached store catalogs, choose another
   package or mark no suitable match, add a private note, see a corrected badge,
   undo, and keep the automatic result visible; corrections travel with profile

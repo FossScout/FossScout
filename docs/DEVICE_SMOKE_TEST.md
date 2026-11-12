@@ -155,6 +155,28 @@ It does not replace the real-device checklist below.
 - [ ] Verify alternatives are labelled as different apps and are capped at five.
       Hide and undo work for the session.
 
+## 4a. Permission and tracker comparison (F19)
+
+- [ ] From a primary, other-match, and alternative card, open Compare
+      permissions. Added, removed, and shared counts and grouped details render.
+- [ ] Open an alternative whose cached store metadata has no permission list.
+      The alternative is marked unknown, not “no permissions”.
+- [ ] Confirm the tracker section shows the bundled Exodus ETIP dataset name,
+      version, license, source, and attribution.
+- [ ] Compare an installed app with local DEX signatures. The scan completes and
+      any match shows the tracker name, categories, matched code signature, and
+      dataset-entry confidence.
+- [ ] Compare an app with no matches. The empty state says absence is not proof
+      of no tracking.
+- [ ] Compare an app whose APK cannot be read. The tracker section shows
+      unavailable, not a clean result.
+- [ ] Run the comparison with the network disabled. Permission and tracker
+      results still render; no upload or alternative-APK download occurs.
+- [ ] Open the tracker dataset source and license links. Both open the expected
+      pages.
+- [ ] If the 64 MiB cap is reached, the tracker section says the scan is
+      incomplete and does not claim a complete result.
+
 ## 5. Matching correction (F20)
 
 - [ ] Search cached enabled-store catalogs for a correction target.

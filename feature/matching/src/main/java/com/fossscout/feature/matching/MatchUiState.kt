@@ -4,6 +4,7 @@ import com.fossscout.core.inventory.InstalledApp
 import com.fossscout.core.matching.AlternativeSuggestion
 import com.fossscout.core.matching.CatalogSearchResult
 import com.fossscout.core.matching.MatchDecision
+import com.fossscout.core.matching.TrackerReport
 import com.fossscout.core.model.AppKey
 
 enum class MatchError {
@@ -43,6 +44,8 @@ data class MatchUiState(
     val hiddenAlternatives: Set<String> = emptySet(),
     val lastHiddenAlternative: AlternativeSuggestion? = null,
     val correctionEditor: MatchCorrectionUiState? = null,
+    val tracker: TrackerReport? = null,
+    val isTrackerScanning: Boolean = false,
 ) {
     /** Suggestions the user hid during this screen session. */
     val visibleAlternatives: List<AlternativeSuggestion>

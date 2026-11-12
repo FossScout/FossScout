@@ -23,6 +23,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,11 @@ import com.fossscout.core.matching.PermissionDiff
 import com.fossscout.core.matching.PermissionDiffStatus
 import com.fossscout.core.matching.PermissionRelationship
 import com.fossscout.core.matching.PermissionSet
+import com.fossscout.core.matching.TrackerConfidence
+import com.fossscout.core.matching.TrackerDatasetInfo
+import com.fossscout.core.matching.TrackerMatch
+import com.fossscout.core.matching.TrackerScanResult
+import com.fossscout.core.matching.TrackerScanStatus
 
 @Composable
 fun PermissionDiffScreen(
@@ -157,7 +163,7 @@ fun PermissionDiffScreen(
                 }
             }
             item(key = "tracker") {
-                TrackerUnavailableCard()
+                TrackerCard(comparison, onOpenSource)
             }
             item(key = "sources") {
                 PermissionSourcesCard(comparison, onOpenSource)
@@ -444,7 +450,13 @@ private fun InstalledEmptyCard() {
 }
 
 @Composable
-private fun TrackerUnavailableCard() {
+private fun TrackerCard(
+    comparison: PermissionComparison,
+    onOpenSource: (String) -> Unit,
+) {
+    val tracker = comparison.tracker
+    val dataset = tracker?.dataset
+    val installed = tracker?.installed
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
@@ -454,21 +466,214 @@ private fun TrackerUnavailableCard() {
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
                 text = stringResource(R.string.permission_diff_tracker_title),
                 style = MaterialTheme.typography.titleMedium,
             )
-            Text(
-                text = stringResource(R.string.permission_diff_tracker_unavailable),
-                style = MaterialTheme.typography.bodySmall,
-            )
+            dataset?.let { info ->
+                TrackerDatasetSummary(info, onOpenSource)
+            }
+            when {
+                comparison.trackerScanInProgress -> {
+                    Text(
+                        text = stringResource(R.string.permission_diff_tracker_scanning),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                dataset == null || installed == null -> {
+                    Text(
+                        text = stringResource(R.string.permission_diff_tracker_unavailable),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                else -> {
+                    TrackerScanSummary(
+                        dataset = dataset,
+                        installed = installed,
+                        onOpenSource = onOpenSource,
+                    )
+                }
+            }
             Text(
                 text = stringResource(R.string.permission_diff_tracker_limitation),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
+    }
+}
+
+@Composable
+private fun TrackerDatasetSummary(
+    dataset: TrackerDatasetInfo,
+    onOpenSource: (String) -> Unit,
+) {
+    Text(
+        text = stringResource(
+            R.string.permission_diff_tracker_dataset_line,
+            dataset.name,
+            dataset.version,
+        ),
+        style = MaterialTheme.typography.bodySmall,
+    )
+    Text(
+        text = stringResource(
+            R.string.permission_diff_tracker_license_line,
+            dataset.licenseName,
+        ),
+        style = MaterialTheme.typography.bodySmall,
+    )
+    dataset.attribution?.let { attribution ->
+        Text(
+            text = attribution,
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        TextButton(onClick = { onOpenSource(dataset.sourceUrl) }) {
+            Text(stringResource(R.string.permission_diff_tracker_open_source))
+        }
+        TextButton(onClick = { onOpenSource(dataset.licenseUrl) }) {
+            Text(stringResource(R.string.permission_diff_tracker_open_license))
+        }
+    }
+}
+
+@Composable
+private fun TrackerScanSummary(
+    dataset: TrackerDatasetInfo,
+    installed: TrackerScanResult,
+    onOpenSource: (String) -> Unit,
+) {
+    when (installed.status) {
+        TrackerScanStatus.UNAVAILABLE -> {
+            Text(
+                text = stringResource(R.string.permission_diff_tracker_scan_unavailable),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        TrackerScanStatus.COMPLETE,
+        TrackerScanStatus.TRUNCATED -> {
+            if (installed.matches.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.permission_diff_tracker_no_matches),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            } else {
+                Text(
+                    text = pluralStringResource(
+                        R.plurals.permission_diff_tracker_matches_title,
+                        installed.matches.size,
+                        installed.matches.size,
+                    ),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                installed.matches.forEach { match ->
+                    TrackerMatchRow(match, dataset, onOpenSource)
+                }
+            }
+            if (installed.status == TrackerScanStatus.TRUNCATED) {
+                Text(
+                    text = stringResource(R.string.permission_diff_tracker_scan_incomplete),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            if (installed.scannedFiles > 0) {
+                Text(
+                    text = pluralStringResource(
+                        R.plurals.permission_diff_tracker_scanned_files,
+                        installed.scannedFiles,
+                        installed.scannedFiles,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
+    Text(
+        text = stringResource(R.string.permission_diff_tracker_alternative_not_scanned),
+        style = MaterialTheme.typography.bodySmall,
+    )
+}
+
+@Composable
+private fun TrackerMatchRow(
+    match: TrackerMatch,
+    dataset: TrackerDatasetInfo,
+    onOpenSource: (String) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = match.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                TrackerConfidencePill(match.confidence)
+            }
+            if (match.categories.isNotEmpty()) {
+                Text(
+                    text = stringResource(
+                        R.string.permission_diff_tracker_categories,
+                        match.categories.joinToString(", "),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            match.matchedSignatures.forEach { signature ->
+                Text(
+                    text = stringResource(
+                        R.string.permission_diff_tracker_match_signature,
+                        signature,
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(
+                text = stringResource(
+                    R.string.permission_diff_tracker_match_source,
+                    dataset.name,
+                    dataset.version,
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            match.website?.let { website ->
+                TextButton(onClick = { onOpenSource(website) }) {
+                    Text(stringResource(R.string.permission_diff_tracker_website))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrackerConfidencePill(confidence: TrackerConfidence) {
+    val color = when (confidence) {
+        TrackerConfidence.KNOWN -> MaterialTheme.colorScheme.primaryContainer
+        TrackerConfidence.CANDIDATE -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    Surface(
+        shape = RoundedCornerShape(999.dp),
+        color = color,
+    ) {
+        Text(
+            text = stringResource(confidence.labelRes()),
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+        )
     }
 }
 
@@ -544,4 +749,9 @@ private fun PermissionDiffStatus.labelRes(): Int = when (this) {
     PermissionDiffStatus.ALTERNATIVE_ONLY -> R.string.permission_diff_status_added
     PermissionDiffStatus.INSTALLED_ONLY -> R.string.permission_diff_status_removed
     PermissionDiffStatus.SHARED -> R.string.permission_diff_status_shared
+}
+
+private fun TrackerConfidence.labelRes(): Int = when (this) {
+    TrackerConfidence.KNOWN -> R.string.permission_diff_tracker_confidence_known
+    TrackerConfidence.CANDIDATE -> R.string.permission_diff_tracker_confidence_candidate
 }

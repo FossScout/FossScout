@@ -109,7 +109,7 @@
     <string name="permission_diff_action">Compare permissions</string>
     <string name="permission_diff_back">Back to match</string>
     <string name="permission_diff_title">Permission comparison</string>
-    <string name="permission_diff_subtitle">What each app requests, based on local data.</string>
+    <string name="permission_diff_subtitle">What each app requests and which known tracker signatures are present, based on local data.</string>
     <string name="permission_diff_installed_app">Installed app</string>
     <string name="permission_diff_alternative_app">Store alternative</string>
     <string name="permission_diff_version">Version: %1$s</string>
@@ -137,12 +137,35 @@
     <string name="permission_diff_installed_empty_body">The installed app declares no permissions. The alternative\'s permissions remain unknown.</string>
     <string name="permission_diff_tracker_title">Tracker signatures</string>
     <string name="permission_diff_tracker_unavailable">No tracker-signature dataset is configured in this build. Tracker matching is unavailable.</string>
-    <string name="permission_diff_tracker_limitation">No tracker result is shown. That is not evidence that either app has no trackers.</string>
+    <string name="permission_diff_tracker_dataset_line">Dataset: %1$s (%2$s)</string>
+    <string name="permission_diff_tracker_license_line">License: %1$s</string>
+    <string name="permission_diff_tracker_scanning">Scanning the installed app for local DEX signatures…</string>
+    <string name="permission_diff_tracker_scan_unavailable">The installed app\'s APK could not be read, so tracker signatures could not be checked.</string>
+    <string name="permission_diff_tracker_scan_incomplete">The scan stopped before reading every DEX byte. Matches may be incomplete.</string>
+    <string name="permission_diff_tracker_no_matches">No known tracker signature was found in the scanned DEX files. This does not prove the app has no trackers.</string>
+    <string name="permission_diff_tracker_alternative_not_scanned">The store alternative was not downloaded or scanned. Tracker results apply only to the installed app.</string>
+    <string name="permission_diff_tracker_categories">Categories: %1$s</string>
+    <string name="permission_diff_tracker_match_signature">Matched code signature: %1$s</string>
+    <string name="permission_diff_tracker_match_source">Source: %1$s %2$s</string>
+    <string name="permission_diff_tracker_confidence_known">Known dataset entry</string>
+    <string name="permission_diff_tracker_confidence_candidate">Candidate dataset entry</string>
+    <string name="permission_diff_tracker_open_source">Open tracker dataset source</string>
+    <string name="permission_diff_tracker_open_license">Open dataset license</string>
+    <string name="permission_diff_tracker_website">Open tracker website</string>
+    <string name="permission_diff_tracker_limitation">A DEX signature match is evidence that a class is present, not proof that it runs or sends data. A missing match is not proof that the app has no trackers.</string>
+    <plurals name="permission_diff_tracker_matches_title">
+        <item quantity="one">%1$d tracker signature match</item>
+        <item quantity="other">%1$d tracker signature matches</item>
+    </plurals>
+    <plurals name="permission_diff_tracker_scanned_files">
+        <item quantity="one">Scanned %1$d DEX file in the installed app.</item>
+        <item quantity="other">Scanned %1$d DEX files in the installed app.</item>
+    </plurals>
     <string name="permission_diff_sources_title">Sources</string>
-    <string name="permission_diff_installed_source">Installed app: Android PackageManager on this device.</string>
+    <string name="permission_diff_installed_source">Installed app: Android PackageManager and local APK DEX files on this device.</string>
     <string name="permission_diff_alternative_source">Alternative: cached %1$s index. Permissions come from the store metadata.</string>
     <string name="permission_diff_cached_note">Cached store metadata may be older than the installed app or the version you install.</string>
-    <string name="permission_diff_no_upload">Permission data is read locally. Nothing is uploaded.</string>
+    <string name="permission_diff_no_upload">Permission and tracker scan data stay on this device. Nothing is uploaded.</string>
     <string name="permission_diff_open_source">Open source page</string>
     <string name="permission_diff_category_dangerous">Dangerous permission</string>
     <string name="permission_diff_category_special">Special app access</string>

@@ -112,6 +112,47 @@ class PermissionDiffTest {
     }
 
     @Test
+    fun `tracker report is preserved on the comparison`() {
+        val report = TrackerReport(
+            dataset = TrackerDatasetInfo(
+                name = "Test dataset",
+                version = "2026-11-10",
+                licenseName = "ODbL 1.0",
+                licenseUrl = "https://example.org/license",
+                sourceUrl = "https://example.org/source",
+            ),
+            installed = TrackerScanResult(
+                status = TrackerScanStatus.COMPLETE,
+                matches = listOf(
+                    TrackerMatch(
+                        name = "Analytics",
+                        confidence = TrackerConfidence.KNOWN,
+                        matchedSignatures = listOf("com.example.tracker."),
+                    ),
+                ),
+            ),
+        )
+
+        val comparison = comparePermissions(
+            installed = InstalledApp(
+                packageName = "org.example.old",
+                label = "Old app",
+            ),
+            alternative = PermissionAlternative(
+                label = "New app",
+                packageName = "org.example.new",
+                permissions = listOf(CAMERA),
+                storeName = "F-Droid",
+                relationship = PermissionRelationship.DIFFERENT_APP,
+            ),
+            tracker = report,
+        )
+
+        assertEquals(report, comparison.tracker)
+        assertEquals(false, comparison.trackerScanInProgress)
+    }
+
+    @Test
     fun `candidate conversion preserves relationship and permissions`() {
         val candidate = MatchCandidate(
             appKey = "org.example.new",

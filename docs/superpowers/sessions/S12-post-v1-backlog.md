@@ -65,14 +65,22 @@ results, and link-only handoff presentation.
 
 ## F19 — Permission and tracker diff
 
-**Prerequisites:** F01/F03/F06, installed permission metadata, and a tracker
-dataset with a compatible license/update policy.
+**Status:** Implemented in S17 and the F19 tracker-signature follow-up. The
+permission comparison and local tracker matching are complete; audit export (R8)
+remains deferred.
 
-**Must decide:** tracker dataset, APK manifest analysis policy, and how often
-store metadata actually includes permissions.
+**Prerequisites:** F01/F03/F06 and installed permission metadata.
 
-**Suggested future session:** S17 — permission diff first; tracker matching only
-after a dataset/licensing decision.
+**Decisions:** the bundled tracker dataset is the Exodus Privacy ETIP snapshot
+`2026-11-10` (674 trackers / 987 signatures) under ODbL 1.0/DbCL 1.0. The app
+scans only the selected installed app's local base/split APK `classes*.dex`
+files, capped at 64 MiB; it never downloads or scans the store alternative. It
+does not infer runtime tracking, upload scan data, or persist match results.
+Dataset update and scan policy are documented in
+[`docs/TRACKER_DATASET.md`](../../TRACKER_DATASET.md).
+
+**Deferred:** F19-R8 audit export, alternative APK manifest analysis, and
+real-device/UI verification of the tracker section.
 
 ## F20 — Matching correction
 
