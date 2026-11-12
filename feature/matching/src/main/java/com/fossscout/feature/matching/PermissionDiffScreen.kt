@@ -45,6 +45,7 @@ fun PermissionDiffScreen(
     comparison: PermissionComparison,
     onBack: () -> Unit,
     onOpenSource: (String) -> Unit,
+    onExportAudit: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -167,6 +168,11 @@ fun PermissionDiffScreen(
             }
             item(key = "sources") {
                 PermissionSourcesCard(comparison, onOpenSource)
+            }
+            if (onExportAudit != null) {
+                item(key = "audit_export") {
+                    PermissionAuditExportCard(onExport = onExportAudit)
+                }
             }
         }
     }
@@ -722,6 +728,33 @@ private fun PermissionSourcesCard(
                 TextButton(onClick = { onOpenSource(source) }) {
                     Text(stringResource(R.string.permission_diff_open_source))
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PermissionAuditExportCard(onExport: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.permission_diff_audit_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.permission_diff_audit_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            TextButton(onClick = onExport) {
+                Text(stringResource(R.string.permission_diff_audit_action))
             }
         }
     }

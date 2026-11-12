@@ -176,6 +176,13 @@ It does not replace the real-device checklist below.
       pages.
 - [ ] If the 64 MiB cap is reached, the tracker section says the scan is
       incomplete and does not claim a complete result.
+- [ ] Tap Export audit report. The share sheet opens with a JSON file named for
+      the installed package and export timestamp.
+- [ ] Open the exported JSON. Both permission sets, the diff, tracker evidence
+      when available, data sources, export timestamp, and limitations are
+      present. Missing tracker or alternative-permission data stays explicit.
+- [ ] Export with the network disabled and confirm the report is produced
+      locally; no app or permission data is uploaded.
 
 ## 5. Matching correction (F20)
 
