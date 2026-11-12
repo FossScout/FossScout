@@ -65,22 +65,25 @@ results, and link-only handoff presentation.
 
 ## F19 — Permission and tracker diff
 
-**Status:** Implemented in S17, the F19 tracker-signature follow-up, and the
-F19-R8 audit export. The permission comparison, local tracker matching, and
-local JSON audit export are complete.
+**Status:** Implemented in S17, the F19 tracker-signature follow-up, the
+F19-R8 audit export, and local alternative-APK manifest analysis. The permission
+comparison, local tracker matching, local manifest import, and local JSON audit
+export are complete.
 
 **Prerequisites:** F01/F03/F06 and installed permission metadata.
 
 **Decisions:** the bundled tracker dataset is the Exodus Privacy ETIP snapshot
 `2026-11-10` (674 trackers / 987 signatures) under ODbL 1.0/DbCL 1.0. The app
 scans only the selected installed app's local base/split APK `classes*.dex`
-files, capped at 64 MiB; it never downloads or scans the store alternative. It
-does not infer runtime tracking, upload scan data, or persist match results.
-Dataset update and scan policy are documented in
-[`docs/TRACKER_DATASET.md`](../../TRACKER_DATASET.md).
+files, capped at 64 MiB; it never downloads or scans the store alternative. The
+optional manifest import reads only an APK the user selects, through a
+temporary cache copy capped at 128 MiB; it rejects package mismatches and does
+not install, execute, or signature-verify the APK. It does not infer runtime
+tracking, upload scan data, or persist match results. Dataset update and scan
+policy are documented in [`docs/TRACKER_DATASET.md`](../../TRACKER_DATASET.md).
 
-**Deferred:** Alternative APK manifest analysis and real-device/UI verification
-of the tracker section and audit export.
+**Deferred:** Real-device/UI verification of the tracker section, APK picker,
+and audit export.
 
 ## F20 — Matching correction
 

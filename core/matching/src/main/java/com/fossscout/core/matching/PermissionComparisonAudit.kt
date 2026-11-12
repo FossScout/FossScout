@@ -24,6 +24,7 @@ data class PermissionComparisonAudit(
     val alternative: PermissionComparisonAuditSet,
     val relationship: String,
     val diff: PermissionComparisonAuditDiff? = null,
+    val alternativeManifest: AlternativeApkManifest? = null,
     val tracker: TrackerComparisonAudit,
     val limitations: List<String> = emptyList(),
 )
@@ -117,16 +118,26 @@ class PermissionComparisonAuditBuilder(
             exportedAtEpochMillis = exportedAtEpochMillis,
             exportedAtUtc = formatUtc(exportedAtEpochMillis),
             sources = PermissionComparisonAuditSources(
+                alternative = if (comparison.alternativeManifest != null) {
+                    "selected_local_apk_manifest"
+                } else {
+                    "cached_store_index"
+                },
                 alternativeUrl = comparison.alternativeSourceUrl,
             ),
             installed = comparison.installed.toAuditSet(),
             alternative = comparison.alternative.toAuditSet(),
             relationship = comparison.relationship.name,
             diff = comparison.diff?.toAuditDiff(),
+            alternativeManifest = comparison.alternativeManifest,
             tracker = comparison.tracker.toAudit(
                 scanInProgress = comparison.trackerScanInProgress,
             ),
-            limitations = LIMITATIONS,
+            limitations = if (comparison.alternativeManifest != null) {
+                LIMITATIONS + MANIFEST_LIMITATION
+            } else {
+                LIMITATIONS
+            },
         )
     }
 
@@ -206,6 +217,10 @@ class PermissionComparisonAuditBuilder(
             "A DEX signature match is static evidence that a class is present, " +
                 "not proof that it runs or sends data. A missing match is not " +
                 "proof that the app has no trackers."
+
+        const val MANIFEST_LIMITATION =
+            "The selected APK manifest was read locally; the APK was not installed, " +
+                "executed, or signature-verified."
 
         val LIMITATIONS = listOf(
             "The store alternative was not downloaded or scanned.",

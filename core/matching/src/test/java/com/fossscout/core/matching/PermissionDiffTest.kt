@@ -3,6 +3,7 @@ package com.fossscout.core.matching
 import com.fossscout.core.inventory.InstalledApp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -54,6 +55,118 @@ class PermissionDiffTest {
         assertNull(comparison.diff)
         assertEquals(false, comparison.alternative.permissionsKnown)
         assertEquals(CAMERA, comparison.installed.permissions.single().name)
+    }
+
+    @Test
+    fun `local APK manifest replaces unknown alternative permissions`() {
+        val comparison = comparePermissions(
+            installed = InstalledApp(
+                packageName = "org.example.old",
+                label = "Old app",
+                requestedPermissions = listOf(CAMERA),
+            ),
+            alternative = PermissionAlternative(
+                label = "New app",
+                packageName = "org.example.new",
+                permissionsKnown = false,
+                versionName = "2.0",
+                storeName = "F-Droid",
+                sourceUrl = "https://store.example/new",
+                relationship = PermissionRelationship.DIFFERENT_APP,
+            ),
+        )
+
+        val updated = comparison.withAlternativeManifest(
+            AlternativeApkManifest(
+                packageName = "org.example.new",
+                versionName = "2.1",
+                versionCode = 21,
+                permissions = listOf(CAMERA, RECORD_AUDIO),
+            ),
+        )
+
+        assertEquals(true, updated.alternative.permissionsKnown)
+        assertEquals("2.1", updated.alternative.versionName)
+        assertEquals("https://store.example/new", updated.alternativeSourceUrl)
+        assertEquals(
+            listOf(RECORD_AUDIO),
+            requireNotNull(updated.diff).alternativeOnly.map(PermissionDetail::name),
+        )
+        assertEquals(21L, requireNotNull(updated.alternativeManifest).versionCode)
+    }
+
+    @Test
+    fun `local APK manifest without a version does not reuse the store version`() {
+        val comparison = comparePermissions(
+            installed = InstalledApp(
+                packageName = "org.example.old",
+                label = "Old app",
+            ),
+            alternative = PermissionAlternative(
+                label = "New app",
+                packageName = "org.example.new",
+                versionName = "2.0",
+                storeName = "F-Droid",
+                relationship = PermissionRelationship.DIFFERENT_APP,
+            ),
+        )
+
+        val updated = comparison.withAlternativeManifest(
+            AlternativeApkManifest(packageName = "org.example.new"),
+        )
+
+        assertNull(updated.alternative.versionName)
+    }
+
+    @Test
+    fun `local APK manifest with no permissions is known and empty`() {
+        val comparison = comparePermissions(
+            installed = InstalledApp(
+                packageName = "org.example.old",
+                label = "Old app",
+                requestedPermissions = listOf(CAMERA),
+            ),
+            alternative = PermissionAlternative(
+                label = "New app",
+                packageName = "org.example.new",
+                permissionsKnown = false,
+                storeName = "F-Droid",
+                relationship = PermissionRelationship.DIFFERENT_APP,
+            ),
+        )
+
+        val updated = comparison.withAlternativeManifest(
+            AlternativeApkManifest(packageName = "org.example.new"),
+        )
+
+        assertTrue(updated.alternative.permissionsKnown)
+        assertTrue(updated.alternative.permissions.isEmpty())
+        assertEquals(
+            listOf(CAMERA),
+            requireNotNull(updated.diff).installedOnly.map(PermissionDetail::name),
+        )
+    }
+
+    @Test
+    fun `local APK manifest must match the alternative package`() {
+        val comparison = comparePermissions(
+            installed = InstalledApp(
+                packageName = "org.example.old",
+                label = "Old app",
+            ),
+            alternative = PermissionAlternative(
+                label = "New app",
+                packageName = "org.example.new",
+                storeName = "F-Droid",
+                relationship = PermissionRelationship.DIFFERENT_APP,
+            ),
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            comparison.withAlternativeManifest(
+                AlternativeApkManifest(packageName = "org.example.other"),
+            )
+        }
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.fossscout.core.matching
 
 import com.fossscout.core.inventory.InstalledApp
+import kotlinx.serialization.Serializable
 
 /** Android protection level, reduced to the categories shown to users. */
 enum class PermissionCategory {
@@ -62,9 +63,26 @@ data class PermissionComparison(
     val relationship: PermissionRelationship,
     val diff: PermissionDiff? = null,
     val alternativeSourceUrl: String? = null,
+    val alternativeManifest: AlternativeApkManifest? = null,
     val tracker: TrackerReport? = null,
     val trackerScanInProgress: Boolean = false,
 )
+
+/**
+ * Manifest evidence from a locally available APK selected by the user. It is
+ * never installed, executed, or signature-verified by this comparison.
+ */
+@Serializable
+data class AlternativeApkManifest(
+    val packageName: String,
+    val versionName: String? = null,
+    val versionCode: Long = 0L,
+    val permissions: List<String> = emptyList(),
+) {
+    init {
+        require(packageName.isNotBlank()) { "Package name is blank" }
+    }
+}
 
 /** Store-side input for a comparison. */
 data class PermissionAlternative(
@@ -88,19 +106,7 @@ fun comparePermissions(
     val installedDetails = permissionDetails(installed.requestedPermissions)
     val alternativeDetails = permissionDetails(alternative.permissions)
     val diff = if (alternative.permissionsKnown) {
-        val installedByName = installedDetails.associateBy(PermissionDetail::name)
-        val alternativeByName = alternativeDetails.associateBy(PermissionDetail::name)
-        PermissionDiff(
-            installedOnly = installedDetails
-                .filterNot { it.name in alternativeByName }
-                .sortedWith(PERMISSION_ORDER),
-            alternativeOnly = alternativeDetails
-                .filterNot { it.name in installedByName }
-                .sortedWith(PERMISSION_ORDER),
-            shared = alternativeDetails
-                .filter { it.name in installedByName }
-                .sortedWith(PERMISSION_ORDER),
-        )
+        buildPermissionDiff(installedDetails, alternativeDetails)
     } else {
         null
     }
@@ -126,6 +132,30 @@ fun comparePermissions(
         alternativeSourceUrl = alternative.sourceUrl,
         tracker = tracker,
         trackerScanInProgress = trackerScanInProgress,
+    )
+}
+
+/**
+ * Replaces the alternative permission metadata with a locally selected APK
+ * manifest. The package must match so that unrelated manifest evidence cannot
+ * be attached to the comparison.
+ */
+fun PermissionComparison.withAlternativeManifest(
+    manifest: AlternativeApkManifest,
+): PermissionComparison {
+    require(manifest.packageName == alternative.packageName) {
+        "Selected APK package does not match the alternative"
+    }
+    val manifestDetails = permissionDetails(manifest.permissions)
+    return copy(
+        alternative = alternative.copy(
+            packageName = manifest.packageName,
+            versionName = manifest.versionName,
+            permissions = manifestDetails,
+            permissionsKnown = true,
+        ),
+        diff = buildPermissionDiff(installed.permissions, manifestDetails),
+        alternativeManifest = manifest,
     )
 }
 
@@ -184,6 +214,25 @@ private fun fallbackDisplayName(permission: String): String {
             word.lowercase().replaceFirstChar(Char::uppercase)
         }
         .ifBlank { permission }
+}
+
+private fun buildPermissionDiff(
+    installed: List<PermissionDetail>,
+    alternative: List<PermissionDetail>,
+): PermissionDiff {
+    val installedByName = installed.associateBy(PermissionDetail::name)
+    val alternativeByName = alternative.associateBy(PermissionDetail::name)
+    return PermissionDiff(
+        installedOnly = installed
+            .filterNot { it.name in alternativeByName }
+            .sortedWith(PERMISSION_ORDER),
+        alternativeOnly = alternative
+            .filterNot { it.name in installedByName }
+            .sortedWith(PERMISSION_ORDER),
+        shared = alternative
+            .filter { it.name in installedByName }
+            .sortedWith(PERMISSION_ORDER),
+    )
 }
 
 private val PERMISSION_ORDER = compareBy<PermissionDetail> { it.category.ordinal }

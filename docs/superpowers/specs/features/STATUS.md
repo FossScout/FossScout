@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
 Last updated: **2026-11-12**
-Feature baseline: `main` at `a7cae9b`; F18 unified store search, the F19 permission comparison, the F19 tracker-signature slice, and the vanilla flavor rename are merged; the F19-R8 audit export is on the current branch pending review. Current GitHub beta `v0.1.0-beta.4`; the F-Droid source tag `v0.1.0-vanilla` is prepared (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
+Feature baseline: `main` at `a7cae9b`; F18 unified store search, the F19 permission comparison, the F19 tracker-signature slice, and the vanilla flavor rename are merged; the F19-R8 audit export and local alternative-APK manifest analysis are on the current stacked branches pending review. Current GitHub beta `v0.1.0-beta.4`; the F-Droid source tag `v0.1.0-vanilla` is prepared (S01–S11, F20, F22, friendly installer labels, the approved dependency updates, and project detail screens are on `main`).
 Pending: real-device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passed on `ee03deb` (run [42694212609](https://github.com/FossScout/FossScout/actions/runs/42694212609)), while Play internal testing and F-Droid submission remain pending. The F-Droid buildserver API 37 check is complete.
 Delivery: Toolchain upgraded to Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play internal AAB workflow added; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
@@ -40,7 +40,7 @@ file after every feature session with the new commit, test result, and status.
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
 | Feature completion | **15 of 21 fully done; 2 partial; 3 deferred; 1 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passes. Then prepare Play internal testing and open the F-Droid metadata merge request. The F-Droid buildserver API 37 check is complete; watch the first build for the `android-37` resolution workaround. F18 unified store search, F20 matching correction, and F22 support link are complete. F19 now includes permission comparison, local tracker-signature scanning, and a local JSON audit export; alternative APK manifest analysis remains deferred, and F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md); the CI emulator baseline passes. Then prepare Play internal testing and open the F-Droid metadata merge request. The F-Droid buildserver API 37 check is complete; watch the first build for the `android-37` resolution workaround. F18 unified store search, F20 matching correction, and F22 support link are complete. F19 now includes permission comparison, local tracker-signature scanning, local alternative-APK manifest analysis, and a local JSON audit export; F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ## What works today
 
@@ -81,14 +81,14 @@ file after every feature session with the new commit, test result, and status.
 - Permission comparison with installed `PackageManager` data and cached store
   metadata, plus local-only tracker-signature matching over the installed app's
   DEX files using the bundled Exodus ETIP snapshot. The UI shows dataset
-  name/version/license, match confidence, matched signature, and explicit
-  unavailable/incomplete states.
+  name/version/license, match confidence, matched signature, explicit
+  unavailable/incomplete states, and a local JSON audit export.
 - Permission comparison from a match result: installed `PackageManager`
   permissions against the alternative's cached index metadata, with
   added/removed/shared counts, a grouped detail view, readable dangerous and
   special permission explanations, and unknown store metadata kept distinct
-  from “none”. Tracker signatures remain unavailable until a licensed dataset
-  is selected.
+  from “none”. An optional local APK manifest can replace the store permission
+  metadata after its package name is checked.
 - Local match correction: search cached enabled-store catalogs, replace a match
   or mark no suitable match, add a private note, see a corrected badge, undo, and
   keep the automatic result inspectable. Overrides survive index refreshes and
@@ -164,7 +164,7 @@ file after every feature session with the new commit, test result, and status.
 | F16 | Contribution hooks | **Done** | Pure-JVM schema-v1 report builder and redaction boundary, configurable prefilled issue URL, preview-gated ViewModel, Compose contribution screen, and Settings/Stores/Match entry points. Default reports exclude inventory, notes, account data, device identifiers, raw errors, query tokens, and local paths; coverage keeps statuses/reasons only. Copy/share work offline; debug details are opt-in and exported as redacted JSON. The GitHub issue URL is configurable in the builder. Device checks for preview, clipboard, share sheet, browser opening, and debug JSON remain. | S11 |
 | F17 | Feature configuration | **Done** | Descriptor settings model (boolean/text/integer with defaults and validation), versioned envelope with legacy migration, registry-authoritative availability, basic/advanced sections, per-feature/global reset, and read-only snapshot used by F13. `INDEX_CACHE` declares the real `storage_budget_mb` setting; S09 adds the backup import/export UI. | S01, S09 |
 | F18 | Unified store search | **Done** | Search runs offline from every enabled indexed store through the shared cached-catalog loader; duplicate packages are grouped with every store/version and per-store metadata; store/trust/availability filters, anti-feature labels, cache-age timestamps, unavailable-cache notices, and link-only homepage handoffs are implemented. Results can be favourited locally; no install action is added. Search history (R8, MAY) remains deferred. Device/UI verification pending. | S16 (post-v1) |
-| F19 | Permission and tracker diff | **Done** (R8 complete) | Permission comparison is implemented from primary, other-match, or alternative match cards: installed `PackageManager` requested permissions, cached index permissions for the store version, added/removed/shared summary counts, grouped details, readable dangerous/special/normal/signature labels, and explicit unknown state when store metadata is absent. Tracker matching uses the bundled Exodus ETIP `2026-11-10` snapshot (674 trackers / 987 signatures, ODbL 1.0/DbCL 1.0) and scans only the selected installed app's local base/split APK `classes*.dex` files, capped at 64 MiB. The UI shows dataset name/version/license/source, matched signature, dataset-entry confidence, and explicit unavailable/incomplete states; it never scans or downloads the store alternative. F19-R8 exports the comparison as a local JSON audit report with sources, timestamp, and limitations. Alternative APK manifest analysis remains deferred. Real-device/UI verification of the tracker section and audit export remains pending. | S17 |
+| F19 | Permission and tracker diff | **Done** (R8 + manifest) | Permission comparison is implemented from primary, other-match, or alternative match cards: installed `PackageManager` requested permissions, cached index permissions for the store version, added/removed/shared summary counts, grouped details, readable dangerous/special/normal/signature labels, and explicit unknown state when store metadata is absent. Tracker matching uses the bundled Exodus ETIP `2026-11-10` snapshot (674 trackers / 987 signatures, ODbL 1.0/DbCL 1.0) and scans only the selected installed app's local base/split APK `classes*.dex` files, capped at 64 MiB. The UI shows dataset name/version/license/source, matched signature, dataset-entry confidence, and explicit unavailable/incomplete states; it never scans or downloads the store alternative. The optional local APK manifest import reads a user-selected APK through a temporary cache copy, rejects package mismatches, and recomputes the diff. F19-R8 exports the comparison as a local JSON audit report with sources, timestamp, manifest evidence, and limitations. Real-device/UI verification of the tracker section, APK picker, and audit export remains pending. | S17 |
 | F20 | Matching correction | **Done** | Local corrections from the match screen: cached enabled-store target search, no-suitable-match, private note, corrected badge, target-unavailable warning, undo, automatic result retained, and one override per package key. Backup schema 2 adds overrides with v1 checksum migration and merge/replace/skip preview. Store-scoped overrides (R8), shareable corrections, low-confidence prompts, and profile-scoped duplicates remain deferred. Device/UI verification pending. | S18 (post-v1) |
 | F21 | Trust badges | **Spec only** | Post-v1. No feature ID or code. | S12 |
 | F22 | Support and donations | **Done** | About support section and URL validation are enabled with the verified Liberapay team URL `https://liberapay.com/FossScout/`; the README links to the same profile. No payment SDK, permission, account, tracking, or feature gating. Device verification of the browser handoff remains pending. | Post-v1 support |
@@ -291,7 +291,21 @@ Commands run on `feat/f19-r8-comparison-export`:
 | `./gradlew lint` | **Passed**: 0 errors; existing warnings only. |
 | New tests | `PermissionComparisonAuditTest` covers sources, UTC timestamp, permission sets and diff, tracker dataset evidence, unknown alternative permissions, missing tracker data, in-progress scans, and negative timestamps. |
 | Boundary check | No Gradle, dependency, manifest, or permission change. The export is user-initiated, local, and shared through the existing cache-backed `FileProvider`; it is not uploaded. |
-| Deferred | Alternative APK manifest analysis and real-device/UI verification of the audit export. |
+| Deferred | Real-device/UI verification of the audit export. |
+
+### F19 alternative APK manifest (2026-11-12)
+
+Commands run on `feat/f19-alternative-apk-manifest`:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test lint` | **Passed** (1m 14s, 577 actionable tasks) |
+| Unit tests | **590 test executions across 83 result files; 0 failures, 0 errors, 0 skipped** |
+| `./gradlew :app:assembleDebug assembleVanillaRelease assemblePlaystoreRelease` | **Passed** (2m 11s, 768 actionable tasks) |
+| `./gradlew lint` | **Passed**: 0 errors; existing warnings only. |
+| New tests | `PermissionDiffTest` covers manifest replacement of unknown store permissions, empty manifest permissions, version fallback avoidance, and package mismatch rejection. `PermissionComparisonAuditTest` covers the selected-APK manifest source in the audit report. |
+| Boundary check | No Gradle, dependency, manifest, or permission change. The user-selected APK is copied to the cache under a 128 MiB cap, parsed with `PackageManager.getPackageArchiveInfo`, and deleted; it is not installed, executed, or uploaded. |
+| Deferred | Real-device/UI verification of the APK picker and the interaction with the audit export. |
 
 ## Known gaps and blockers
 
@@ -327,11 +341,12 @@ environment has no attached device or emulator.
   that share a package key share a correction. Store-scoped overrides (R8),
   shareable correction files, and low-confidence prompts remain deferred.
 - F19 tracker matching uses the reviewed Exodus ETIP snapshot under ODbL
-  1.0/DbCL 1.0 and scans only local installed APK DEX files. The local JSON
-  audit export is implemented. The permission comparison intentionally treats
-  an empty or absent store permission list as unknown, not as no permissions.
-  Real-device verification of the local APK scan, tracker UI, and audit export
-  remains pending.
+  1.0/DbCL 1.0 and scans only local installed APK DEX files. The optional local
+  alternative-APK manifest import and local JSON audit export are implemented.
+  The permission comparison intentionally treats an empty or absent store
+  permission list as unknown, not as no permissions. Real-device verification
+  of the local APK scan, tracker UI, APK picker, and audit export remains
+  pending.
 - F20 device/UI verification could not be run in this environment: `adb` reports
   no attached devices, no emulator binary is installed, and `/dev/kvm` is absent.
   Target search, the correction dialog, note limit/privacy copy,

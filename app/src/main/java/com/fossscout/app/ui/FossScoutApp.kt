@@ -44,6 +44,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.fossscout.app.AppContainer
 import com.fossscout.app.R
+import com.fossscout.app.inventory.LocalApkManifestFailure
+import com.fossscout.app.inventory.LocalApkManifestReadResult
+import com.fossscout.app.inventory.LocalApkManifestReader
 import com.fossscout.app.ui.about.AboutScreen
 import com.fossscout.core.contribution.ContributionContext
 import com.fossscout.core.contribution.ReportStoreInput
@@ -58,6 +61,7 @@ import com.fossscout.core.matching.PermissionComparison
 import com.fossscout.core.matching.PermissionComparisonAudit
 import com.fossscout.core.matching.PermissionComparisonAuditBuilder
 import com.fossscout.core.matching.StoreSearchGroup
+import com.fossscout.core.matching.withAlternativeManifest
 import com.fossscout.feature.backup.BackupExportRequest
 import com.fossscout.feature.backup.BackupScreen
 import com.fossscout.feature.backup.BackupViewModel
@@ -527,6 +531,78 @@ fun FossScoutApp(
                 var permissionComparison by remember {
                     mutableStateOf<PermissionComparison?>(null)
                 }
+                var isReadingAlternativeApk by remember { mutableStateOf(false) }
+                var alternativeManifestFailure by remember {
+                    mutableStateOf<LocalApkManifestFailure?>(null)
+                }
+                var alternativeManifestMismatch by remember {
+                    mutableStateOf<Pair<String, String>?>(null)
+                }
+                val manifestMismatch = alternativeManifestMismatch
+                val manifestFailure = alternativeManifestFailure
+                val alternativeManifestError = when {
+                    manifestMismatch != null -> stringResource(
+                        R.string.permission_diff_manifest_package_mismatch,
+                        manifestMismatch.first,
+                        manifestMismatch.second,
+                    )
+                    manifestFailure != null -> stringResource(manifestFailure.messageRes())
+                    else -> null
+                }
+                val localApkManifestReader = remember {
+                    LocalApkManifestReader(context)
+                }
+                val alternativeApkLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.OpenDocument(),
+                ) { uri ->
+                    if (uri == null) return@rememberLauncherForActivityResult
+                    val current = permissionComparison
+                        ?: return@rememberLauncherForActivityResult
+                    scope.launch {
+                        isReadingAlternativeApk = true
+                        alternativeManifestFailure = null
+                        alternativeManifestMismatch = null
+                        try {
+                            val result = try {
+                                localApkManifestReader.read(uri)
+                            } catch (cancellation: CancellationException) {
+                                throw cancellation
+                            } catch (_: Exception) {
+                                LocalApkManifestReadResult.Failure(
+                                    LocalApkManifestFailure.UNREADABLE,
+                                )
+                            }
+                            when (result) {
+                                is LocalApkManifestReadResult.Success -> {
+                                    if (
+                                        result.manifest.packageName !=
+                                        current.alternative.packageName
+                                    ) {
+                                        alternativeManifestMismatch = Pair(
+                                            result.manifest.packageName,
+                                            current.alternative.packageName,
+                                        )
+                                    } else {
+                                        val latest = permissionComparison
+                                        if (
+                                            latest != null &&
+                                            latest.alternative.packageName ==
+                                            current.alternative.packageName
+                                        ) {
+                                            permissionComparison =
+                                                latest.withAlternativeManifest(result.manifest)
+                                        }
+                                    }
+                                }
+                                is LocalApkManifestReadResult.Failure -> {
+                                    alternativeManifestFailure = result.reason
+                                }
+                            }
+                        } finally {
+                            isReadingAlternativeApk = false
+                        }
+                    }
+                }
                 val alternativesEnabled = FeatureId.ALTERNATIVES in enabledFeatures
                 val permissionDiffEnabled = FeatureId.PERMISSION_DIFF in enabledFeatures
                 val replacementGuidanceEnabled =
@@ -602,13 +678,31 @@ fun FossScoutApp(
                 if (showMatch) {
                     BackHandler(enabled = permissionComparison != null) {
                         permissionComparison = null
+                        alternativeManifestFailure = null
+                        alternativeManifestMismatch = null
                     }
                     val comparison = permissionComparison
                     if (comparison != null) {
                         PermissionDiffScreen(
                             comparison = comparison,
-                            onBack = { permissionComparison = null },
+                            onBack = {
+                                permissionComparison = null
+                                alternativeManifestFailure = null
+                                alternativeManifestMismatch = null
+                            },
                             onOpenSource = { url -> context.openWebsite(url) },
+                            onPickAlternativeApk = {
+                                alternativeManifestFailure = null
+                                alternativeManifestMismatch = null
+                                alternativeApkLauncher.launch(
+                                    arrayOf(
+                                        "application/vnd.android.package-archive",
+                                        "application/octet-stream",
+                                    ),
+                                )
+                            },
+                            isReadingAlternativeApk = isReadingAlternativeApk,
+                            alternativeManifestError = alternativeManifestError,
                             onExportAudit = {
                                 val builder = PermissionComparisonAuditBuilder()
                                 val audit = builder.build(
@@ -687,6 +781,8 @@ fun FossScoutApp(
                             isTrackerScanning = matchingState.isTrackerScanning,
                             onComparePermissions = if (permissionDiffEnabled) {
                                 { comparison ->
+                                    alternativeManifestFailure = null
+                                    alternativeManifestMismatch = null
                                     val scanning = matchingViewModel.startTrackerScan()
                                     permissionComparison = comparison.copy(
                                         tracker = matchingState.tracker,
@@ -1013,6 +1109,13 @@ private fun Context.copyCompanionText(text: String) {
         ClipData.newPlainText(getString(R.string.companion_repository_link_label), text),
     )
     Toast.makeText(this, R.string.companion_copied, Toast.LENGTH_SHORT).show()
+}
+
+@StringRes
+private fun LocalApkManifestFailure.messageRes(): Int = when (this) {
+    LocalApkManifestFailure.UNREADABLE -> R.string.permission_diff_manifest_read_failed
+    LocalApkManifestFailure.TOO_LARGE -> R.string.permission_diff_manifest_too_large
+    LocalApkManifestFailure.INVALID_APK -> R.string.permission_diff_manifest_invalid
 }
 
 private fun Context.shareComparisonAudit(

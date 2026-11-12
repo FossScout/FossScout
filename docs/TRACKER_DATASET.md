@@ -56,6 +56,9 @@ The tracker scan is user-initiated and local-only:
   produces an incomplete result, not a clean result.
 - It never scans the store alternative. FossScout does not download APKs for
   this feature.
+- The separate optional alternative-manifest flow reads only an APK the user
+  selects, using a temporary cache copy with a 128 MiB cap. That APK is not
+  installed, executed, or signature-verified.
 - APK bytes, class names, and match results are not uploaded or persisted.
 - The optional comparison audit export is a local JSON file created only after
   the user taps the export action. It contains the dataset metadata, evidence,

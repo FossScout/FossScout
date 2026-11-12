@@ -176,11 +176,18 @@ It does not replace the real-device checklist below.
       pages.
 - [ ] If the 64 MiB cap is reached, the tracker section says the scan is
       incomplete and does not claim a complete result.
+- [ ] Pick a local APK whose package matches the alternative. The alternative
+      permissions and version update from the manifest, and the source card says
+      the data came from a locally selected APK. No install prompt appears.
+- [ ] Pick a local APK for a different package. The mismatch error is shown and
+      the previous comparison is not replaced.
+- [ ] Pick a non-APK or an APK larger than 128 MiB. An explicit error is shown.
 - [ ] Tap Export audit report. The share sheet opens with a JSON file named for
       the installed package and export timestamp.
 - [ ] Open the exported JSON. Both permission sets, the diff, tracker evidence
-      when available, data sources, export timestamp, and limitations are
-      present. Missing tracker or alternative-permission data stays explicit.
+      when available, the selected-APK manifest evidence and source when
+      selected, export timestamp, and limitations are present. Missing tracker
+      or alternative-permission data stays explicit.
 - [ ] Export with the network disabled and confirm the report is produced
       locally; no app or permission data is uploaded.
 

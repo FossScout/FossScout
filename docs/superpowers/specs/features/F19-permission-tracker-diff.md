@@ -36,6 +36,9 @@ replacement name.
 - Tracker evidence: the selected installed app's already-local base and split
   APK files are scanned for `classes*.dex` signatures. The store alternative is
   not downloaded or scanned.
+- Optional alternative APK manifest: the user may select a local APK. FossScout
+  reads its manifest from a temporary cache copy, then deletes it. The APK is
+  not installed, executed, or signature-verified.
 
 No permission or tracker data is uploaded.
 
@@ -50,12 +53,16 @@ No permission or tracker data is uploaded.
 - Explain that absence of a tracker match is not proof of no tracking.
 - Scan only the selected installed app's local DEX files; never download the
   alternative APK for this feature.
+- Optionally read the declared permissions and version from a user-selected
+  local APK, replacing missing or stale store permission metadata for that
+  comparison.
 - Export the comparison as a local JSON audit report with the data sources,
   evidence limitations, and an export timestamp.
 
 ## 4a. Implementation status
 
-As of 2026-11-10, the permission and tracker-comparison slices are implemented:
+As of 2026-11-12, the permission, tracker-comparison, local-manifest, and
+audit-export slices are implemented:
 
 - F19-R1: installed requested permissions come from `PackageManager` with
   `GET_PERMISSIONS`; no new manifest permission is required.
@@ -91,26 +98,43 @@ As of 2026-11-10, the permission and tracker-comparison slices are implemented:
 - The snapshot update procedure and APK scan policy are in
   [`docs/TRACKER_DATASET.md`](../../../TRACKER_DATASET.md).
 
+### Alternative APK manifest
+
+- The comparison screen offers an optional **Choose APK** action using the
+  Android document picker. The selected APK must match the alternative package
+  name; a mismatch is rejected and shown as an error.
+- FossScout copies the selected file into its cache with a 128 MiB cap, reads
+  the package name, version name/code, and declared permissions through
+  `PackageManager.getPackageArchiveInfo`, and deletes the temporary file.
+- A successfully parsed manifest, including an empty permission list, replaces
+  the store permission metadata for that comparison and recomputes the diff.
+- The UI and audit report identify the selected-APK manifest as the source.
+  The APK is not installed, executed, or signature-verified, and the app never
+  downloads a store APK.
+
 ### Audit export (F19-R8)
 
 - The comparison screen can share a local JSON audit report through the Android
   share sheet. The export starts only from an explicit user action.
-- The report contains both permission sets, the diff, the tracker evidence and
-  dataset metadata when available, the store source URL, the installed-app
-  source, an export timestamp, and the static-evidence limitations.
+- The report contains both permission sets, the diff, the selected-APK manifest
+  evidence when present, the tracker evidence and dataset metadata when
+  available, the store source URL, the installed-app source, an export
+  timestamp, and the static-evidence limitations.
 - Unknown alternative permissions and a missing tracker result stay explicit;
   the export never turns missing evidence into a clean result.
 - The report is written to the app cache for the share-sheet grant only. It is
   not uploaded or persisted elsewhere.
 
-Real-device/UI verification of the tracker section and the audit export is still
-pending.
+Real-device/UI verification of the tracker section, the APK picker, and the
+audit export is still pending.
 
 ## 5. Non-goals
 
 - Assigning a single “privacy score” that hides the underlying evidence.
 - Claiming runtime network behaviour from static signatures alone.
 - Uploading an app or its permission list for analysis.
+- Installing, executing, or signature-verifying a selected APK.
+- Downloading an APK from a store or other source.
 - Blocking installation based on this comparison.
 
 ## 6. Requirements
@@ -135,6 +159,9 @@ pending.
 - Tracker signatures with low confidence or shared libraries.
 - Apps with no declared permissions.
 - Apps whose APK files are unreadable or whose scan exceeds the 64 MiB cap.
+- A selected alternative APK that is unreadable, malformed, larger than 128 MiB,
+  or for a different package.
+- A selected APK whose declared permissions differ from the store version.
 - Trackers in native code, remote-loaded code, or code hidden by renaming.
 
 ## 8. Open questions
@@ -142,11 +169,13 @@ pending.
 1. Resolved: F19-R4 uses the Exodus Privacy ETIP snapshot version `2026-11-10`
    under ODbL 1.0/DbCL 1.0. The licence and attribution are shown in the
    comparison screen.
-2. Deferred: analyzing the alternative APK manifest when it is already available
-   locally. V1 uses installed-app permissions and cached store metadata, and
-   never downloads the alternative APK.
+2. Resolved: the user may select a local alternative APK for manifest analysis.
+   V1 still never downloads a store APK; the selected file is read from a
+   temporary cache copy and is not installed or signature-verified.
 3. Resolved: the comparison shows added, removed, and shared summary counts
    before the detailed diff.
 4. Resolved: F19-R8 exports a local JSON audit report from the comparison
    screen. It includes sources, a timestamp, and the evidence limitations, and
    it never uploads the report.
+5. Resolved: the local APK manifest is optional and source-labelled; it replaces
+   alternative permission metadata only after the package name matches.

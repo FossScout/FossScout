@@ -16,6 +16,10 @@
     <string name="share_export_chooser">Share list</string>
     <string name="share_comparison_chooser">Share comparison report</string>
     <string name="share_comparison_subject">FossScout permission comparison: %1$s vs %2$s</string>
+    <string name="permission_diff_manifest_read_failed">Couldn\'t read the selected APK.</string>
+    <string name="permission_diff_manifest_too_large">The selected APK is larger than 128 MiB.</string>
+    <string name="permission_diff_manifest_invalid">The selected file is not a readable APK.</string>
+    <string name="permission_diff_manifest_package_mismatch">The selected APK is for %1$s, not %2$s.</string>
     <string name="companion_open_failed">No app can open this link.</string>
     <string name="companion_copied">Copied.</string>
     <string name="companion_repository_link_label">FossScout handoff</string>
