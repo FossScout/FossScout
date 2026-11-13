@@ -739,14 +739,6 @@ class Smoke:
                 return node
         return None
 
-    def editables(self) -> list[ET.Element]:
-        return [
-            node
-            for node in self.dump_ui().iter("node")
-            if node.get("class") == "android.widget.EditText"
-            and self.node_bounds(node) is not None
-        ]
-
     def wait_for_editable(self, timeout: int = 20) -> ET.Element:
         deadline = time.time() + timeout
         while time.time() < deadline:
@@ -811,20 +803,64 @@ class Smoke:
         self.save_ui(build, screenshot)
         return f"{package}: {observed}"
 
+    def edittext_for_label(
+        self,
+        root: ET.Element,
+        label: str,
+    ) -> ET.Element | None:
+        label_node = self.find_node(root, label, exact=True)
+        if label_node is None:
+            return None
+        label_bounds = self.node_bounds(label_node)
+        if not label_bounds:
+            return None
+        for node in root.iter("node"):
+            if node.get("class") != "android.widget.EditText":
+                continue
+            bounds = self.node_bounds(node)
+            if not bounds:
+                continue
+            if (
+                bounds[0] <= label_bounds[0]
+                and bounds[2] >= label_bounds[2]
+                and bounds[1] - 18 <= label_bounds[1]
+                and bounds[3] + 18 >= label_bounds[3]
+            ):
+                return node
+        return None
+
+    def fill_store_field(self, label: str, value: str) -> None:
+        deadline = time.time() + 20
+        while time.time() < deadline:
+            field = self.edittext_for_label(self.dump_ui(), label)
+            if field is not None:
+                self.tap_node(field)
+                self.input_text(value)
+                self.hide_keyboard()
+                return
+            self.hide_keyboard()
+            width, height = self.screen_size()
+            self.sh(
+                "input",
+                "swipe",
+                width // 2,
+                int(height * 0.70),
+                width // 2,
+                int(height * 0.35),
+                300,
+            )
+            time.sleep(0.5)
+        raise Failure(f"store editor field was not found: {label}")
+
     def add_f19_store(self, build: Build) -> None:
         if not self.f19_store_url:
             raise Failure("F19 store URL is required for the device run")
         self.open_destination("Stores", "Stores", build, "20-f19-stores-empty")
         self.tap_text("Add store", exact=True, timeout=20, scroll=True)
         self.wait_for_node("Homepage / repository URL", exact=True, timeout=20)
-        fields = self.editables()
-        if len(fields) < 2:
-            raise Failure("store editor did not expose the name and homepage fields")
-        self.tap_node(fields[0])
-        self.input_text(F19_STORE_NAME)
-        fields = self.editables()
-        self.tap_node(fields[1])
-        self.input_text(self.f19_store_url)
+        self.fill_store_field("Name", F19_STORE_NAME)
+        self.fill_store_field("Homepage / repository URL", self.f19_store_url)
+        self.fill_store_field("Index URL", self.f19_store_url)
         self.hide_keyboard()
         self.tap_text("Save", exact=True, timeout=20)
         self.wait_for_node(F19_STORE_NAME, exact=True, timeout=30, scroll=True)
