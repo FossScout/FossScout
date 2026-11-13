@@ -45,6 +45,11 @@ Covered:
 - Vanilla full scan with status and last-checked time, plus installed-package
   fixtures for the ADB fallback, a known installer (friendly name), an unknown
   installer (raw package), and a preinstalled system app.
+- F19 comparison against a signed test index: the Exodus ETIP dataset header,
+  a positive tracker signature match, a no-match result, local APK manifest
+  replacement, package-mismatch rejection, and a standalone audit export whose
+  JSON is read back from the app cache. The fixture index and tracker APK live
+  under [`.github/fixtures/f19`](../.github/fixtures/f19/).
 
 Not covered:
 
@@ -52,14 +57,15 @@ Not covered:
   Play/F-Droid client installs, and work profiles.
 - Google Play and F-Droid client-provided installer labels. The mapping is
   unit-tested; the CI fixtures use installed packages.
-- Store index sync and signer rotation, matching correction, replacement
-  handoff, sharing/import, backup/restore, and settings reset.
+- Real repository index sync, signer rotation/mismatch, and the storage budget.
+- Matching correction, replacement handoff, other sharing/import flows,
+  backup/restore, and settings reset.
 - Stale-threshold, hide/unhide persistence, inaccessible-app counts, and
   real-device rendering, performance, and battery behavior.
 
 The artifact contains `report.md`, screenshots, UI dumps, logcat, package dumps,
-and the emulator log. A passing CI run is evidence for the listed checks only.
-It does not replace the real-device checklist below.
+F19 audit JSON exports, and the emulator log. A passing CI run is evidence for
+the listed checks only. It does not replace the real-device checklist below.
 
 ## Run record
 
@@ -156,6 +162,10 @@ It does not replace the real-device checklist below.
       Hide and undo work for the session.
 
 ## 4a. Permission and tracker comparison (F19)
+
+The CI emulator covers the positive/no-match scan states, local APK manifest
+replacement and mismatch, and audit JSON schema. The unchecked items below still
+need a real device, network-disabled run, or failure fixture.
 
 - [ ] From a primary, other-match, and alternative card, open Compare
       permissions. Added, removed, and shared counts and grouped details render.

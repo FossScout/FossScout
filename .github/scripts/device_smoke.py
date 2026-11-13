@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -19,14 +20,21 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 NAV_LABELS = ("Discover", "Installed", "Saved", "Stores", "Settings", "About")
+F19_STORE_NAME = "F19 smoke fixture"
+F19_TRACKER_PACKAGE = "dev.fossscout.smoke.tracker"
+F19_DOWNLOADS = {
+    "playstore": "foss-scout-play.apk",
+    "vanilla": "foss-scout-vanilla.apk",
+    "tracker": "f19-tracker.apk",
+}
 NOT_COVERED = (
     "Release-signed Play AAB, Play Console upload, and internal-track installation.",
     "A real Google Play or F-Droid client install, and work-profile separation.",
     "Google Play and F-Droid client-provided installer labels (the mapping is "
     "unit-tested; this run uses installed-package fixtures).",
-    "Store index sync, signer rotation/mismatch, storage budget, and cached freshness.",
-    "Matching correction, replacement handoff, sharing/import, backup/restore, "
-    "contribution, and settings reset flows.",
+    "Store signer rotation/mismatch, storage budget, and a real repository's freshness.",
+    "Matching correction, replacement handoff, other sharing/import flows, "
+    "backup/restore, contribution, and settings reset flows.",
     "Inventory stale-threshold, hide/unhide persistence, and inaccessible-app counts.",
     "Real-device rendering, performance, and battery behavior.",
 )
@@ -65,6 +73,10 @@ class Smoke:
         self.device: dict[str, str] = {}
         self.error: str | None = None
         self.static_only = args.static_only
+        self.f19_store_url = args.f19_store_url
+        self.f19_tracker_apk = (
+            args.f19_tracker_apk.resolve() if args.f19_tracker_apk else None
+        )
         self._screen_size_cache: tuple[int, int] | None = None
 
     def run(
@@ -226,6 +238,26 @@ class Smoke:
                 "install debug APK",
                 lambda build=build: self._install(build.apk),
             )
+
+    def install_f19_fixtures(self) -> None:
+        if self.f19_tracker_apk is None:
+            raise Failure("F19 tracker APK is required for the device run")
+        self.record(
+            "f19",
+            "install tracker fixture APK",
+            lambda: self._install(self.f19_tracker_apk),
+        )
+        self.sh("mkdir", "-p", "/sdcard/Download")
+        downloads = {
+            F19_DOWNLOADS["tracker"]: self.f19_tracker_apk,
+            F19_DOWNLOADS["playstore"]: self.builds[0].apk,
+            F19_DOWNLOADS["vanilla"]: self.builds[1].apk,
+        }
+        for name, path in downloads.items():
+            self.adb("push", path, f"/sdcard/Download/{name}", timeout=120)
+        path = self.sh("pm", "path", F19_TRACKER_PACKAGE).stdout.strip()
+        if "package:" not in path:
+            raise Failure("tracker fixture package was not installed")
 
     def _install(self, apk: Path) -> str:
         result = self.adb("install", "-r", "-t", apk, timeout=300).stdout
@@ -707,6 +739,14 @@ class Smoke:
                 return node
         return None
 
+    def editables(self) -> list[ET.Element]:
+        return [
+            node
+            for node in self.dump_ui().iter("node")
+            if node.get("class") == "android.widget.EditText"
+            and self.node_bounds(node) is not None
+        ]
+
     def wait_for_editable(self, timeout: int = 20) -> ET.Element:
         deadline = time.time() + timeout
         while time.time() < deadline:
@@ -715,6 +755,15 @@ class Smoke:
                 return node
             time.sleep(1)
         raise Failure("inventory query field was not found")
+
+    def input_text(self, text: str) -> None:
+        self.sh("input", "text", text.replace(" ", "%s"))
+        time.sleep(0.3)
+
+    def hide_keyboard(self) -> None:
+        if "mInputShown=true" in self.sh("dumpsys", "input_method").stdout:
+            self.sh("input", "keyevent", "4")
+            time.sleep(0.5)
 
     def enter_package(self, build: Build, package: str) -> None:
         self.open_inventory(build)
@@ -725,9 +774,17 @@ class Smoke:
         self.sh("input", "keyevent", *(["67"] * 80))
         self.sh("input", "text", package)
         time.sleep(0.5)
-        if "mInputShown=true" in self.sh("dumpsys", "input_method").stdout:
-            self.sh("input", "keyevent", "4")
-            time.sleep(0.5)
+        self.hide_keyboard()
+
+    def run_as(self, package: str, *args: object, check: bool = True):
+        return self.adb(
+            "exec-out",
+            "run-as",
+            package,
+            *args,
+            check=check,
+            timeout=30,
+        )
 
     def manual_check(
         self,
@@ -753,6 +810,307 @@ class Smoke:
         self.capture(build, screenshot)
         self.save_ui(build, screenshot)
         return f"{package}: {observed}"
+
+    def add_f19_store(self, build: Build) -> None:
+        if not self.f19_store_url:
+            raise Failure("F19 store URL is required for the device run")
+        self.open_destination("Stores", "Stores", build, "20-f19-stores-empty")
+        self.tap_text("Add store", exact=True, timeout=20, scroll=True)
+        self.wait_for_node("Homepage / repository URL", exact=True, timeout=20)
+        fields = self.editables()
+        if len(fields) < 2:
+            raise Failure("store editor did not expose the name and homepage fields")
+        self.tap_node(fields[0])
+        self.input_text(F19_STORE_NAME)
+        fields = self.editables()
+        self.tap_node(fields[1])
+        self.input_text(self.f19_store_url)
+        self.hide_keyboard()
+        self.tap_text("Save", exact=True, timeout=20)
+        self.wait_for_node(F19_STORE_NAME, exact=True, timeout=30, scroll=True)
+
+    def setup_f19_store(self, build: Build) -> str:
+        self.add_f19_store(build)
+        return self.sync_f19_store(build)
+
+    def sync_f19_store(self, build: Build) -> str:
+        for _ in range(10):
+            root = self.dump_ui()
+            anchor = self.find_node(root, F19_STORE_NAME, exact=True)
+            if anchor is not None:
+                anchor_bounds = self.node_bounds(anchor)
+                candidates: list[tuple[int, ET.Element]] = []
+                for node in root.iter("node"):
+                    labels = self.node_labels(node)
+                    if not any(
+                        label in ("Sync now", "Sync again") for label in labels
+                    ):
+                        continue
+                    bounds = self.node_bounds(node)
+                    if not bounds or not anchor_bounds:
+                        continue
+                    center_y = (bounds[1] + bounds[3]) // 2
+                    if center_y > (anchor_bounds[1] + anchor_bounds[3]) // 2:
+                        candidates.append((center_y, node))
+                if candidates:
+                    _, button = min(candidates, key=lambda item: item[0])
+                    self.tap_node(button)
+                    break
+            self.swipe_up()
+        else:
+            raise Failure("F19 store sync button was not found")
+
+        self.wait_for_node("Last successful sync", exact=False, timeout=120, scroll=True)
+        self.wait_for_any_text(("Fresh", "Stale"), exact=True, timeout=20, scroll=False)
+        self.capture(build, "21-f19-store-synced")
+        self.save_ui(build, "21-f19-store-synced")
+        return "F19 fixture store synced"
+
+    def pick_download_apk(self, build: Build, filename: str, screenshot: str) -> None:
+        deadline = time.time() + 60
+        while time.time() < deadline:
+            root = self.dump_ui()
+            file_node = self.find_node(root, filename, exact=True)
+            if file_node is not None:
+                self.tap_node(file_node)
+                return
+            downloads = self.find_node(root, "Downloads", exact=True)
+            if downloads is not None:
+                self.tap_node(downloads)
+                time.sleep(1.5)
+                continue
+            roots = self.find_node(root, "Show roots", exact=True)
+            if roots is not None:
+                self.tap_node(roots)
+                time.sleep(1)
+                continue
+            time.sleep(1)
+        self.capture(build, f"{screenshot}-picker-failure")
+        self.save_ui(build, f"{screenshot}-picker-failure")
+        raise Failure(f"document picker did not show {filename}")
+
+    def f19_comparison(
+        self,
+        build: Build,
+        package: str,
+        manifest_apk: str,
+        mismatch_apk: str,
+        mismatch_package: str,
+        expect_tracker_match: bool,
+    ) -> str:
+        self.enter_package(build, package)
+        self.tap_text("Check app", exact=True, timeout=20)
+        self.wait_for_node("Checked one app", exact=True, timeout=30)
+        self.tap_text("FOSS match details", exact=True, timeout=20, scroll=True)
+        self.wait_for_node("FOSS match", exact=False, region="top", timeout=30)
+        self.wait_for_node("Exact FOSS match", exact=True, timeout=20, scroll=True)
+        self.tap_text("Compare permissions", exact=True, timeout=20, scroll=True)
+        self.wait_for_node("Permission comparison", exact=False, region="top", timeout=30)
+
+        self.tap_text("Choose APK", exact=True, timeout=20, scroll=True)
+        self.pick_download_apk(build, manifest_apk, "22-f19-manifest")
+        self.wait_for_node(
+            "Using the selected APK's manifest",
+            exact=False,
+            timeout=40,
+            scroll=True,
+        )
+        self.wait_for_node(
+            "APK manifest version:",
+            exact=False,
+            timeout=20,
+            scroll=True,
+        )
+        permissions_node = self.wait_for_node(
+            "Manifest permissions:",
+            exact=False,
+            timeout=20,
+            scroll=True,
+        )
+        permission_detail = next(
+            label
+            for label in self.node_labels(permissions_node)
+            if label.startswith("Manifest permissions:")
+        )
+        count = re.search(r"(\d+)", permission_detail)
+        if not count or int(count.group(1)) < 1:
+            raise Failure("selected APK manifest did not expose permissions")
+        self.wait_for_node(
+            "A manifest shows declared permissions, not runtime use.",
+            exact=False,
+            timeout=20,
+            scroll=True,
+        )
+        self.wait_for_node(
+            "Alternative: manifest of a locally selected APK.",
+            exact=False,
+            timeout=20,
+            scroll=True,
+        )
+
+        self.tap_text("Choose another APK", exact=True, timeout=20, scroll=True)
+        self.pick_download_apk(build, mismatch_apk, "23-f19-manifest-mismatch")
+        mismatch = f"The selected APK is for {mismatch_package}, not {package}."
+        self.wait_for_node(mismatch, exact=True, timeout=40, scroll=True)
+        self.wait_for_node(
+            "Using the selected APK's manifest",
+            exact=False,
+            timeout=20,
+            scroll=True,
+        )
+
+        self.wait_for_node(
+            "Dataset: Exodus Privacy ETIP tracker signatures",
+            exact=False,
+            timeout=20,
+            scroll=True,
+        )
+        self.wait_for_node(
+            "License: ODbL 1.0 / DbCL 1.0",
+            exact=False,
+            timeout=20,
+            scroll=True,
+        )
+        if expect_tracker_match:
+            self.wait_for_node(
+                "1 tracker signature match",
+                exact=True,
+                timeout=40,
+                scroll=True,
+            )
+            self.wait_for_node("Aarki", exact=True, timeout=20, scroll=True)
+            tracker = "Aarki"
+        else:
+            self.wait_for_node(
+                "No known tracker signature was found",
+                exact=False,
+                timeout=40,
+                scroll=True,
+            )
+            tracker = "no tracker match"
+
+        self.capture(build, "24-f19-comparison")
+        self.save_ui(build, "24-f19-comparison")
+        return (
+            f"{tracker}; manifest {permission_detail}; "
+            f"mismatch rejected for {mismatch_package}"
+        )
+
+    def f19_audit(self, build: Build, package: str, tracker_match: bool) -> str:
+        existing = set(
+            self.run_as(build.package, "ls", "-1t", "cache/exports", check=False)
+            .stdout.splitlines()
+        )
+        self.tap_text("Export audit report", exact=True, timeout=20, scroll=True)
+        deadline = time.time() + 30
+        filename = ""
+        while time.time() < deadline:
+            listing = self.run_as(
+                build.package,
+                "ls",
+                "-1t",
+                "cache/exports",
+                check=False,
+            ).stdout.splitlines()
+            new_files = [
+                entry
+                for entry in listing
+                if entry not in existing and entry.endswith(".json")
+            ]
+            if new_files:
+                filename = new_files[0]
+                break
+            time.sleep(0.5)
+        if not filename:
+            self.capture(build, "25-f19-audit-failure")
+            self.save_ui(build, "25-f19-audit-failure")
+            raise Failure("comparison audit file was not written")
+        content = self.run_as(
+            build.package,
+            "cat",
+            f"cache/exports/{filename}",
+        ).stdout
+        self.save(f"{build.flavor}/f19-audit.json", content)
+        audit = json.loads(content)
+        if audit["sources"]["alternative"] != "selected_local_apk_manifest":
+            raise Failure("audit did not record the selected manifest source")
+        if audit["alternativeManifest"]["packageName"] != package:
+            raise Failure("audit manifest package does not match the comparison")
+        if audit["installed"]["packageName"] != package:
+            raise Failure("audit installed package does not match the comparison")
+        if audit["exportedAtEpochMillis"] <= 0:
+            raise Failure("audit timestamp is missing")
+        if not audit["exportedAtUtc"].endswith("Z"):
+            raise Failure("audit UTC timestamp is missing")
+        if audit["tracker"]["dataset"]["version"] != "2026-11-10":
+            raise Failure("audit tracker dataset version is missing")
+        if audit["tracker"]["scanStatus"] != "COMPLETE":
+            raise Failure(
+                f"audit tracker scan did not complete: {audit['tracker']['scanStatus']}"
+            )
+        names = [match["name"] for match in audit["tracker"]["matches"]]
+        if tracker_match and "Aarki" not in names:
+            raise Failure("audit did not preserve the Aarki tracker match")
+        if not tracker_match and names:
+            raise Failure(f"audit unexpectedly reported tracker matches: {names}")
+        diff = audit["diff"]
+        if diff is None or diff["installedOnly"] or diff["alternativeOnly"]:
+            raise Failure("manifest replacement did not recompute the permission diff")
+        if not diff["shared"]:
+            raise Failure("manifest replacement produced no shared permissions")
+        limitation = (
+            "The selected APK manifest was read locally; the APK was not installed, "
+            "executed, or signature-verified."
+        )
+        if limitation not in audit["limitations"]:
+            raise Failure("audit did not record the manifest limitation")
+
+        deadline = time.time() + 10
+        while time.time() < deadline and self.is_foreground(build.package):
+            time.sleep(0.5)
+        if self.is_foreground(build.package):
+            raise Failure("audit share sheet did not open")
+        self.sh("input", "keyevent", "4")
+        self.wait_for_node("Permission comparison", exact=False, region="top", timeout=20)
+        return f"audit {filename}; {len(audit['alternative']['permissions'])} permissions"
+
+    def f19_specific(self, build: Build) -> None:
+        if self.f19_tracker_apk is None:
+            raise Failure("F19 tracker APK is required for the device run")
+        self.record(
+            build.flavor,
+            "F19 fixture store sync",
+            lambda: self.setup_f19_store(build),
+        )
+        if build.flavor == "playstore":
+            package = F19_TRACKER_PACKAGE
+            manifest_apk = F19_DOWNLOADS["tracker"]
+            mismatch_apk = F19_DOWNLOADS["vanilla"]
+            mismatch_package = self.builds[1].package
+            expect_match = True
+        else:
+            package = build.package
+            manifest_apk = F19_DOWNLOADS["vanilla"]
+            mismatch_apk = F19_DOWNLOADS["playstore"]
+            mismatch_package = self.builds[0].package
+            expect_match = False
+        self.record(
+            build.flavor,
+            "F19 tracker and APK manifest comparison",
+            lambda: self.f19_comparison(
+                build,
+                package,
+                manifest_apk,
+                mismatch_apk,
+                mismatch_package,
+                expect_match,
+            ),
+        )
+        self.record(
+            build.flavor,
+            "F19 standalone audit export",
+            lambda: self.f19_audit(build, package, expect_match),
+        )
 
     def play_specific(self, build: Build) -> None:
         self.record(
@@ -893,16 +1251,19 @@ class Smoke:
     def run_device(self) -> None:
         self.require_device()
         self.install_initial()
+        self.install_f19_fixtures()
         self.adb("logcat", "-c")
         play = self.builds[0]
         self.common_ui(play)
         self.play_specific(play)
+        self.f19_specific(play)
         self.record(play.flavor, "no crash or ANR", lambda: self.check_logcat(play))
 
         self.adb("logcat", "-c")
         vanilla = self.builds[1]
         self.common_ui(vanilla)
         self.vanilla_specific(vanilla)
+        self.f19_specific(vanilla)
         self.record(vanilla.flavor, "no crash or ANR", lambda: self.check_logcat(vanilla))
 
     def write_report(self) -> None:
@@ -942,6 +1303,7 @@ class Smoke:
             "",
             "- `playstore/` and `vanilla/` screenshots and UI dumps",
             "- `*/logcat.txt`, `*/package-dumpsys.txt`, and `static/` APK inspection",
+            "- `*/f19-audit.json` comparison audit exports",
             "- `installer-fixtures/` package dumps for the installer cases",
             "- `report.md`, `device.txt`, and the emulator log",
             "",
@@ -958,6 +1320,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--vanilla-apk", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--aapt2")
+    parser.add_argument("--f19-store-url")
+    parser.add_argument("--f19-tracker-apk", type=Path)
     parser.add_argument("--static-only", action="store_true")
     return parser.parse_args()
 

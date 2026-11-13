@@ -1,0 +1,130 @@
+{
+  "repo": {
+    "name": {
+      "en-US": "FossScout F19 smoke repository"
+    },
+    "address": "https://raw.githubusercontent.com/FossScout/FossScout/main/.github/fixtures/f19/repo"
+  },
+  "packages": {
+    "com.fossscout.app": {
+      "metadata": {
+        "added": 1767225600000,
+        "lastUpdated": 1767225600000,
+        "name": {
+          "en-US": "com.fossscout.app"
+        },
+        "summary": {
+          "en-US": "F19 smoke fixture"
+        },
+        "license": "Apache-2.0",
+        "sourceCode": "https://example.invalid/f19-smoke"
+      },
+      "versions": {
+        "81d0ff561f04d2a3584d6cf12e01a8f23a3c69426ee9f5c3969cd115217d466b": {
+          "added": 1767225600000,
+          "file": {
+            "name": "/f19-smoke.apk",
+            "sha256": "81d0ff561f04d2a3584d6cf12e01a8f23a3c69426ee9f5c3969cd115217d466b",
+            "size": 1
+          },
+          "manifest": {
+            "versionName": "1.0",
+            "versionCode": 1,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.CAMERA"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "com.fossscout.app.vanilla": {
+      "metadata": {
+        "added": 1767225600000,
+        "lastUpdated": 1767225600000,
+        "name": {
+          "en-US": "com.fossscout.app.vanilla"
+        },
+        "summary": {
+          "en-US": "F19 smoke fixture"
+        },
+        "license": "Apache-2.0",
+        "sourceCode": "https://example.invalid/f19-smoke"
+      },
+      "versions": {
+        "eeab843aae007748d0fc225ab1039ea7645a70db752cba2b1b22782772973033": {
+          "added": 1767225600000,
+          "file": {
+            "name": "/f19-smoke.apk",
+            "sha256": "eeab843aae007748d0fc225ab1039ea7645a70db752cba2b1b22782772973033",
+            "size": 1
+          },
+          "manifest": {
+            "versionName": "1.0",
+            "versionCode": 1,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              },
+              {
+                "name": "android.permission.CAMERA"
+              },
+              {
+                "name": "android.permission.QUERY_ALL_PACKAGES"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "dev.fossscout.smoke.tracker": {
+      "metadata": {
+        "added": 1767225600000,
+        "lastUpdated": 1767225600000,
+        "name": {
+          "en-US": "dev.fossscout.smoke.tracker"
+        },
+        "summary": {
+          "en-US": "F19 smoke fixture"
+        },
+        "license": "Apache-2.0",
+        "sourceCode": "https://example.invalid/f19-smoke"
+      },
+      "versions": {
+        "ea9af8bdb9a53126c32af7b60774894bd06b302b6218626f2d2d41ae9db32b22": {
+          "added": 1767225600000,
+          "file": {
+            "name": "/f19-smoke.apk",
+            "sha256": "ea9af8bdb9a53126c32af7b60774894bd06b302b6218626f2d2d41ae9db32b22",
+            "size": 1
+          },
+          "manifest": {
+            "versionName": "1.0",
+            "versionCode": 1,
+            "usesSdk": {
+              "minSdkVersion": 24,
+              "targetSdkVersion": 36
+            },
+            "usesPermission": [
+              {
+                "name": "android.permission.INTERNET"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
