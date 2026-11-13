@@ -860,7 +860,6 @@ class Smoke:
         self.wait_for_node("Homepage / repository URL", exact=True, timeout=20)
         self.fill_store_field("Name", F19_STORE_NAME)
         self.fill_store_field("Homepage / repository URL", self.f19_store_url)
-        self.fill_store_field("Index URL", self.f19_store_url)
         self.hide_keyboard()
         self.tap_text("Save", exact=True, timeout=20)
         self.wait_for_node(F19_STORE_NAME, exact=True, timeout=30, scroll=True)
