@@ -863,43 +863,164 @@ class Smoke:
         self.hide_keyboard()
         self.tap_text("Save", exact=True, timeout=20)
         self.wait_for_node(F19_STORE_NAME, exact=True, timeout=30, scroll=True)
+        self.capture(build, "21-f19-store-added")
+        self.save_ui(build, "21-f19-store-added")
 
     def setup_f19_store(self, build: Build) -> str:
         self.add_f19_store(build)
         return self.sync_f19_store(build)
 
+    def f19_sync_scope(self, root: ET.Element, anchor: ET.Element) -> ET.Element | None:
+        parents = {
+            child: parent for parent in root.iter("node") for child in parent
+        }
+        node: ET.Element | None = anchor
+        while node is not None:
+            for candidate in node.iter("node"):
+                labels = self.node_labels(candidate)
+                if any(
+                    label in ("Sync now", "Sync again", "Cancel")
+                    or label.startswith("Last successful sync")
+                    or "Downloading and verifying" in label
+                    for label in labels
+                ):
+                    return node
+            node = parents.get(node)
+        return None
+
+    def node_center(self, node: ET.Element) -> tuple[int, int] | None:
+        bounds = self.node_bounds(node)
+        if not bounds:
+            return None
+        return (bounds[0] + bounds[2]) // 2, (bounds[1] + bounds[3]) // 2
+
+    def is_tappable(self, node: ET.Element) -> bool:
+        center = self.node_center(node)
+        if center is None:
+            return False
+        _, height = self.screen_size()
+        _, y = center
+        return 0 < y < height - int(height * 0.10)
+
+    def nudge_up(self) -> None:
+        width, height = self.screen_size()
+        self.sh(
+            "input",
+            "swipe",
+            width // 2,
+            int(height * 0.72),
+            width // 2,
+            int(height * 0.50),
+            250,
+        )
+        time.sleep(0.5)
+
+    def save_f19_sync_failure(self, build: Build, name: str) -> None:
+        try:
+            self.capture(build, name)
+            self.save_ui(build, name)
+        except Exception as exc:
+            print(f"could not capture F19 sync failure screen: {exc}")
+        try:
+            logs = self.adb("logcat", "-d", "-v", "threadtime").stdout
+            self.save(f"{build.flavor}/{name}-logcat.txt", logs)
+        except Exception as exc:
+            print(f"could not capture F19 sync logcat: {exc}")
+        try:
+            listing = self.run_as(
+                build.package,
+                "find",
+                "files",
+                "-type",
+                "f",
+                check=False,
+            )
+            self.save(f"{build.flavor}/{name}-files.txt", listing.stdout)
+            for path in (
+                "files/datastore/store_registry.preferences_pb",
+                "files/datastore/index_state.preferences_pb",
+            ):
+                encoded = self.run_as(build.package, "base64", path, check=False)
+                if encoded.returncode == 0:
+                    self.save(
+                        f"{build.flavor}/{name}-{Path(path).name}.base64.txt",
+                        encoded.stdout,
+                    )
+        except Exception as exc:
+            print(f"could not capture F19 store data: {exc}")
+
     def sync_f19_store(self, build: Build) -> str:
-        for _ in range(10):
+        for _ in range(15):
             root = self.dump_ui()
             anchor = self.find_node(root, F19_STORE_NAME, exact=True)
             if anchor is not None:
-                anchor_bounds = self.node_bounds(anchor)
-                candidates: list[tuple[int, ET.Element]] = []
-                for node in root.iter("node"):
-                    labels = self.node_labels(node)
-                    if not any(
-                        label in ("Sync now", "Sync again") for label in labels
-                    ):
-                        continue
-                    bounds = self.node_bounds(node)
-                    if not bounds or not anchor_bounds:
-                        continue
-                    center_y = (bounds[1] + bounds[3]) // 2
-                    if center_y > (anchor_bounds[1] + anchor_bounds[3]) // 2:
-                        candidates.append((center_y, node))
-                if candidates:
-                    _, button = min(candidates, key=lambda item: item[0])
-                    self.tap_node(button)
-                    break
-            self.swipe_up()
+                scope = self.f19_sync_scope(root, anchor)
+                if scope is not None:
+                    button = next(
+                        (
+                            node
+                            for node in scope.iter("node")
+                            if any(
+                                label in ("Sync now", "Sync again")
+                                for label in self.node_labels(node)
+                            )
+                        ),
+                        None,
+                    )
+                    if button is not None and self.is_tappable(button):
+                        self.tap_node(button)
+                        break
+                self.nudge_up()
+            else:
+                self.swipe_up()
         else:
-            raise Failure("F19 store sync button was not found")
+            self.save_f19_sync_failure(build, "21-f19-store-sync-button-failure")
+            raise Failure("F19 store sync button was not found or was off-screen")
 
-        self.wait_for_node("Last successful sync", exact=False, timeout=120, scroll=True)
-        self.wait_for_any_text(("Fresh", "Stale"), exact=True, timeout=20, scroll=False)
-        self.capture(build, "21-f19-store-synced")
-        self.save_ui(build, "21-f19-store-synced")
-        return "F19 fixture store synced"
+        errors = (
+            "The index could not be downloaded",
+            "The index failed signature or hash verification",
+            "The store returned an unsupported or malformed index",
+            "The index would exceed your storage budget",
+            "The index could not be saved",
+            "Sync cancelled",
+            "Sync failed",
+            "This adapter cannot sync indexes",
+            "Plain HTTP is blocked",
+            "The repository fingerprint changed",
+        )
+        deadline = time.time() + 120
+        while True:
+            root = self.dump_ui()
+            anchor = self.find_node(root, F19_STORE_NAME, exact=True)
+            scope = None if anchor is None else self.f19_sync_scope(root, anchor)
+            if scope is not None:
+                labels = [
+                    label
+                    for node in scope.iter("node")
+                    for label in self.node_labels(node)
+                ]
+                error = next(
+                    (
+                        label
+                        for label in labels
+                        if any(label.startswith(prefix) for prefix in errors)
+                    ),
+                    None,
+                )
+                if error is not None:
+                    self.save_f19_sync_failure(build, "21-f19-store-sync-failure")
+                    raise Failure(f"F19 store sync failed: {error}")
+                if any(
+                    label.startswith("Last successful sync") for label in labels
+                ) and any(label in ("Fresh", "Stale") for label in labels):
+                    self.capture(build, "21-f19-store-synced")
+                    self.save_ui(build, "21-f19-store-synced")
+                    return "F19 fixture store synced"
+            if time.time() >= deadline:
+                self.save_f19_sync_failure(build, "21-f19-store-sync-timeout")
+                raise Failure("F19 store did not finish syncing within 120 seconds")
+            time.sleep(1)
 
     def pick_download_apk(self, build: Build, filename: str, screenshot: str) -> None:
         deadline = time.time() + 60
