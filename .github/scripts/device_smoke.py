@@ -963,17 +963,29 @@ class Smoke:
         }
         node: ET.Element | None = anchor
         while node is not None:
+            has_sync = False
+            has_other_store = False
             for candidate in node.iter("node"):
                 labels = self.node_labels(candidate)
+                if any(label in ("F-Droid", "IzzyOnDroid") for label in labels):
+                    has_other_store = True
                 if any(
                     label in ("Sync now", "Sync again", "Cancel")
                     or label.startswith("Last successful sync")
                     or "Downloading and verifying" in label
                     for label in labels
                 ):
-                    return node
+                    has_sync = True
+            if has_sync and not has_other_store:
+                return node
             node = parents.get(node)
         return None
+
+    def find_f19_anchor(self, root: ET.Element) -> ET.Element | None:
+        anchor = self.find_node(root, F19_STORE_NAME, exact=True)
+        if anchor is None and self.f19_store_url:
+            anchor = self.find_node(root, self.f19_store_url, exact=True)
+        return anchor
 
     def node_center(self, node: ET.Element) -> tuple[int, int] | None:
         bounds = self.node_bounds(node)
@@ -1039,7 +1051,7 @@ class Smoke:
     def sync_f19_store(self, build: Build) -> str:
         for _ in range(15):
             root = self.dump_ui()
-            anchor = self.find_node(root, F19_STORE_NAME, exact=True)
+            anchor = self.find_f19_anchor(root)
             if anchor is not None:
                 scope = self.f19_sync_scope(root, anchor)
                 if scope is not None:
@@ -1079,7 +1091,7 @@ class Smoke:
         deadline = time.time() + 120
         while True:
             root = self.dump_ui()
-            anchor = self.find_node(root, F19_STORE_NAME, exact=True)
+            anchor = self.find_f19_anchor(root)
             scope = None if anchor is None else self.f19_sync_scope(root, anchor)
             if scope is not None:
                 labels = [
@@ -1104,6 +1116,8 @@ class Smoke:
                     self.capture(build, "21-f19-store-synced")
                     self.save_ui(build, "21-f19-store-synced")
                     return "F19 fixture store synced"
+            else:
+                self.nudge_up()
             if time.time() >= deadline:
                 self.save_f19_sync_failure(build, "21-f19-store-sync-timeout")
                 raise Failure("F19 store did not finish syncing within 120 seconds")
