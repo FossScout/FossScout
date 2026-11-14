@@ -774,9 +774,32 @@ class Smoke:
             time.sleep(1)
         raise Failure("inventory query field was not found")
 
-    def input_text(self, text: str) -> None:
-        self.sh("input", "text", text.replace(" ", "%s"))
-        time.sleep(0.3)
+    def input_text(
+        self,
+        text: str,
+        *,
+        chunk_size: int = 20,
+        delay: float = 0.25,
+    ) -> None:
+        for start in range(0, len(text), chunk_size):
+            chunk = text[start : start + chunk_size].replace(" ", "%s")
+            self.sh("input", "text", chunk)
+            time.sleep(delay)
+
+    def focused_edittext(self, root: ET.Element) -> ET.Element | None:
+        for node in root.iter("node"):
+            if (
+                node.get("class") == "android.widget.EditText"
+                and node.get("focused") == "true"
+            ):
+                return node
+        return None
+
+    def clear_focused_field(self, length: int) -> None:
+        self.sh("input", "keyevent", "123")
+        if length > 0:
+            self.sh("input", "keyevent", *(["67"] * (length + 8)))
+        time.sleep(0.2)
 
     def hide_keyboard(self) -> None:
         if "mInputShown=true" in self.sh("dumpsys", "input_method").stdout:
@@ -790,7 +813,7 @@ class Smoke:
         time.sleep(0.5)
         self.sh("input", "keyevent", "123")
         self.sh("input", "keyevent", *(["67"] * 80))
-        self.sh("input", "text", package)
+        self.input_text(package)
         time.sleep(0.5)
         self.hide_keyboard()
 
@@ -855,13 +878,35 @@ class Smoke:
                 return node
         return None
 
-    def fill_store_field(self, label: str, value: str) -> None:
+    def fill_store_field(self, build: Build, label: str, value: str) -> None:
         deadline = time.time() + 20
         while time.time() < deadline:
             field = self.edittext_for_label(self.dump_ui(), label)
             if field is not None:
                 self.tap_node(field)
+                time.sleep(0.2)
+                current = field.get("text") or ""
+                self.clear_focused_field(len(current))
                 self.input_text(value)
+                time.sleep(0.4)
+                actual = self.focused_edittext(self.dump_ui())
+                actual_text = (actual.get("text") or "") if actual is not None else ""
+                if actual_text != value:
+                    self.clear_focused_field(len(actual_text))
+                    self.input_text(value, chunk_size=10, delay=0.4)
+                    time.sleep(0.4)
+                    actual = self.focused_edittext(self.dump_ui())
+                    actual_text = (
+                        (actual.get("text") or "") if actual is not None else ""
+                    )
+                    if actual_text != value:
+                        self.capture(build, "20-f19-store-field-failure")
+                        self.save_ui(build, "20-f19-store-field-failure")
+                        raise Failure(
+                            f"store field {label} did not keep the full value: "
+                            f"expected {len(value)} characters, "
+                            f"got {len(actual_text)}"
+                        )
                 self.hide_keyboard()
                 return
             self.hide_keyboard()
@@ -884,8 +929,8 @@ class Smoke:
         self.open_destination("Stores", "Stores", build, "20-f19-stores-empty")
         self.tap_text("Add store", exact=True, timeout=20, scroll=True)
         self.wait_for_node("Homepage / repository URL", exact=True, timeout=20)
-        self.fill_store_field("Name", F19_STORE_NAME)
-        self.fill_store_field("Homepage / repository URL", self.f19_store_url)
+        self.fill_store_field(build, "Name", F19_STORE_NAME)
+        self.fill_store_field(build, "Homepage / repository URL", self.f19_store_url)
         self.hide_keyboard()
         self.tap_text("Save", exact=True, timeout=20)
         self.wait_for_node(F19_STORE_NAME, exact=True, timeout=30, scroll=True)
