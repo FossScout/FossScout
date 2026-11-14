@@ -71,6 +71,7 @@ class Smoke:
         ]
         self.checks: list[Check] = []
         self.device: dict[str, str] = {}
+        self.current_build: Build | None = None
         self.error: str | None = None
         self.static_only = args.static_only
         self.f19_store_url = args.f19_store_url
@@ -111,6 +112,8 @@ class Smoke:
         try:
             detail = fn()
         except Exception as exc:
+            if self.current_build is not None:
+                self.capture_failure(self.current_build, name)
             self.checks.append(Check(scope, name, "FAIL", str(exc)))
             print(f"FAIL [{scope}] {name}: {exc}")
             raise
@@ -118,6 +121,19 @@ class Smoke:
         self.checks.append(Check(scope, name, "PASS", text))
         print(f"PASS [{scope}] {name}" + (f": {text}" if text else ""))
         return detail
+
+    def capture_failure(self, build: Build, name: str) -> None:
+        slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "check"
+        try:
+            self.capture(build, f"failure-{slug}")
+            self.save_ui(build, f"failure-{slug}")
+        except Exception as exc:
+            print(f"could not capture failure screen: {exc}")
+        try:
+            logs = self.adb("logcat", "-d", "-v", "threadtime").stdout
+            self.save(f"{build.flavor}/failure-{slug}-logcat.txt", logs)
+        except Exception as exc:
+            print(f"could not capture failure logcat: {exc}")
 
     def aapt2_dump(self, *args: object) -> str:
         if not self.aapt2_path:
@@ -1128,8 +1144,12 @@ class Smoke:
         self.enter_package(build, package)
         self.tap_text("Check app", exact=True, timeout=20)
         self.wait_for_node("Checked one app", exact=True, timeout=30)
+        self.capture(build, "22-f19-checked")
+        self.save_ui(build, "22-f19-checked")
         self.tap_text("FOSS match details", exact=True, timeout=20, scroll=True)
         self.wait_for_node("FOSS match", exact=False, region="top", timeout=30)
+        self.capture(build, "22-f19-match-details")
+        self.save_ui(build, "22-f19-match-details")
         self.wait_for_node("Exact FOSS match", exact=True, timeout=20, scroll=True)
         self.tap_text("Compare permissions", exact=True, timeout=20, scroll=True)
         self.wait_for_node("Permission comparison", exact=False, region="top", timeout=30)
@@ -1309,6 +1329,7 @@ class Smoke:
             "F19 fixture store sync",
             lambda: self.setup_f19_store(build),
         )
+        self.save_f19_sync_failure(build, "21-f19-store-synced-diagnostics")
         if build.flavor == "playstore":
             package = F19_TRACKER_PACKAGE
             manifest_apk = F19_DOWNLOADS["tracker"]
@@ -1481,6 +1502,7 @@ class Smoke:
         self.install_f19_fixtures()
         self.adb("logcat", "-c")
         play = self.builds[0]
+        self.current_build = play
         self.common_ui(play)
         self.play_specific(play)
         self.f19_specific(play)
@@ -1488,6 +1510,7 @@ class Smoke:
 
         self.adb("logcat", "-c")
         vanilla = self.builds[1]
+        self.current_build = vanilla
         self.common_ui(vanilla)
         self.vanilla_specific(vanilla)
         self.f19_specific(vanilla)
