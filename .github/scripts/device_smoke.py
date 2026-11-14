@@ -536,11 +536,37 @@ class Smoke:
     def common_ui(self, build: Build) -> None:
         scope = build.flavor
 
+        def launch_failure(name: str) -> None:
+            try:
+                self.capture(build, name)
+                self.save_ui(build, name)
+            except Exception as exc:
+                print(f"could not capture launch failure screen: {exc}")
+            try:
+                logs = self.adb("logcat", "-d", "-v", "threadtime").stdout
+                self.save(f"{scope}/{name}-logcat.txt", logs)
+            except Exception as exc:
+                print(f"could not capture launch failure logcat: {exc}")
+
+        def launch_once(timeout: int) -> None:
+            self.launch(build.package)
+            self.wait_for_navigation(timeout=timeout)
+
         def launch_fresh() -> str:
             self.adb("logcat", "-c")
             self.clear_app(build.package)
-            self.launch(build.package)
-            self.wait_for_navigation()
+            try:
+                launch_once(30)
+            except Failure as exc:
+                launch_failure("00-launch-failure")
+                print(f"{scope}: retrying after launch failure: {exc}")
+                self.adb("logcat", "-c")
+                self.clear_app(build.package)
+                try:
+                    launch_once(60)
+                except Failure:
+                    launch_failure("00-launch-failure-retry")
+                    raise
             self.capture(build, "01-discover")
             self.save_ui(build, "01-discover")
             return f"{build.package} launched"
