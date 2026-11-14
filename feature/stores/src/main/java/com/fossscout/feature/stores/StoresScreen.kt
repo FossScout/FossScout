@@ -107,36 +107,39 @@ fun StoresScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        Row(
+        Column(
             modifier = Modifier.padding(start = 20.dp, end = 12.dp, top = 16.dp, bottom = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.stores_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.stores_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (onReportProblem != null) {
-                TextButton(onClick = { onReportProblem(null) }) {
-                    Text(stringResource(R.string.stores_report_problem))
+            Text(
+                text = stringResource(R.string.stores_title),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = stringResource(R.string.stores_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (onReportProblem != null) {
+                    TextButton(onClick = { onReportProblem(null) }) {
+                        Text(stringResource(R.string.stores_report_problem))
+                    }
                 }
-            }
-            if (onOpenStoreSearch != null) {
-                OutlinedButton(onClick = onOpenStoreSearch) {
-                    Text(stringResource(R.string.stores_search))
+                if (onOpenStoreSearch != null) {
+                    OutlinedButton(onClick = onOpenStoreSearch) {
+                        Text(stringResource(R.string.stores_search))
+                    }
                 }
-            }
-            Button(onClick = onAdd) {
-                Text(stringResource(R.string.stores_add))
+                Button(onClick = onAdd) {
+                    Text(stringResource(R.string.stores_add))
+                }
             }
         }
 

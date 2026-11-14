@@ -53,6 +53,15 @@ jobs:
       - name: Build debug APKs
         run: ./gradlew assemblePlaystoreDebug assembleVanillaDebug
 
+      - name: Build F19 tracker fixture APK
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/build_f19_fixture_apk.py \
+            --output "$RUNNER_TEMP/f19-tracker.apk" \
+            --android-jar "$ANDROID_HOME/platforms/android-37.0/android.jar" \
+            --build-tools "$ANDROID_HOME/build-tools/36.0.0" \
+            --java-home "$JAVA_HOME"
+
       - name: Boot emulator and run smoke test
         run: |
           set -euo pipefail
@@ -102,13 +111,16 @@ jobs:
             --output "$RUNNER_TEMP/device-smoke" \
             --play-apk app/build/outputs/apk/playstore/debug/app-playstore-debug.apk \
             --vanilla-apk app/build/outputs/apk/vanilla/debug/app-vanilla-debug.apk \
-            --aapt2 "$ANDROID_HOME/build-tools/36.0.0/aapt2"
+            --aapt2 "$ANDROID_HOME/build-tools/36.0.0/aapt2" \
+            --f19-store-url "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/.github/fixtures/f19/repo" \
+            --f19-tracker-apk "$RUNNER_TEMP/f19-tracker.apk"
 
       - name: Publish smoke report
         if: always()
         run: |
           mkdir -p "$RUNNER_TEMP/device-smoke"
           cp "$RUNNER_TEMP/emulator.log" "$RUNNER_TEMP/device-smoke/emulator.log" 2>/dev/null || true
+          cp "$RUNNER_TEMP/f19-tracker.apk" "$RUNNER_TEMP/device-smoke/f19-tracker.apk" 2>/dev/null || true
           if [ -f "$RUNNER_TEMP/device-smoke/report.md" ]; then
             cat "$RUNNER_TEMP/device-smoke/report.md" >> "$GITHUB_STEP_SUMMARY"
           else
