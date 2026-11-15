@@ -364,11 +364,17 @@ class IndexSyncRepository(
                 message = exception.message.orEmpty(),
             )
         } catch (exception: Exception) {
+            println(
+                "Index sync failed for ${descriptor.id.value}: " +
+                    "${exception::class.java.name}: ${exception.message}",
+            )
+            exception.printStackTrace()
             fail(
                 job = job,
                 previous = previous,
                 kind = SyncFailureKind.UNKNOWN,
-                message = exception.message ?: "Index sync failed",
+                message = "${exception::class.java.simpleName}: " +
+                    (exception.message ?: "Index sync failed"),
             )
         } finally {
             entryJar?.delete()
