@@ -45,11 +45,12 @@ Covered:
 - Vanilla full scan with status and last-checked time, plus installed-package
   fixtures for the ADB fallback, a known installer (friendly name), an unknown
   installer (raw package), and a preinstalled system app.
-- F19 comparison against a signed test index: the Exodus ETIP dataset header,
-  a positive tracker signature match, a no-match result, local APK manifest
-  replacement, package-mismatch rejection, and a standalone audit export whose
-  JSON is read back from the app cache. The fixture index and tracker APK live
-  under [`.github/fixtures/f19`](../.github/fixtures/f19/).
+- F19 comparison against a custom HTTPS fixture store and signed test index:
+  the Exodus ETIP dataset header, a positive tracker signature match, a
+  no-match result, local APK manifest replacement, package-mismatch rejection,
+  and a standalone audit export whose JSON is read back from the app cache. The
+  fixture index and tracker APK live under
+  [`.github/fixtures/f19`](../.github/fixtures/f19/).
 
 Not covered:
 
@@ -164,8 +165,11 @@ the listed checks only. It does not replace the real-device checklist below.
 ## 4a. Permission and tracker comparison (F19)
 
 The CI emulator covers the positive/no-match scan states, local APK manifest
-replacement and mismatch, and audit JSON schema. The unchecked items below still
-need a real device, network-disabled run, or failure fixture.
+replacement and mismatch, and audit JSON schema. Run
+[43734657567](https://github.com/FossScout/FossScout/actions/runs/43734657567)
+passed for `d2ebe37`; it also syncs a signed HTTPS fixture store before the
+comparison. The unchecked items below still need a real device, network-disabled
+run, or failure fixture.
 
 - [ ] From a primary, other-match, and alternative card, open Compare
       permissions. Added, removed, and shared counts and grouped details render.
