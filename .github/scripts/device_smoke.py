@@ -459,6 +459,8 @@ class Smoke:
                 return node
             if time.time() >= deadline:
                 raise Failure(f"UI text not found: {needle!r}")
+            if self.dismiss_system_anr():
+                continue
             if scroll:
                 self.swipe_up()
             else:
@@ -482,6 +484,8 @@ class Smoke:
                     return needle, node
             if time.time() >= deadline:
                 raise Failure(f"none of these UI texts appeared: {values!r}")
+            if self.dismiss_system_anr():
+                continue
             if scroll:
                 self.swipe_up()
             else:
@@ -509,10 +513,30 @@ class Smoke:
         if self.find_node(self.dump_ui(), text, exact=exact) is not None:
             raise Failure(f"unexpected UI text is present: {text!r}")
 
+    def dismiss_system_anr(self) -> bool:
+        root = self.dump_ui()
+        labels = [
+            label for node in root.iter("node") for label in self.node_labels(node)
+        ]
+        if not any(
+            "isn't responding" in label or "is not responding" in label
+            for label in labels
+        ):
+            return False
+        wait = self.find_node(root, "Wait", exact=True)
+        if wait is not None and self.is_tappable(wait):
+            self.tap_node(wait)
+        else:
+            self.sh("input", "keyevent", "4")
+        time.sleep(1)
+        return True
+
     def wait_for_navigation(self, timeout: int = 30) -> None:
         deadline = time.time() + timeout
         missing: list[str] = []
         while time.time() < deadline:
+            if self.dismiss_system_anr():
+                continue
             root = self.dump_ui()
             missing = [
                 label
