@@ -1278,7 +1278,12 @@ class Smoke:
                 timeout=40,
                 scroll=True,
             )
-            self.wait_for_node("Aarki", exact=True, timeout=20, scroll=True)
+            self.wait_for_node(
+                "Matched code signature: com.aarki",
+                exact=True,
+                timeout=20,
+                scroll=True,
+            )
             tracker = "Aarki"
         else:
             self.wait_for_node(
