@@ -438,6 +438,20 @@ class Smoke:
         )
         time.sleep(0.5)
 
+    def scroll_to_top(self, attempts: int = 8) -> None:
+        width, height = self.screen_size()
+        for _ in range(attempts):
+            self.sh(
+                "input",
+                "swipe",
+                width // 2,
+                int(height * 0.30),
+                width // 2,
+                int(height * 0.80),
+                300,
+            )
+            time.sleep(0.2)
+
     def wait_for_node(
         self,
         needle: str,
@@ -1233,6 +1247,7 @@ class Smoke:
             scroll=True,
         )
 
+        self.scroll_to_top()
         self.tap_text("Choose another APK", exact=True, timeout=20, scroll=True)
         self.pick_download_apk(build, mismatch_apk, "23-f19-manifest-mismatch")
         mismatch = f"The selected APK is for {mismatch_package}, not {package}."
