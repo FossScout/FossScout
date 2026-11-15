@@ -325,6 +325,7 @@ class StoresViewModelTest {
                 tempDir = Files.createTempDirectory("fossscout-rotation-vm").toFile(),
                 storageBudgetBytes = { 16L * 1024L * 1024L },
                 now = { 2_000_000L },
+                ioDispatcher = dispatcher,
             )
             val viewModel = StoresViewModel(
                 StoreRegistryRepository(store = FakeStoreRegistryStore(registry)),

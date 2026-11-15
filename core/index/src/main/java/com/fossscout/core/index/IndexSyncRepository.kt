@@ -11,6 +11,8 @@ import java.security.DigestInputStream
 import java.security.MessageDigest
 import java.util.UUID
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -69,6 +71,7 @@ class IndexSyncRepository(
     private val storageBudgetBytes: suspend () -> Long = { DEFAULT_STORAGE_BUDGET_BYTES },
     private val now: () -> Long = System::currentTimeMillis,
     private val staleAfterMillis: Long = DEFAULT_STALE_AFTER_MILLIS,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
     private val syncMutex = Mutex()
     private val json = Json { encodeDefaults = true }
@@ -115,7 +118,10 @@ class IndexSyncRepository(
         payloadStore.cleanup(activePayloadPaths())
     }
 
-    suspend fun sync(descriptor: StoreDescriptor): IndexSyncResult = syncMutex.withLock {
+    suspend fun sync(descriptor: StoreDescriptor): IndexSyncResult =
+        withContext(ioDispatcher) { syncLocked(descriptor) }
+
+    private suspend fun syncLocked(descriptor: StoreDescriptor): IndexSyncResult = syncMutex.withLock {
         val storeId = descriptor.id.value
         val previous = metadataStore.state.first().snapshots[storeId]
         val startedAt = now()
