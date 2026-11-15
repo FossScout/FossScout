@@ -9,6 +9,7 @@ import com.fossscout.core.store.StoreListingRequest
 import com.fossscout.core.store.StoreSearchRequest
 import com.fossscout.core.store.StoreVersionsRequest
 import java.io.File
+import java.io.InputStream
 import java.nio.file.Files
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CancellationException
@@ -94,6 +95,31 @@ class IndexSyncRepositoryTest {
         assertEquals(35, version.targetSdk)
         assertEquals(listOf("android.permission.INTERNET"), version.permissions)
         assertEquals(1_234L, version.sizeBytes)
+    }
+
+    @Test
+    fun `response bodies are read off the caller thread`() = runTest {
+        val callerThread = Thread.currentThread().name
+        val readThreads = mutableListOf<String>()
+        val indexJson = TestIndexFixtures.indexJson()
+        val signed = signedEntry(timestamp = 1_000, indexJson = indexJson)
+        val harness = harness()
+        harness.respond { request ->
+            val bytes = when {
+                request.url.endsWith("/entry.jar") -> signed.jar
+                request.url.endsWith("/index-v2.json") -> indexJson.toByteArray()
+                else -> error("Unexpected request ${request.url}")
+            }
+            fakeResponse(request.url, bytes).copy(
+                body = ThreadRecordingInputStream(bytes.inputStream(), readThreads),
+            )
+        }
+
+        val result = harness.repository.sync(harness.descriptor)
+
+        assertEquals(SyncState.SUCCEEDED, result.job.state)
+        assertTrue(readThreads.isNotEmpty())
+        assertTrue(readThreads.none { it == callerThread })
     }
 
     @Test
@@ -757,6 +783,25 @@ class IndexSyncRepositoryTest {
         .drop(1)
         .filter(String::isNotBlank)
         .map(parser::decodePackage)
+
+    private class ThreadRecordingInputStream(
+        private val delegate: InputStream,
+        private val readThreads: MutableList<String>,
+    ) : InputStream() {
+        override fun read(): Int {
+            readThreads += Thread.currentThread().name
+            return delegate.read()
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            readThreads += Thread.currentThread().name
+            return delegate.read(buffer, offset, length)
+        }
+
+        override fun close() {
+            delegate.close()
+        }
+    }
 
     private class Harness(
         val descriptor: StoreDescriptor,
