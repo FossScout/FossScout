@@ -69,9 +69,10 @@ Before announcing the beta:
 
 | Version | Date | Channel | Result |
 | --- | --- | --- | --- |
-| [`v0.1.0-vanilla`](https://github.com/FossScout/FossScout/tree/v0.1.0-vanilla) | 2026-11-10 | Historical F-Droid source tag | Tagged from `main` after the vanilla rename; no GitHub release. It predates the latest F19 slices and dependency updates and is superseded by the planned `v0.1.1-vanilla` tag. |
+| [`v0.1.1-vanilla`](https://github.com/FossScout/FossScout/tree/v0.1.1-vanilla) | 2026-11-16 | F-Droid source tag | Tagged from `main` at `42e8cc7`; no GitHub release. The local tag build passed with version `0.1.1-vanilla`/code `2`; F-Droid publication is pending. |
+| [`v0.1.0-vanilla`](https://github.com/FossScout/FossScout/tree/v0.1.0-vanilla) | 2026-11-10 | Historical F-Droid source tag | Tagged from `main` after the vanilla rename; no GitHub release. It predates the latest F19 slices and dependency updates and is superseded by `v0.1.1-vanilla`. |
 | [`v0.1.0-beta.4`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.4) | 2026-11-06 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version `0.1.0-beta.4` (version code 12), SHA-256 `7e42bb6d2d9f900c17aa57bfcf64522487f64a54411fc84ac7bad738764e6148`, certificate verified. |
-| [`v0.1.0`](https://github.com/FossScout/FossScout/tree/v0.1.0) | 2026-11-05 | F-Droid source tag | Created on `e4262a1`; no GitHub release. Predates the vanilla rename, so a new tag is required before `fdroiddata` submission. |
+| [`v0.1.0`](https://github.com/FossScout/FossScout/tree/v0.1.0) | 2026-11-05 | Historical F-Droid source tag | Created on `e4262a1`; no GitHub release. Predates the vanilla rename and is superseded by `v0.1.1-vanilla`. |
 | [`v0.1.0-beta.3`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.3) | 2026-11-03 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version `0.1.0-beta.3` (version code 11), SHA-256 `ef76fe01c48f116b156b6c472360d47b40fedbacdde0b9cde1dafcd8c154e332`, certificate verified. |
 | [`v0.1.0-beta.2`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.2) | 2026-11-01 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version `0.1.0-beta.2` (version code 10), checksum and certificate verified. |
 | [`v0.1.0-beta.1`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.1) | 2026-10-29 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version code 9, checksum and certificate verified. |
@@ -82,8 +83,8 @@ Play internal testing and F-Droid are separate follow-up stages. Do not publish
 the beta APK to Play or F-Droid: Play App Signing and official F-Droid builds
 have different signing and application-ID requirements.
 
-The selected F-Droid source release is `v0.1.1-vanilla`, tagged from the release
-commit after the version bump to `0.1.1`/`2`. Stable tags do not trigger the beta
+The F-Droid source release is `v0.1.1-vanilla`, tagged from `main` at `42e8cc7`
+after the version bump to `0.1.1`/`2`. Stable tags do not trigger the beta
 release workflow or create a GitHub release. The F-Droid source build is not
 submitted yet.
 
