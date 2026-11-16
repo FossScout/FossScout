@@ -49,9 +49,8 @@ from the tracked `screenshots/` directory for the Play listing.
 
 ## Graphics
 
-The screenshots are composed onto 1080 × 1920 canvases. Seven are derived from
-the tracked headless captures in `screenshots/`; the Stores screenshot is
-recomposed from the passing device-smoke emulator capture. The selected source
+The screenshots are derived from the existing tracked captures in
+`screenshots/` and recomposed onto 1080 × 1920 canvases. The selected source
 images are:
 
 | Play screenshot | Source |
@@ -59,16 +58,15 @@ images are:
 | `01-discover.png` | `01-discover-light.png` |
 | `02-search.png` | `02-discover-search.png` |
 | `03-foss-match.png` | `07-match-exact-result.png` |
-| `04-stores.png` | Device-smoke run [43734657567](https://github.com/FossScout/FossScout/actions/runs/43734657567), `playstore/04-stores.png` |
+| `04-stores.png` | `10-stores-overview.png` |
 | `05-saved-projects.png` | `13-saved-favourites.png` |
 | `06-collections.png` | `15-collections.png` |
 | `07-contribution-preview.png` | `21-contribution-preview.png` |
 | `08-settings.png` | `22-settings-basic.png` |
 
-Seven screenshots contain sample data from the headless capture harness. The
-Stores screenshot uses the fresh-install emulator state from the passing
-device-smoke run. Recapture the rest after a UI change, and replace them with
-real-device screenshots when a device is available.
+The screenshots contain sample data from the headless capture harness. Recapture
+them after a UI change, and replace them with real-device screenshots when a
+device is available.
 
 ## Before uploading
 
