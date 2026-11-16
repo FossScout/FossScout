@@ -22,5 +22,9 @@ can access every feature without credentials.
   installed-app scan is available only in the F-Droid build.
 - Some handoff actions require a compatible store client; a browser fallback is
   available.
+- Permission comparison, tracker-signature scanning, local APK manifest
+  selection, and audit export are available without an account. The tracker
+  dataset is bundled; the APK picker is optional and reads only a file the
+  reviewer selects.
 - No login, test account, or special configuration is required.
 - The app does not install or uninstall APKs.

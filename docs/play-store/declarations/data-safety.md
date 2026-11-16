@@ -28,6 +28,11 @@ Status: ready to copy into Play Console after the app entry exists.
   third-party servers may receive standard request metadata such as an IP
   address, request time, and user agent, as with any HTTPS request. FossScout
   does not attach user data to those requests.
+- Permission comparison and tracker-signature scanning run on-device against
+  installed `PackageManager` data, cached store metadata, and the installed
+  app's local DEX files. The optional APK manifest picker reads a user-selected
+  file; audit exports are created locally and shared only when the user chooses.
+  None of this data is sent to the developer.
 - Contribution reports are never uploaded automatically. The user reviews a
   redacted report and chooses whether to copy it, share it, or open a prefilled
   GitHub issue URL. If the user submits an issue, GitHub's privacy policy
@@ -39,6 +44,8 @@ Status: ready to copy into Play Console after the app entry exists.
 
 - Confirm no analytics, crash-reporting, advertising, or attribution SDK was
   added after this draft.
+- Confirm the bundled tracker dataset remains local-only and that the APK
+  picker and audit export add no network or storage permission.
 - Confirm the privacy policy is hosted at a public URL.
 - Re-check the Play build manifest for `QUERY_ALL_PACKAGES` and other sensitive
   permissions.

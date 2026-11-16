@@ -1,12 +1,14 @@
 # F-Droid Release Readiness
 
 F-Droid is the second distribution channel after the GitHub beta. The source
-build, listing metadata, submission metadata, and the `v0.1.0-vanilla` source
-tag are prepared. The `fdroiddata` merge request is not open yet.
+build, listing metadata, and submission metadata are prepared, but the existing
+`v0.1.0-vanilla` tag predates the latest F19 tracker, audit, and manifest work.
+The `fdroiddata` merge request is not open yet; choose the submission target
+first.
 
 The GitHub beta channel remains at `v0.1.0-beta.4`. The old `v0.1.0` tag is for
-the previous `fdroid` flavor; the `v0.1.0-vanilla` tag contains the current
-`vanilla` flavor and the refreshed F-Droid metadata.
+the previous `fdroid` flavor; the `v0.1.0-vanilla` tag contains the vanilla
+rename and the earlier F-Droid metadata.
 
 Do not publish the GitHub beta APK or the Play AAB to F-Droid. The F-Droid
 variant is a separate package built from source with the `vanilla` flavor.
@@ -16,12 +18,33 @@ variant is a separate package built from source with the `vanilla` flavor.
 | Item | Status |
 | --- | --- |
 | Vanilla flavor | Ready: `com.fossscout.app.vanilla`, full installed-app scan |
-| Stable tag | **Done**: `v0.1.0-vanilla` contains the vanilla rename and refreshed metadata |
-| F-Droid release build | **Done**: clean `v0.1.0-vanilla` tag build passed locally on 2026-11-10; rerun only if the tagged source changes |
-| Fastlane listing metadata | Added under `fastlane/metadata/android/en-US/` |
-| `fdroiddata` metadata | Prepared in [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml); `commit` points to `v0.1.0-vanilla` |
+| Stable tag | **Decision required**: `v0.1.0-vanilla` contains the vanilla rename but predates the latest F19 slices and dependency updates |
+| F-Droid release build | `v0.1.0-vanilla` passed locally on 2026-11-10; rebuild from the chosen tag before submission |
+| Fastlane listing metadata | Current `main` copy includes F18/F19. `changelogs/1.txt` matches `v0.1.0-vanilla`; a new tag needs a new changelog |
+| `fdroiddata` metadata | Prepared in [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml); currently targets `v0.1.0-vanilla` |
 | F-Droid signing | F-Droid-hosted signing; no project key |
-| F-Droid submission | **Pending**: open the `fdroiddata` merge request after real-device verification; buildserver API 37 is confirmed |
+| F-Droid submission | **Pending**: choose the tag/version, complete real-device verification, then open the `fdroiddata` merge request; buildserver API 37 is confirmed |
+
+## Submission target decision
+
+Current `main` includes the F19 tracker, audit, and local APK manifest work plus
+the dependency updates; `v0.1.0-vanilla` does not. Choose one path before
+opening the merge request:
+
+1. **Submit `v0.1.0-vanilla` as the first F-Droid release.** No build-file change
+   or retag is needed, and the prepared metadata and `changelogs/1.txt` match.
+   Use the tag's existing listing copy. This omits the latest F19 slices and
+   dependency updates.
+2. **Create a new vanilla tag from current `main` (recommended).** This includes
+   the current feature set and current listing copy but requires a version
+   name/code bump. The current Gradle default is `0.1.0`/`1`; update it only with
+   project-owner approval, then update the `fdroiddata` `commit`, `versionName`,
+   `versionCode`, and `CurrentVersion`, and add
+   `fastlane/metadata/android/en-US/changelogs/<code>.txt`. Rebuild from the new
+   tag before submission.
+
+Do not open the merge request until the target is chosen and the real-device
+checks pass.
 
 ## Previous v0.1.0 build (before rename)
 
@@ -44,7 +67,7 @@ This build does not describe the current `vanilla` flavor. Its merged manifest
 contained `QUERY_ALL_PACKAGES` and `INTERNET`, plus AndroidX's dynamic-receiver
 permission, and no install, uninstall, or accessibility entries.
 
-## Current vanilla build
+## Prepared v0.1.0-vanilla build
 
 Run from the `v0.1.0-vanilla` tag:
 
@@ -74,9 +97,10 @@ and sign its own APK.
 
 ## Before submission
 
-1. **Use the `v0.1.0-vanilla` tag.** It contains the vanilla rename and the
-   refreshed metadata. Confirm the metadata `commit`, `CurrentVersion`, and
-   `versionCode` still match the tagged build before opening the merge request.
+1. **Choose the submission tag.** Either submit the existing
+   `v0.1.0-vanilla` tag or create a new vanilla tag/version from current `main`.
+   Confirm the metadata `commit`, `CurrentVersion`, `versionName`, and
+   `versionCode` match the tagged build before opening the merge request.
 2. **API 37 is available on the F-Droid buildserver.** The app uses
    `compileSdk = 37`. F-Droid's
    [`sdkmanager`](https://gitlab.com/fdroid/sdkmanager/-/blob/master/.gitlab-ci.yml)
@@ -110,18 +134,21 @@ metadata must add `Binaries` and `AllowedAPKSigningKeys`.
 
 Use
 [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml).
-The prepared file contains:
+The prepared file currently targets `v0.1.0-vanilla` and contains:
 
-- `commit: v0.1.0-vanilla`, the stable source tag;
+- `commit: v0.1.0-vanilla`, the source tag;
 - `versionName: '0.1.0-vanilla'` because the vanilla flavor appends the suffix;
 - `versionCode: 1`;
 - `UpdateCheckMode: Static` until automatic version extraction is tested;
 - a `QUERY_ALL_PACKAGES` explanation in `MaintainerNotes`;
 - no `Binaries` or `AllowedAPKSigningKeys` because F-Droid signs the build.
 
+If a new tag/version is chosen, update all four tag/version fields together and
+add the matching `changelogs/<versionCode>.txt`.
+
 The descriptive listing is taken from `fastlane/metadata/android/en-US/`:
 `short_description.txt`, `full_description.txt`, `images/icon.png`,
-`images/phoneScreenshots/`, and `changelogs/1.txt`.
+`images/phoneScreenshots/`, and `changelogs/<versionCode>.txt`.
 
 ## Submission
 
@@ -148,8 +175,8 @@ The project does not have GitLab access in this environment. Opening the
 
 ## Verification after publication
 
-- The F-Droid listing shows package `com.fossscout.app.vanilla`, version
-  `0.1.0-vanilla`, and the expected icon and screenshots.
+- The F-Droid listing shows package `com.fossscout.app.vanilla`, the version
+  chosen for submission, and the expected icon and screenshots.
 - The published APK is signed by F-Droid, not the beta or Play key.
 - The full scan works, the scan stays local, and the app does not request
   install, uninstall, or accessibility permissions.
@@ -159,6 +186,8 @@ The project does not have GitLab access in this environment. Opening the
 
 ## Open items
 
+- Choose whether to submit `v0.1.0-vanilla` or create a new vanilla tag/version
+  from current `main`; update the metadata and changelog to match.
 - Watch the first F-Droid build for the `android-37` resolution workaround;
   API 37 packages are available on the buildserver.
 - Open the `fdroiddata` merge request and respond to review.

@@ -90,7 +90,7 @@ More captures: [screenshots/](screenshots/).
 ## Tech stack
 
 - Kotlin 2.4
-- Gradle 9.8.2 and Android Gradle Plugin 9.5
+- Gradle 9.9.0 and Android Gradle Plugin 9.5.1
 - Jetpack Compose + Material 3
 - AndroidX Lifecycle and ViewModel with StateFlow
 - DataStore Preferences with kotlinx.serialization for local persistence
@@ -208,8 +208,8 @@ depend on `:app` or on each other.
 - Complete device/emulator verification for inventory, store intents, backup,
   trust details, and contribution actions
 - Complete Play internal testing
-- Open the F-Droid metadata merge request for the `v0.1.0-vanilla` source tag
-  ([runbook](docs/FDROID.md))
+- Choose the F-Droid submission tag/version, then open the metadata merge
+  request ([runbook](docs/FDROID.md))
 
 Direct APK download/install and the install-time accessibility prompt are
 post-v1 and restricted to builds where the platform policy allows them.
