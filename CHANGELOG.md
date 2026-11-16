@@ -7,10 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1-vanilla] - 2026-11-16
+
+F-Droid source release for the vanilla flavor. It includes the complete F19
+tracker, audit, and local APK manifest work, the F20 matching correction, and the
+dependency updates. F-Droid publication is pending.
+
+### Added
+
+- Unified cross-store search across cached F-Droid and IzzyOnDroid indexes.
+- Local permission comparison against a store alternative.
+- Local tracker-signature scanning with the bundled Exodus ETIP dataset.
+- Local alternative-APK manifest selection and comparison.
+- Local JSON audit export with source and timestamp.
+- API 36 emulator coverage for tracker matching, manifest import,
+  package-mismatch rejection, and audit export.
+
+### Changed
+
+- Updated AGP to 9.5.1 and the Gradle wrapper to 9.9.0.
+- Bumped the default version name/code to `0.1.1`/`2` for the F-Droid release.
+
 ## [0.1.0-vanilla] - 2026-11-10
 
-First F-Droid source tag for the vanilla flavor, including the F18, F19, F20,
-and F22 post-v1 work. F-Droid publication is pending.
+First F-Droid source tag for the vanilla flavor, including F18, the initial F19
+permission comparison, F20, and F22. F-Droid publication is pending.
 
 ### Added
 
@@ -83,7 +104,8 @@ channel remains at `0.1.0-beta.3`.
 - Beta build type with application ID `com.fossscout.app.beta`.
 - Signed GitHub prerelease workflow for `v*-beta*` tags.
 
-[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.0-vanilla...HEAD
+[Unreleased]: https://github.com/FossScout/FossScout/compare/v0.1.1-vanilla...HEAD
+[0.1.1-vanilla]: https://github.com/FossScout/FossScout/tree/v0.1.1-vanilla
 [0.1.0-vanilla]: https://github.com/FossScout/FossScout/tree/v0.1.0-vanilla
 [0.1.0]: https://github.com/FossScout/FossScout/tree/v0.1.0
 [0.1.0-beta.4]: https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.4

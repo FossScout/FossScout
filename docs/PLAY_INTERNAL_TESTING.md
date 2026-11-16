@@ -58,13 +58,17 @@ Keep the keystore and passwords out of the repository.
 ## Build the AAB
 
 The `PLAY_*` repository secrets are not configured yet. No signed AAB is
-committed. After the secrets are configured, run the **Play Internal AAB**
-workflow manually from GitHub Actions from current `main`. Provide:
+committed. A local unsigned `bundlePlaystoreRelease` check on 2026-11-16
+produced version `0.1.1`/code `2`; the Play merged manifest had only `INTERNET`
+and the AndroidX dynamic-receiver permission, with no `QUERY_ALL_PACKAGES`.
+That artifact is not for upload. After the secrets are configured, run the
+**Play Internal AAB** workflow manually from GitHub Actions from current
+`main`. Provide:
 
 - `version_name`: a Play version name that does not contain `-beta`
 - `version_code`: a positive integer higher than every previously uploaded code
 
-For the first internal upload, `version_name: 0.1.0` and `version_code: 1` match
+For the first internal upload, `version_name: 0.1.1` and `version_code: 2` match
 the current build defaults. Use a higher version code if a build has already
 been uploaded to this Play entry.
 

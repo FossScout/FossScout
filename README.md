@@ -208,8 +208,8 @@ depend on `:app` or on each other.
 - Complete device/emulator verification for inventory, store intents, backup,
   trust details, and contribution actions
 - Complete Play internal testing
-- Choose the F-Droid submission tag/version, then open the metadata merge
-  request ([runbook](docs/FDROID.md))
+- Tag and submit `v0.1.1-vanilla` to F-Droid
+  ([runbook](docs/FDROID.md))
 
 Direct APK download/install and the install-time accessibility prompt are
 post-v1 and restricted to builds where the platform policy allows them.

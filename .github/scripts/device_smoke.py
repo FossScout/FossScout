@@ -634,7 +634,7 @@ class Smoke:
             self.wait_for_node("IzzyOnDroid", exact=False, timeout=30, scroll=True)
             self.open_destination("Settings", "Settings", build, "05-settings")
             self.wait_for_node("Backup and restore", exact=False, timeout=30, scroll=True)
-            self.open_destination("About", "Version 0.1.0", build, "06-about")
+            self.open_destination("About", "Version 0.1.1", build, "06-about")
             self.wait_for_node(
                 "Donate via Liberapay",
                 exact=True,
