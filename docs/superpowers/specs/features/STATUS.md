@@ -2,7 +2,7 @@
 
 Last updated: **2026-11-16**
 Feature baseline: `main` at `de110e1`; F18 unified store search, the F19 permission comparison, tracker signatures, local alternative-APK manifest analysis, and audit export, F20 matching correction, F22 support link, the vanilla flavor rename, F19 emulator coverage, the dependency updates, the standardized Stores screenshot workflow, and the Play/F-Droid submission package are merged. Current GitHub beta `v0.1.0-beta.4`; the selected F-Droid target is `v0.1.1-vanilla` (version `0.1.1`/code `2`), to be tagged from the release commit.
-Pending: real-device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); the latest CI emulator baseline passed on `d11a2a7` (run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921)), while Play internal testing and F-Droid submission remain pending. The F-Droid buildserver API 37 check is complete.
+Pending: real-device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); the latest CI emulator baseline passed on `9f82284` (run [43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411)) for version `0.1.1`, while Play internal testing and F-Droid submission remain pending. The F-Droid buildserver API 37 check is complete.
 Delivery: Toolchain upgraded to Gradle 9.9.0, AGP 9.5.1, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; the Play internal AAB workflow is present; Play upload secrets, Play Console setup, and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F22`](F22-support-and-donations.md)
@@ -40,14 +40,14 @@ file after every feature session with the new commit, test result, and status.
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
 | Feature completion | **15 of 21 fully done; 2 partial; 3 deferred; 1 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** create and push `v0.1.1-vanilla` from the release commit, rebuild the vanilla release from the tag, and complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md), especially the F19 tracker section, local APK picker, and audit export. The latest CI emulator baseline passes, including the F19 fixtures and the standardized Stores screenshot. Then prepare Play internal testing and the F-Droid metadata merge request for `v0.1.1-vanilla`. The F-Droid buildserver API 37 check is complete; watch the first build for the `android-37` resolution workaround. F18 unified store search, F20 matching correction, and F22 support link are complete; F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** create and push `v0.1.1-vanilla` from the release commit, rebuild the vanilla release from the tag, and complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md), especially the F19 tracker section, local APK picker, and audit export. The latest CI emulator baseline passes for version `0.1.1`, including the F19 fixtures; the Stores screenshot artifact from run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921) remains current. Then prepare Play internal testing and the F-Droid metadata merge request for `v0.1.1-vanilla`. The F-Droid buildserver API 37 check is complete; watch the first build for the `android-37` resolution workaround. F18 unified store search, F20 matching correction, and F22 support link are complete; F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ### Current verification baseline (2026-11-16)
 
 | Check | Result |
 | --- | --- |
-| `main` CI | `059da82`, run [43857008522](https://github.com/FossScout/FossScout/actions/runs/43857008522) passed: screenshot composition tests, unit tests, lint, and both debug APK builds. |
-| Device Smoke Test | `d11a2a7`, run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921) passed in 17m40s, including the F19 fixture store, tracker match/no-match, local APK manifest import and package-mismatch rejection, audit JSON export, and the standardized Stores screenshot artifact. |
+| `main` CI | `de110e1`, run [43863768482](https://github.com/FossScout/FossScout/actions/runs/43863768482) passed: screenshot composition tests, unit tests, lint, and both debug APK builds. |
+| Device Smoke Test | `9f82284`, run [43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411) passed in 20m13s for version `0.1.1`, including both flavors, the F19 fixture store, tracker match/no-match, local APK manifest import and package-mismatch rejection, and audit JSON export. |
 | Local rerun | `./gradlew test --rerun-tasks` passed: 591 tests, 0 failures/errors/skipped; 315 tasks in 12m03s. |
 | Stores screenshot | `c1b9e9c831f711c41446c6413c13b740d4d9259a36069bec64a7a8b1cadb6e2a`, generated from run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921) and committed in `059da82`. |
 

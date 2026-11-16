@@ -29,10 +29,10 @@ runs the CI-emulatable subset on a GitHub-hosted Ubuntu 24.04 runner with an API
 signing. Start it from the Actions tab with `Run workflow`.
 
 Passing baseline: 2026-11-16, run
-[43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921),
-commit `d11a2a7`, artifacts `device-smoke` and `store-screenshot`. This run
-includes the renamed `vanilla` flavor (`com.fossscout.app.vanilla`) and the F19
-fixture, tracker, local APK manifest, and audit checks.
+[43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411),
+commit `9f82284`, artifact `device-smoke`. This run uses version `0.1.1` and
+includes both flavors plus the F19 fixture, tracker, local APK manifest, and
+audit checks. The Stores screenshot artifact was not requested for this run.
 
 Covered:
 
