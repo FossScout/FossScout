@@ -1,10 +1,10 @@
 # F-Droid Release Readiness
 
-F-Droid is the second distribution channel after the GitHub beta. The selected
-submission target is `v0.1.1-vanilla`, tagged from the release commit on current
-`main` after the version-bump PR merges. It includes the F19 tracker, audit, and
-local APK manifest work plus the dependency updates. The `fdroiddata` merge
-request is not open yet.
+F-Droid is the second distribution channel after the GitHub beta. The
+`v0.1.1-vanilla` release tag is created from the `0.1.1` release commit on
+`main` (`42e8cc7`). It includes the F19 tracker, audit, and local APK manifest
+work plus the dependency updates. The `fdroiddata` merge request is not open
+yet.
 
 The GitHub beta channel remains at `v0.1.0-beta.4`. The old `v0.1.0` tag is for
 the previous `fdroid` flavor; `v0.1.0-vanilla` is the historical first vanilla
@@ -18,24 +18,23 @@ variant is a separate package built from source with the `vanilla` flavor.
 | Item | Status |
 | --- | --- |
 | Vanilla flavor | Ready: `com.fossscout.app.vanilla`, full installed-app scan |
-| Stable tag | **Target**: `v0.1.1-vanilla`, to be tagged from the release commit after the version-bump PR merges |
-| F-Droid release build | Rebuild from `v0.1.1-vanilla` after tagging; the historical `v0.1.0-vanilla` build passed on 2026-11-10 |
+| Stable tag | **Done**: `v0.1.1-vanilla` at `42e8cc7` |
+| F-Droid release build | **Done**: clean tag build passed locally on 2026-11-16; the historical `v0.1.0-vanilla` build passed on 2026-11-10 |
 | Fastlane listing metadata | Current `main` copy includes F18/F19; `changelogs/2.txt` matches `v0.1.1-vanilla` |
 | `fdroiddata` metadata | Prepared in [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml); targets `v0.1.1-vanilla` |
 | F-Droid signing | F-Droid-hosted signing; no project key |
-| F-Droid submission | **Pending**: create and push `v0.1.1-vanilla`, complete real-device verification, then open the `fdroiddata` merge request; buildserver API 37 is confirmed |
+| F-Droid submission | **Pending**: complete real-device verification, then open the `fdroiddata` merge request; buildserver API 37 is confirmed |
 
-## Selected target
+## Release tag
 
 `v0.1.1-vanilla` includes the current F18/F19 feature set, the F20 matching
 correction, and the dependency updates. `v0.1.0-vanilla` remains a historical
-tag; do not open the merge request against it. The release commit bumps the
+tag; do not open the merge request against it. The release commit bumped the
 Gradle defaults to version name `0.1.1` and version code `2`; the vanilla flavor
 produces `0.1.1-vanilla`.
 
-After the version-bump PR merges, tag the release commit, push
-`v0.1.1-vanilla`, rebuild from the tag, and then open the merge request. Do not
-open it before the real-device checks pass.
+The tag is created and pushed. Open the merge request only after the
+real-device checks pass.
 
 ## Previous v0.1.0 build (before rename)
 
@@ -86,25 +85,23 @@ does not declare `QUERY_ALL_PACKAGES`.
 This is a local build check, not a distributable artifact. F-Droid will build
 and sign its own APK.
 
-## Target v0.1.1-vanilla build check
+## v0.1.1-vanilla tag build check
 
-The release PR build was verified locally on 2026-11-16 before tagging:
+A clean build from the pushed tag was verified locally on 2026-11-16:
 
 - Path: `app/build/outputs/apk/vanilla/release/app-vanilla-release-unsigned.apk`
 - Package: `com.fossscout.app.vanilla`
 - Version name: `0.1.1-vanilla`
 - Version code: `2`
-- SHA-256: `faf558ad556bf7ba1c48094409896b0d7d6a773b452be0cbb9c2e3b4e9984869`
+- SHA-256: `ee43493e8ecbbd6abbd206a43e3b2cfe3ca278a47cafc49a1448d3fcbb96c90c`
 
 The merged manifest uses `QUERY_ALL_PACKAGES` and `INTERNET`, plus AndroidX's
 dynamic-receiver permission, with no install, uninstall, or accessibility
-entries. Rebuild from the pushed tag after tagging; local checksums vary with
-the build environment.
+entries. Local checksums vary with the build environment.
 
 ## Before submission
 
-1. **Create and push `v0.1.1-vanilla`.** After the version-bump PR merges, tag
-   the release commit and push the tag. Confirm the metadata `commit`,
+1. **Use the pushed `v0.1.1-vanilla` tag.** Confirm the metadata `commit`,
    `CurrentVersion`, `versionName`, and `versionCode` match the tagged build
    before opening the merge request.
 2. **API 37 is available on the F-Droid buildserver.** The app uses
@@ -192,8 +189,8 @@ The project does not have GitLab access in this environment. Opening the
 
 ## Open items
 
-- Create and push `v0.1.1-vanilla` from the release commit, then open the
-  `fdroiddata` merge request and respond to review.
+- Open the `fdroiddata` merge request for `v0.1.1-vanilla` and respond to
+  review.
 - Watch the first F-Droid build for the `android-37` resolution workaround;
   API 37 packages are available on the buildserver.
 - Decide whether to add F-Droid-specific full-scan screenshots.
