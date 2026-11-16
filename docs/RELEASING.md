@@ -69,7 +69,7 @@ Before announcing the beta:
 
 | Version | Date | Channel | Result |
 | --- | --- | --- | --- |
-| [`v0.1.0-vanilla`](https://github.com/FossScout/FossScout/tree/v0.1.0-vanilla) | 2026-11-10 | F-Droid source tag | Tagged from `main` after the vanilla rename; no GitHub release. F-Droid metadata points to this tag; publication is pending. |
+| [`v0.1.0-vanilla`](https://github.com/FossScout/FossScout/tree/v0.1.0-vanilla) | 2026-11-10 | F-Droid source tag | Tagged from `main` after the vanilla rename; no GitHub release. It predates the latest F19 slices and dependency updates; decide whether to submit it or retag current `main`. F-Droid publication is pending. |
 | [`v0.1.0-beta.4`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.4) | 2026-11-06 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version `0.1.0-beta.4` (version code 12), SHA-256 `7e42bb6d2d9f900c17aa57bfcf64522487f64a54411fc84ac7bad738764e6148`, certificate verified. |
 | [`v0.1.0`](https://github.com/FossScout/FossScout/tree/v0.1.0) | 2026-11-05 | F-Droid source tag | Created on `e4262a1`; no GitHub release. Predates the vanilla rename, so a new tag is required before `fdroiddata` submission. |
 | [`v0.1.0-beta.3`](https://github.com/FossScout/FossScout/releases/tag/v0.1.0-beta.3) | 2026-11-03 | GitHub prerelease | Published; APK package `com.fossscout.app.beta`, version `0.1.0-beta.3` (version code 11), SHA-256 `ef76fe01c48f116b156b6c472360d47b40fedbacdde0b9cde1dafcd8c154e332`, certificate verified. |
@@ -83,7 +83,9 @@ the beta APK to Play or F-Droid: Play App Signing and official F-Droid builds
 have different signing and application-ID requirements.
 
 The `v0.1.0-vanilla` tag contains the vanilla rename and the refreshed F-Droid
-metadata. Stable tags do not trigger the beta release workflow or create a
+metadata, but predates the latest F19 slices and dependency updates. Choose
+whether to submit it or retag current `main` before opening the F-Droid merge
+request. Stable tags do not trigger the beta release workflow or create a
 GitHub release. The F-Droid source build is not submitted yet.
 
 The beta signing key is dedicated to GitHub beta builds. Do not reuse it for

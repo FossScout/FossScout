@@ -28,10 +28,11 @@ runs the CI-emulatable subset on a GitHub-hosted Ubuntu 24.04 runner with an API
 36 AOSP x86_64 emulator. It builds both debug APKs and does not use release
 signing. Start it from the Actions tab with `Run workflow`.
 
-Passing baseline: 2026-11-09, run
-[42694212609](https://github.com/FossScout/FossScout/actions/runs/42694212609),
-commit `ee03deb`, artifact `device-smoke`. This run includes the renamed
-`vanilla` flavor (`com.fossscout.app.vanilla`).
+Passing baseline: 2026-11-16, run
+[43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921),
+commit `d11a2a7`, artifacts `device-smoke` and `store-screenshot`. This run
+includes the renamed `vanilla` flavor (`com.fossscout.app.vanilla`) and the F19
+fixture, tracker, local APK manifest, and audit checks.
 
 Covered:
 

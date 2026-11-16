@@ -5,9 +5,12 @@ It is local-first by design: no account, no ads, no analytics, and no hidden tel
 WHAT YOU CAN DO
 • Browse a curated catalog of FOSS projects and filter by category or tag.
 • Search by project name, tagline, or tag.
+• Search cached F-Droid and IzzyOnDroid catalogs across every enabled store.
 • Check an app by name or package against verified F-Droid and IzzyOnDroid indexes.
 • Review match confidence, evidence, coverage, and alternatives.
 • Correct a wrong match locally and keep a private note.
+• Compare installed permissions with a store alternative and scan the installed app's local DEX files for known tracker signatures.
+• Optionally inspect a user-selected local APK manifest and export the comparison as a local JSON audit report.
 • Inspect store security details, pinned fingerprints, index signatures, and verification history.
 • Save favourites, write private notes, and build collections you can share or import.
 • Export and restore your local profile with an optional passphrase.
@@ -16,6 +19,8 @@ WHAT YOU CAN DO
 
 PRIVACY AND CONTROL
 FossScout keeps its working data on your device. The Play build uses manual package checks and limited package visibility; it does not request broad package access, install packages, or use an accessibility service. The F-Droid build adds a full installed-app scan for people who want it.
+
+Permission comparison and tracker-signature scanning run on-device. The optional APK manifest picker reads only the file you choose, and audit exports are created locally and shared only when you choose.
 
 Network access is used for store index sync and for links you choose to open. Store indexes are checked against pinned fingerprints and signatures. Reports are never uploaded automatically: you review the redacted content and decide whether to copy, share, or open it in your browser.
 
