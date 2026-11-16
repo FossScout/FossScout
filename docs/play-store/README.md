@@ -68,6 +68,14 @@ The screenshots contain sample data from the headless capture harness. Recapture
 them after a UI change, and replace them with real-device screenshots when a
 device is available.
 
+The Stores graphic is generated from a `main`-branch Device Smoke Test run.
+Dispatch the workflow from `main` with `publish_store_screenshot` enabled,
+download the `store-screenshot` artifact, and commit `04-stores.png` and `4.png`.
+The composition is performed by
+[`compose_store_screenshot.py`](../../.github/scripts/compose_store_screenshot.py);
+do not edit the images by hand. Until the first main-branch capture is committed,
+`04-stores.png` uses the tracked `10-stores-overview.png` baseline.
+
 ## Before uploading
 
 1. Host `privacy-policy.md` at a public HTTPS URL and add that URL in Play

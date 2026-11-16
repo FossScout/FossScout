@@ -2,6 +2,12 @@ name: Device Smoke Test
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_store_screenshot:
+        description: 'Compose the Stores Play/fastlane screenshot artifact (main only)'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -114,6 +120,38 @@ jobs:
             --aapt2 "$ANDROID_HOME/build-tools/36.0.0/aapt2" \
             --f19-store-url "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/.github/fixtures/f19/repo" \
             --f19-tracker-apk "$RUNNER_TEMP/f19-tracker.apk"
+
+      - name: Compose Stores screenshot
+        if: inputs.publish_store_screenshot
+        env:
+          CAPTURE: ${{ runner.temp }}/device-smoke/playstore/04-stores.png
+          OUTPUT_DIR: ${{ runner.temp }}/store-screenshot
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "Store screenshot generation must run on main." >&2
+            exit 1
+          fi
+          mkdir -p "$OUTPUT_DIR"
+          python3 .github/scripts/compose_store_screenshot.py \
+            --capture "$CAPTURE" \
+            --template docs/play-store/graphics/phone-screenshots/04-stores.png \
+            --play-out "$OUTPUT_DIR/04-stores.png" \
+            --fastlane-out "$OUTPUT_DIR/4.png"
+          {
+            echo "source_commit=${GITHUB_SHA}"
+            echo "source_run=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "capture=playstore/04-stores.png"
+          } > "$OUTPUT_DIR/source.txt"
+          sha256sum "$OUTPUT_DIR/04-stores.png" "$OUTPUT_DIR/4.png" >> "$OUTPUT_DIR/source.txt"
+
+      - name: Upload Stores screenshot
+        if: inputs.publish_store_screenshot
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: store-screenshot
+          path: ${{ runner.temp }}/store-screenshot
+          retention-days: 30
 
       - name: Publish smoke report
         if: always()

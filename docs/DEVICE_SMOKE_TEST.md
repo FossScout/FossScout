@@ -68,6 +68,12 @@ The artifact contains `report.md`, screenshots, UI dumps, logcat, package dumps,
 F19 audit JSON exports, and the emulator log. A passing CI run is evidence for
 the listed checks only. It does not replace the real-device checklist below.
 
+To generate the Stores Play/fastlane screenshot, dispatch the workflow from
+`main` with `publish_store_screenshot` enabled. The `store-screenshot` artifact
+contains `04-stores.png`, `4.png`, and `source.txt` with the source commit and
+run URL. Commit both images with the run URL recorded in
+[`docs/play-store/README.md`](play-store/README.md).
+
 ## Run record
 
 | Field | Value |
