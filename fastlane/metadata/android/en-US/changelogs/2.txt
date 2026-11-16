@@ -1,0 +1,3 @@
+FossScout 0.1.1 adds unified cross-store search, local permission and tracker comparison, optional local APK manifest inspection, and JSON audit export. It also includes the F20 matching correction and the latest dependency updates.
+
+FossScout does not install or uninstall apps. The vanilla build can scan installed apps locally; data stays on-device.

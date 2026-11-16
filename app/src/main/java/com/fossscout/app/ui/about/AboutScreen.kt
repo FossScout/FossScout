@@ -63,7 +63,7 @@ fun AboutScreen(
             color = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = "Version 0.1.0 · MIT licensed",
+            text = "Version 0.1.1 · MIT licensed",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

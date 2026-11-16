@@ -1,10 +1,10 @@
 # F-Droid build metadata prepared for submission to fdroiddata.
 #
-# Stable tag: v0.1.0-vanilla.
+# Stable tag: v0.1.1-vanilla.
 # Signing: F-Droid-hosted; do not add Binaries or AllowedAPKSigningKeys.
 #
 # The vanilla flavor appends "-vanilla" to the version name, so versionName
-# below is 0.1.0-vanilla.
+# below is 0.1.1-vanilla.
 
 Categories:
   - Internet
@@ -18,9 +18,9 @@ RepoType: git
 Repo: https://github.com/FossScout/FossScout.git
 
 Builds:
-  - versionName: '0.1.0-vanilla'
-    versionCode: 1
-    commit: v0.1.0-vanilla
+  - versionName: '0.1.1-vanilla'
+    versionCode: 2
+    commit: v0.1.1-vanilla
     submodules: true
     gradle:
       - vanilla
@@ -28,8 +28,8 @@ Builds:
 
 RequiresRoot: false
 UpdateCheckMode: Static
-CurrentVersion: '0.1.0-vanilla'
-CurrentVersionCode: 1
+CurrentVersion: '0.1.1-vanilla'
+CurrentVersionCode: 2
 MaintainerNotes: |
   The vanilla build declares QUERY_ALL_PACKAGES solely to enumerate installed
   apps for the local full scan. The scan stays on-device. The app has no install,

@@ -12,8 +12,8 @@ android {
 
     val ciVersionCode = System.getenv("CI_VERSION_CODE")?.toIntOrNull()
         ?: System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
-        ?: 1
-    val ciVersionName = System.getenv("CI_VERSION_NAME") ?: "0.1.0"
+        ?: 2
+    val ciVersionName = System.getenv("CI_VERSION_NAME") ?: "0.1.1"
 
     defaultConfig {
         applicationId = "com.fossscout.app"

@@ -1,4 +1,4 @@
-Initial internal test build of FossScout.
+Initial internal test build of FossScout 0.1.1.
 
 Try Discover, cross-store search, FOSS matching, permission and tracker comparison, local APK manifest import, audit export, store security details, Saved projects, collections, contribution reports, and settings.
 
