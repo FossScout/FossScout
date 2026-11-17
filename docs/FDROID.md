@@ -3,8 +3,9 @@
 F-Droid is the second distribution channel after the GitHub beta. The
 `v0.1.1-vanilla` release tag is created from the `0.1.1` release commit on
 `main` (`42e8cc7`). It includes the F19 tracker, audit, and local APK manifest
-work plus the dependency updates. The `fdroiddata` merge request is not open
-yet.
+work plus the dependency updates. The public `fdroiddata` fork branch is ready
+and its pipeline passed on 2026-11-17. The merge request is not open yet because
+the real-device check is still pending.
 
 The GitHub beta channel remains at `v0.1.0-beta.4`. The old `v0.1.0` tag is for
 the previous `fdroid` flavor; `v0.1.0-vanilla` is the historical first vanilla
@@ -21,9 +22,10 @@ variant is a separate package built from source with the `vanilla` flavor.
 | Stable tag | **Done**: `v0.1.1-vanilla` at `42e8cc7` |
 | F-Droid release build | **Done**: clean tag build passed locally on 2026-11-16; the historical `v0.1.0-vanilla` build passed on 2026-11-10 |
 | Fastlane listing metadata | Current `main` copy includes F18/F19; `changelogs/2.txt` matches `v0.1.1-vanilla` |
-| `fdroiddata` metadata | Prepared in [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml); targets `v0.1.1-vanilla` |
+| `fdroiddata` metadata | Prepared in [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml); matches the verified fork copy at `0939a9b` |
+| F-Droid fork pipeline | **Done**: branch `com.fossscout.app.vanilla`; [pipeline #3077952136](https://gitlab.com/kanzel88/fdroiddata/-/pipelines/3077952136) passed all 9 jobs on 2026-11-17, including `fdroid build` and `check apk` |
 | F-Droid signing | F-Droid-hosted signing; no project key |
-| F-Droid submission | **Pending**: complete real-device verification, then open the `fdroiddata` merge request; buildserver API 37 is confirmed |
+| F-Droid submission | **Pending**: fork branch and pipeline are green; complete real-device verification, then open the `fdroiddata` merge request; buildserver API 37 is confirmed |
 
 ## Release tag
 
@@ -107,7 +109,8 @@ entries. Local checksums vary with the build environment.
 2. **API 37 is available on the F-Droid buildserver.** The app uses
    `compileSdk = 37`. F-Droid's
    [`sdkmanager`](https://gitlab.com/fdroid/sdkmanager/-/blob/master/.gitlab-ci.yml)
-   installs `platforms;android-37.0` (verified 2026-11-10). If the first
+   installs `platforms;android-37.0` (verified 2026-11-10). The first fork
+   pipeline resolved `android-37` normally on 2026-11-17. If the official
    buildserver build cannot resolve `android-37`, add the known `fdroiddata`
    workaround to the build entry:
    `ln -s $$SDK$$/platforms/android-37.0 $$SDK$$/platforms/android-37`. Do not
@@ -137,17 +140,22 @@ metadata must add `Binaries` and `AllowedAPKSigningKeys`.
 
 Use
 [`docs/fdroid/com.fossscout.app.vanilla.yml`](fdroid/com.fossscout.app.vanilla.yml).
-The prepared file targets `v0.1.1-vanilla` and contains:
+The prepared file targets `v0.1.1-vanilla`, matches the verified fork copy at
+`0939a9b`, and contains:
 
-- `commit: v0.1.1-vanilla`, the source tag;
-- `versionName: '0.1.1-vanilla'` because the vanilla flavor appends the suffix;
+- `commit: 42e8cc71b0245f51a5cd12af0f93ce9261ab11b4`, the full release commit
+  hash required by `fdroiddata`;
+- `versionName: 0.1.1-vanilla` because the vanilla flavor appends the suffix;
 - `versionCode: 2`;
-- `UpdateCheckMode: Static` until automatic version extraction is tested;
+- `AutoUpdateMode: None` and `UpdateCheckMode: Static`;
+- a `scandelete` entry for `.github/fixtures/f19/repo/entry.jar`; the fixture
+  JAR is test-only and triggers the F-Droid binary scanner;
 - a `QUERY_ALL_PACKAGES` explanation in `MaintainerNotes`;
 - no `Binaries` or `AllowedAPKSigningKeys` because F-Droid signs the build.
 
-Keep all four tag/version fields and `CurrentVersionCode` together when the
-release changes, and add the matching `changelogs/<versionCode>.txt`.
+Keep `commit`, `versionName`, `versionCode`, `CurrentVersion`, and
+`CurrentVersionCode` together when the release changes, and add the matching
+`changelogs/<versionCode>.txt`.
 
 The descriptive listing is taken from `fastlane/metadata/android/en-US/`:
 `short_description.txt`, `full_description.txt`, `images/icon.png`,
@@ -155,12 +163,14 @@ The descriptive listing is taken from `fastlane/metadata/android/en-US/`:
 
 ## Submission
 
-The project does not have GitLab access in this environment. Opening the
-`fdroiddata` merge request is a manual step.
+The public fork is [`kanzel88/fdroiddata`](https://gitlab.com/kanzel88/fdroiddata)
+and the branch is `com.fossscout.app.vanilla`; its pipeline passed on
+2026-11-17. This environment has no GitLab token, so opening the merge request
+remains manual.
 
-1. Fork `fdroiddata` and create a branch for `com.fossscout.app.vanilla`.
-2. Copy the prepared metadata to `metadata/com.fossscout.app.vanilla.yml`.
-3. In an F-Droid buildserver container, run:
+1. Confirm the fork branch still points at `0939a9b` and the metadata matches
+   the prepared file.
+2. In an F-Droid buildserver container, run:
 
    ```sh
    fdroid readmeta
@@ -169,11 +179,12 @@ The project does not have GitLab access in this environment. Opening the
    fdroid build com.fossscout.app.vanilla
    ```
 
-4. Fix any metadata or build errors. The expected Gradle task is
+3. Fix any metadata or build errors. The expected Gradle task is
    `assembleVanillaRelease`; the expected unsigned output is
    `app/build/outputs/apk/vanilla/release/app-vanilla-release-unsigned.apk`.
-5. Commit with `New App: com.fossscout.app.vanilla` and open a merge request.
-6. After the metadata is merged, wait for the F-Droid build cycle and then
+4. Commit with `New App: com.fossscout.app.vanilla` and open a merge request
+   titled `New app: FossScout` with the `New App` label.
+5. After the metadata is merged, wait for the F-Droid build cycle and then
    install the published build for verification.
 
 ## Verification after publication
@@ -191,8 +202,9 @@ The project does not have GitLab access in this environment. Opening the
 
 - Open the `fdroiddata` merge request for `v0.1.1-vanilla` and respond to
   review.
-- Watch the first F-Droid build for the `android-37` resolution workaround;
-  API 37 packages are available on the buildserver.
+- The first fork pipeline resolved `android-37` without the documented
+  workaround; no metadata change is needed. Watch the post-merge official
+  build.
 - Decide whether to add F-Droid-specific full-scan screenshots.
 - Revisit `UpdateCheckMode` after the first stable vanilla build and metadata
   test.
