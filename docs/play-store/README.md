@@ -15,11 +15,15 @@ listing. It does not contain a Play Console account, a service account, or
 | App icon | `graphics/app-icon-512.png` | 512 × 512 PNG, no alpha |
 | Feature graphic | `graphics/feature-graphic-1024x500.png` | 1024 × 500 PNG, no alpha |
 | Phone screenshots | `graphics/phone-screenshots/` | 8 images, 1080 × 1920 |
-| Privacy policy | `privacy-policy.md` | Needs a public URL |
+| Privacy policy | `privacy-policy.md` | Published at <https://fossscout.github.io/FossScout/privacy/> |
 | Data safety draft | `declarations/data-safety.md` | Recommended answers |
 | Content rating draft | `declarations/content-rating.md` | Questionnaire prep |
 | App access | `declarations/app-access.md` | No login |
 | Store settings | `declarations/store-settings.md` | Category, tags, declarations |
+
+The published GitHub Pages copy is
+[`docs/privacy/index.html`](../privacy/index.html). Update it together with the
+Markdown source when the policy changes.
 
 ## Account-gated
 
@@ -28,7 +32,7 @@ These cannot be completed without the Play Console account:
 - Create the app entry for `com.fossscout.app`.
 - Register the Play upload key and enroll in Play App Signing.
 - Add the developer contact email.
-- Host the privacy policy at a public URL.
+- Add the published privacy-policy URL in Play Console.
 - Submit the content rating questionnaire.
 - Submit the data safety form.
 - Create the internal testing track and add testers.
@@ -79,7 +83,8 @@ do not edit the images by hand.
 
 ## Before uploading
 
-1. Host `privacy-policy.md` at a public HTTPS URL and add that URL in Play
+1. Confirm the published privacy policy is live at
+   <https://fossscout.github.io/FossScout/privacy/> and add that URL in Play
    Console.
 2. Confirm the Play build still has no `QUERY_ALL_PACKAGES`, accessibility
    service, or install-packages permission.
