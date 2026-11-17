@@ -105,4 +105,5 @@ repository with a new effective date.
 ## Contact
 
 For privacy questions, open an issue at
-<https://github.com/FossScout/FossScout/issues>.
+<https://github.com/FossScout/FossScout/issues> or email
+<kanzel88@gmail.com>.

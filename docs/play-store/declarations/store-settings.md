@@ -7,8 +7,8 @@
 | Default language | English (United States) |
 | Category | Tools |
 | Tags | Open source, app discovery, privacy |
-| Contact email | Account-gated; add the project contact in Play Console |
-| Privacy policy URL | Account-gated; host `privacy-policy.md` at a public URL |
+| Contact email | `kanzel88@gmail.com` |
+| Privacy policy URL | `https://fossscout.github.io/FossScout/privacy/` |
 | Ads | No |
 | In-app purchases | No |
 | App access | No login; see `app-access.md` |
@@ -37,6 +37,5 @@
 
 ## Contact email
 
-Play Console requires a developer contact email. Use a project-owned address
-that the maintainers can monitor; do not use a personal address unless the
-project decides to.
+The configured developer contact is `kanzel88@gmail.com`. The maintainers
+monitor this address for Play Console and privacy-policy questions.

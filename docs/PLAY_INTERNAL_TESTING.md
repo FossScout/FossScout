@@ -2,9 +2,9 @@
 
 Play internal testing is the next distribution stage after the GitHub beta. The
 four Play upload secrets are configured, and a signed AAB was built from
-`main` on 2026-11-17. The Play Console app entry, declarations, privacy-policy
-URL, testers, and internal testing track remain pending; automated upload is
-not configured.
+`main` on 2026-11-17. The Play Console app entry, declarations, testers, and
+internal testing track remain pending; the public privacy policy and contact
+email are ready. Automated upload is not configured.
 
 The account-independent submission package is in
 [`docs/play-store/`](play-store/README.md): store listing copy and graphics,
@@ -22,7 +22,7 @@ tracker scanning, local APK manifest import, and audit export stay on-device.
 | Play Console app entry and Play App Signing | Pending: app entry not created yet |
 | Store listing copy and graphics | Prepared under `docs/play-store/` |
 | App content and data safety declarations | Drafted under `docs/play-store/declarations/` |
-| Privacy-policy URL and contact email | Pending |
+| Privacy-policy URL and contact email | **Done**: <https://fossscout.github.io/FossScout/privacy/>; `kanzel88@gmail.com` |
 | Internal testing track and testers | Pending |
 | Device smoke test | CI emulator baseline passes (run [43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411) on `9f82284`); physical-device Play build remains pending |
 
@@ -101,8 +101,9 @@ manually in Play Console.
   current; physical-device checks remain release blockers.
 - Review the store listing and declarations under `docs/play-store/` against
   the uploaded build.
-- Host `docs/play-store/privacy-policy.md` and add the URL and contact email in
-  Play Console.
+- Confirm the published privacy policy is live at
+  <https://fossscout.github.io/FossScout/privacy/> and add that URL and
+  `kanzel88@gmail.com` in Play Console.
 
 ## Play Console setup
 

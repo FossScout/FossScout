@@ -334,8 +334,8 @@ has no attached device; the CI emulator baseline is current.
 - The unsigned Play release bundle builds successfully from current `main`
   (version `0.1.1`/code `2`, no `QUERY_ALL_PACKAGES`). A signed Play AAB is
   built from current `main` but not committed; the upload secrets are
-  configured. Play Console app entry, declarations, privacy-policy URL, testers,
-  and internal track remain pending.
+  configured. Play Console app entry, declarations, testers, and internal track
+  remain pending; the public privacy policy and contact email are ready.
 
 ### Product scope
 

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Privacy policy for the FossScout Android app.">
+    <link rel="canonical" href="https://fossscout.github.io/FossScout/privacy/">
+    <title>FossScout Privacy Policy</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --background: #f7f7f5;
+        --surface: #ffffff;
+        --text: #1d1d1f;
+        --muted: #5f6368;
+        --accent: #0b6e4f;
+        --border: #d9d9d4;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #121412;
+          --surface: #1b1e1b;
+          --text: #f0f2ef;
+          --muted: #b3b9b4;
+          --accent: #7bd8b0;
+          --border: #343a35;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--text);
+        font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(100% - 40px, 780px);
+        margin: 0 auto;
+        padding: 56px 0 80px;
+      }
+
+      article {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: clamp(24px, 5vw, 56px);
+        box-shadow: 0 14px 40px rgb(0 0 0 / 8%);
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 6vw, 3rem);
+        line-height: 1.1;
+        letter-spacing: -0.035em;
+      }
+
+      h2 {
+        margin: 2.2em 0 0.6em;
+        font-size: 1.3rem;
+        line-height: 1.25;
+      }
+
+      p,
+      ul {
+        margin: 0.8em 0;
+      }
+
+      ul {
+        padding-left: 1.3em;
+      }
+
+      li + li {
+        margin-top: 0.35em;
+      }
+
+      a {
+        color: var(--accent);
+        text-underline-offset: 0.18em;
+      }
+
+      .effective-date {
+        margin-top: 1.1em;
+        color: var(--muted);
+      }
+
+      .lede {
+        margin-top: 1.8em;
+        font-size: 1.08rem;
+      }
+
+      footer {
+        margin-top: 2.5em;
+        padding-top: 1.4em;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <article>
+        <header>
+          <p class="eyebrow">FossScout</p>
+          <h1>Privacy Policy</h1>
+          <p class="effective-date"><strong>Effective date:</strong> 2026-11-01</p>
+        </header>
+
+        <p class="lede">
+          This policy applies to the FossScout Android app
+          (<code>com.fossscout.app</code>) and the FossScout project. FossScout is
+          free software maintained by FossScout contributors.
+        </p>
+
+        <h2>Summary</h2>
+        <p>
+          FossScout is local-first. It does not require an account and does not
+          include advertising, analytics, crash reporting, or tracking SDKs. The
+          developer does not collect, sell, or share personal data from the app.
+        </p>
+
+        <h2>Information stored on your device</h2>
+        <p>FossScout stores the following locally on your device:</p>
+        <ul>
+          <li>App settings and feature toggles.</li>
+          <li>Favourites, private notes, tags, collections, and their order.</li>
+          <li>Custom store entries, pinned fingerprints, and trust notes.</li>
+          <li>Match corrections and preferred store clients.</li>
+          <li>Cached store index data, verification history, and sync metadata.</li>
+          <li>Backup files you choose to export.</li>
+        </ul>
+        <p>
+          This information stays on your device unless you explicitly export it,
+          share it, or include it in an Android system backup.
+        </p>
+
+        <h2>Installed-app information</h2>
+        <p>
+          FossScout can read package metadata for apps visible to it in order to
+          check matches and show local inventory. This information is processed on
+          the device and is not sent to the developer.
+        </p>
+        <p>
+          The Play build uses manual package checks and limited package visibility. A
+          launcher-intent query makes apps with a launcher icon visible to those
+          checks. It does not request <code>QUERY_ALL_PACKAGES</code>, install
+          packages, or use an accessibility service. The F-Droid build adds a full
+          installed-app scan for users who want it.
+        </p>
+
+        <h2>Network requests</h2>
+        <p>FossScout uses network access to:</p>
+        <ul>
+          <li>Download public store indexes from F-Droid and IzzyOnDroid.</li>
+          <li>
+            Open links you choose, such as store pages, project pages, or the issue
+            tracker.
+          </li>
+        </ul>
+        <p>
+          When the app contacts a third-party server, that server may receive standard
+          request metadata such as your IP address, request time, and user agent, as
+          with any HTTPS request. FossScout does not attach your installed-app
+          inventory, notes, favourites, collections, or other local profile data to
+          store-index requests.
+        </p>
+        <p>
+          If you open a link or submit a prefilled GitHub issue, the destination
+          service's privacy policy applies.
+        </p>
+
+        <h2>Contribution reports</h2>
+        <p>
+          Contribution reports are generated locally from a redacted preview. Nothing
+          is uploaded automatically. You choose whether to copy the report, share it
+          through the system share sheet, or open a prefilled GitHub issue URL. If you
+          submit an issue, GitHub processes the content you submit under GitHub's
+          privacy policy.
+        </p>
+
+        <h2>Backups and sharing</h2>
+        <p>
+          You can export a FossScout backup containing your local profile data. You
+          can optionally protect it with a passphrase. You control where the backup is
+          saved and who receives it. If you share a file or report through Android's
+          share sheet, the receiving app's privacy policy applies.
+        </p>
+        <p>
+          If Android system backup is enabled on your device, Android may include
+          FossScout's local app data in a device backup. That backup is handled by
+          Android and your device provider; you can disable system backup in Android
+          settings.
+        </p>
+
+        <h2>Permissions</h2>
+        <p>FossScout requests:</p>
+        <ul>
+          <li><strong>Internet</strong> for store-index sync and links you open.</li>
+          <li>
+            <strong>Package queries</strong> for apps with a launcher activity so
+            manual checks can find user-facing apps, and for F-Droid, Droid-ify, and
+            Neo Store so companion-store detection works without broad package
+            visibility.
+          </li>
+        </ul>
+        <p>
+          FossScout does not request location, contacts, camera, microphone, SMS, call
+          log, broad storage, accessibility, or install-packages permissions.
+        </p>
+
+        <h2>Children</h2>
+        <p>
+          FossScout is not directed to children under 13. The app does not knowingly
+          collect personal information from children.
+        </p>
+
+        <h2>Data deletion</h2>
+        <p>
+          FossScout does not maintain server-side user data. To delete local data,
+          clear the app's storage in Android settings or uninstall the app. Exported
+          backup files remain under your control and must be deleted separately if you
+          no longer want them.
+        </p>
+
+        <h2>Changes</h2>
+        <p>
+          If this policy changes, the updated version will be published in the
+          FossScout repository with a new effective date.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          For privacy questions, open an issue at
+          <a href="https://github.com/FossScout/FossScout/issues">github.com/FossScout/FossScout/issues</a>
+          or email
+          <a href="mailto:kanzel88@gmail.com">kanzel88@gmail.com</a>.
+        </p>
+
+        <footer>
+          <p>
+            FossScout is free software maintained by FossScout contributors.
+            <a href="https://github.com/FossScout/FossScout">View the source code</a>.
+          </p>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>
