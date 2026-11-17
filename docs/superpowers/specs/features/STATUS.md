@@ -1,9 +1,9 @@
 # FossScout Implementation Status
 
 Last updated: **2026-11-17**
-Feature baseline: `main` at `380ce8f`; F18 unified store search, the F19 permission comparison, tracker signatures, local alternative-APK manifest analysis, and audit export, F20 matching correction, F22 support link, the vanilla flavor rename, F19 emulator coverage, the dependency updates, the standardized Stores screenshot workflow, and the Play/F-Droid submission package are merged. Current GitHub beta `v0.1.0-beta.4`; the F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created.
-Pending: real-device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); the latest CI emulator baseline passed on `9f82284` (run [43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411)) for version `0.1.1`. The `fdroiddata` fork branch and pipeline are green; Play internal testing and the F-Droid merge request remain pending. The F-Droid buildserver API 37 check is complete.
-Delivery: Toolchain upgraded to Gradle 9.9.0, AGP 9.5.1, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; the Play internal AAB workflow is present; Play upload secrets, Play Console setup, and upload remain pending.
+Feature baseline: `main` at `096245f`; F18 unified store search, the F19 permission comparison, tracker signatures, local alternative-APK manifest analysis, and audit export, F20 matching correction, F22 support link, the vanilla flavor rename, F19 emulator coverage, the dependency updates, the standardized Stores screenshot workflow, and the Play/F-Droid submission package are merged. Current GitHub beta `v0.1.0-beta.4`; the F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created.
+Pending: real-device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); the latest CI emulator baseline passed on `9f82284` (run [43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411)) for version `0.1.1`. The `fdroiddata` fork branch and pipeline are green. Play upload secrets and the signed AAB are ready; the Play Console app entry, internal track, and F-Droid merge request remain pending. The F-Droid buildserver API 37 check is complete.
+Delivery: Toolchain upgraded to Gradle 9.9.0, AGP 9.5.1, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play upload secrets and the signed AAB are ready; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F22`](F22-support-and-donations.md)
 
@@ -28,7 +28,7 @@ file after every feature session with the new commit, test result, and status.
 | --- | --- |
 | Modular foundation | **Done** |
 | Build profiles (`playstore`, `vanilla`) | **Done** for these two; `direct`/`custom` not implemented |
-| CI and beta release pipeline | **Done for GitHub beta** (`v0.1.0-beta.4` prerelease); latest `main` CI and Device Smoke Test pass. F-Droid tag `v0.1.1-vanilla` created, fork pipeline passed, and API 37 confirmed; Play internal testing and the F-Droid merge request remain pending |
+| CI and beta release pipeline | **Done for GitHub beta** (`v0.1.0-beta.4` prerelease); latest `main` CI and Device Smoke Test pass. F-Droid tag `v0.1.1-vanilla` created, fork pipeline passed, and API 37 confirmed; the signed Play internal AAB is ready, while Play Console setup and the F-Droid merge request remain pending |
 | Local favourites, tags, search, installed badge, and collections | **Done** (device badge refresh pending) |
 | Feature configuration | **Done** |
 | Store registry and installed inventory | **Partial** |
@@ -40,15 +40,16 @@ file after every feature session with the new commit, test result, and status.
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
 | Feature completion | **15 of 21 fully done; 2 partial; 3 deferred; 1 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md), especially the F19 tracker section, local APK picker, and audit export. The latest CI emulator baseline passes for version `0.1.1`, including the F19 fixtures; the Stores screenshot artifact from run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921) remains current. Then prepare Play internal testing and open the F-Droid metadata merge request for `v0.1.1-vanilla`. The F-Droid buildserver API 37 check is complete, and the first fork pipeline resolved `android-37` without the documented workaround. F18 unified store search, F20 matching correction, and F22 support link are complete; F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md), especially the F19 tracker section, local APK picker, and audit export. The latest CI emulator baseline passes for version `0.1.1`, including the F19 fixtures; the Stores screenshot artifact from run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921) remains current. The Play upload secrets are configured and the signed AAB is ready; create the Play Console app entry and internal testing track, then open the F-Droid metadata merge request for `v0.1.1-vanilla`. The F-Droid buildserver API 37 check is complete, and the first fork pipeline resolved `android-37` without the documented workaround. F18 unified store search, F20 matching correction, and F22 support link are complete; F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ### Current verification baseline (2026-11-17)
 
 | Check | Result |
 | --- | --- |
-| `main` CI | `42e8cc7`, run [43871551272](https://github.com/FossScout/FossScout/actions/runs/43871551272) passed: screenshot composition tests, unit tests, lint, and both debug APK builds. |
+| `main` CI | `096245f`, run [44076201785](https://github.com/FossScout/FossScout/actions/runs/44076201785) passed: screenshot composition tests, unit tests, lint, and both debug APK builds. |
 | Device Smoke Test | `9f82284`, run [43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411) passed in 20m13s for version `0.1.1`, including both flavors, the F19 fixture store, tracker match/no-match, local APK manifest import and package-mismatch rejection, and audit JSON export. |
 | Local rerun | `./gradlew test --rerun-tasks` passed: 591 tests, 0 failures/errors/skipped; 315 tasks in 12m03s. |
+| Play Internal AAB | `096245f`, run [44077247261](https://github.com/FossScout/FossScout/actions/runs/44077247261) passed in 3m26s; signed `0.1.1`/code `2` AAB, SHA-256 `46a705a2a942e8561b5a10514b04bf591c21d4bc2e5e3d59f68235b78b418968`; signer certificate SHA-256 `74:C6:CD:F3:6A:57:6B:A5:3C:F7:60:86:75:CD:C3:A5:3C:CF:DD:E5:6E:22:8B:EB:BB:99:78:08:F5:55:3F:E4`. |
 | F-Droid fork pipeline | `0939a9b`, pipeline [#3077952136](https://gitlab.com/kanzel88/fdroiddata/-/pipelines/3077952136) passed all 9 jobs on 2026-11-17, including `fdroid build` and `check apk`; `android-37` resolved normally. |
 | Stores screenshot | `c1b9e9c831f711c41446c6413c13b740d4d9259a36069bec64a7a8b1cadb6e2a`, generated from run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921) and committed in `059da82`. |
 
@@ -331,8 +332,10 @@ has no attached device; the CI emulator baseline is current.
   historical `v0.1.0-vanilla` tag predates the F19 slices and must not be
   submitted.
 - The unsigned Play release bundle builds successfully from current `main`
-  (version `0.1.1`/code `2`, no `QUERY_ALL_PACKAGES`). No signed Play AAB is
-  committed; Play upload secrets and Play Console setup remain pending.
+  (version `0.1.1`/code `2`, no `QUERY_ALL_PACKAGES`). A signed Play AAB is
+  built from current `main` but not committed; the upload secrets are
+  configured. Play Console app entry, declarations, privacy-policy URL, testers,
+  and internal track remain pending.
 
 ### Product scope
 

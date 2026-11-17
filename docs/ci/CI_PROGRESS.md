@@ -2,7 +2,7 @@
 
 Last updated: 2026-11-17
 Branch: main
-Feature baseline: main @ `380ce8f`; F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created, the tag build passed locally, and the public `fdroiddata` fork pipeline passed on 2026-11-17; current beta release `v0.1.0-beta.4`. The standardized Stores screenshot workflow and the latest dependency updates are on `main`.
+Feature baseline: main @ `096245f`; F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created, the tag build passed locally, and the public `fdroiddata` fork pipeline passed on 2026-11-17; current beta release `v0.1.0-beta.4`. The standardized Stores screenshot workflow and the latest dependency updates are on `main`.
 
 ## Completed
 | Task | Status | Details |
@@ -18,7 +18,7 @@ Feature baseline: main @ `380ce8f`; F-Droid source tag `v0.1.1-vanilla` (version
 | Beta build type | Done | `playstoreBeta` publishes as `com.fossscout.app.beta` with a `-beta` version-name suffix, so it can be installed alongside production |
 | Beta release workflow | Done | `.github/workflows/release.yml` validates signing secrets through environment variables, has `contents: write`, runs only for `v*-beta*` tags, checks out submodules, verifies the beta APK signature/checksum, and creates a GitHub prerelease. Run [42239255577](https://github.com/FossScout/FossScout/actions/runs/42239255577) passed for `v0.1.0-beta.4`. |
 | Shared docs submodule | Done | `tools/best-practices` is pinned to `532512f`; CI and release workflows check out submodules. |
-| Play internal AAB build | Done | `.github/workflows/play-internal.yml` builds a signed AAB with dedicated Play upload secrets, verifies it, and uploads it as an artifact; Play Console upload remains manual. |
+| Play internal AAB build | Done | `.github/workflows/play-internal.yml` builds a signed AAB with dedicated Play upload secrets, verifies it, and uploads it as an artifact. Run [44077247261](https://github.com/FossScout/FossScout/actions/runs/44077247261) passed on `096245f` for `0.1.1`/code `2`; the AAB SHA-256 is `46a705a2a942e8561b5a10514b04bf591c21d4bc2e5e3d59f68235b78b418968`. Play Console upload remains manual. |
 | Toolchain upgrade | Done | Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
 | Gradle wrapper 9.8.2 | Done | Wrapper JAR matches the official Gradle SHA-256; `test`, `lint`, and main CI passed. |
 | Dependency updates | Done | PRs [#68](https://github.com/FossScout/FossScout/pull/68)–[#71](https://github.com/FossScout/FossScout/pull/71) updated AGP to 9.5.1, the Gradle wrapper to 9.9.0, setup-java to 6.2.0, and action-gh-release to 3.0.4; `main` CI passed. |
@@ -33,12 +33,12 @@ Feature baseline: main @ `380ce8f`; F-Droid source tag `v0.1.1-vanilla` (version
 | Task | Status | Details |
 | --- | --- | --- |
 | GitHub Secrets for release | Done | `KEYSTORE_FILE`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` configured on 2026-10-29 |
-| Play upload secrets | Pending | `PLAY_KEYSTORE_FILE`, `PLAY_KEYSTORE_PASSWORD`, `PLAY_KEY_ALIAS`, and `PLAY_KEY_PASSWORD` are not configured |
+| Play upload secrets | Done | `PLAY_KEYSTORE_FILE`, `PLAY_KEYSTORE_PASSWORD`, `PLAY_KEY_ALIAS`, and `PLAY_KEY_PASSWORD` configured on 2026-11-17; the dedicated upload key is stored outside the repository |
 | Branch protection rules | Done | `main` ruleset requires a PR, the `build` check, an up-to-date branch, and conversation resolution; blocks force pushes and deletion. `best-practices` has a PR-only ruleset. |
 | Release smoke test | Done | `v0.1.0-beta.4` published as a GitHub prerelease; APK package `com.fossscout.app.beta`, version `0.1.0-beta.4` (version code 12), SHA-256 `7e42bb6d2d9f900c17aa57bfcf64522487f64a54411fc84ac7bad738764e6148`, certificate SHA-256 `96:6B:04:56:B3:E6:F6:3B:D8:BD:64:3A:4F:53:D4:9E:E4:31:DE:0B:4A:16:86:07:DA:E0:6D:4B:4A:5A:57:16`. |
 | Real-device smoke test | Partial | The CI emulator baseline passes (run [43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411) on `9f82284`). Remaining checks are in [`docs/DEVICE_SMOKE_TEST.md`](../DEVICE_SMOKE_TEST.md): release signing and Play internal track, real store clients, work profiles, store index/signing, matching correction, replacement handoff, sharing/import, backup/restore, stale/hide behavior, and real-device performance. |
 | Release notes/changelog | Partial | `CHANGELOG.md` is maintained manually; automation remains optional |
-| Play Console setup | Pending | App entry, Play App Signing, declarations, store listing, internal track, and tester setup remain manual |
+| Play Console setup | Pending | The app entry has not been created. Play App Signing, declarations, store listing, privacy-policy URL, internal track, and tester setup remain manual |
 | Play upload automation | Pending | Requires a Play Developer API service account and an approved upload action or dependency |
 | F-Droid submission | Pending | The fork branch and metadata pipeline are green. Complete real-device verification, then open the `fdroiddata` merge request for `v0.1.1-vanilla`. Tag, metadata, changelog, and buildserver API 37 check are ready. See [`docs/FDROID.md`](../FDROID.md). |
 | Compose BOM 2026.09.00 | Done | `compileSdk = 37`; CI, release, and Play workflows install `platforms;android-37.0` |
