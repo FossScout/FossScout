@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.fossscout.core.data.StoreRegistryRepository
 import com.fossscout.core.index.IndexState
 import com.fossscout.core.index.IndexSyncRepository
+import com.fossscout.core.index.SecurityAuditExportBuilder
 import com.fossscout.core.index.SnapshotFreshness
 import com.fossscout.core.index.StorageStatus
 import com.fossscout.core.index.StoreSnapshot
@@ -92,6 +93,12 @@ data class StoreDeleteRequest(
 data class StoreExportRequest(
     val name: String,
     val json: String,
+)
+
+data class StoreAuditExportRequest(
+    val storeName: String,
+    val json: String,
+    val exportedAtEpochMillis: Long,
 )
 
 /** Everything the Stores card needs to show sync and trust evidence. */
@@ -262,6 +269,33 @@ class StoresViewModel(
 
     fun dismissExport() {
         _uiState.update { state -> state.copy(exportRequest = null) }
+    }
+
+    /**
+     * Builds a one-off share request from the current local audit. Returns null
+     * when the store has no verification history, so the UI can stay silent
+     * instead of sharing an empty report.
+     */
+    fun exportSecurityAudit(id: StoreId): StoreAuditExportRequest? {
+        val state = _uiState.value
+        val status = state.syncStatuses[id.value] ?: return null
+        if (status.audit.isEmpty()) return null
+        val storeName = state.entries
+            .firstOrNull { it.descriptor.id == id }
+            ?.descriptor
+            ?.name
+            ?: id.value
+        val builder = SecurityAuditExportBuilder()
+        val audit = builder.build(
+            storeId = id.value,
+            records = status.audit,
+            exportedAtEpochMillis = System.currentTimeMillis(),
+        )
+        return StoreAuditExportRequest(
+            storeName = storeName,
+            json = builder.encode(audit),
+            exportedAtEpochMillis = audit.exportedAtEpochMillis,
+        )
     }
 
     fun dismissError() {

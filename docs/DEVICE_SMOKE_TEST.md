@@ -274,6 +274,9 @@ run, or failure fixture.
 - [ ] Trigger a signer mismatch. Sync is blocked until resolved.
 - [ ] Confirm the bounded verification history is readable and long fingerprints
       and URLs wrap without clipping.
+- [ ] Tap Export verification audit. The share sheet opens with a JSON file;
+      confirm it contains the export timestamp, record timestamps, source URLs,
+      fingerprints, and failure reasons, and no notes or installed-app inventory.
 - [ ] Confirm match evidence does not claim APK hash or signer continuity in v1.
 
 ## 10. Contribution reports (F16)

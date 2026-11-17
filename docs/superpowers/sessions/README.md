@@ -49,9 +49,10 @@ session map; the verified Liberapay team URL is configured in this change.
 Store-scoped overrides, shareable corrections, low-confidence prompts, and
 device/UI verification remain deferred.
 
-No next post-v1 feature is selected. F18 unified store search and the F19
-permission/tracker comparison, including local manifest import and the local
-JSON audit export, are implemented; F21 still needs an evidence-source decision.
+No next post-v1 feature is selected. F18 unified store search, the F19
+permission/tracker comparison including local manifest import and local JSON
+audit export, and the F14-R8 verification-audit export are implemented; F21
+still needs an evidence-source decision.
 If multiple sessions run in parallel in future, use the wave table and avoid
 editing the same app wiring files without coordinating.
 
