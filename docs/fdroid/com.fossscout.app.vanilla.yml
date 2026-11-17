@@ -1,37 +1,33 @@
-# F-Droid build metadata prepared for submission to fdroiddata.
-#
-# Stable tag: v0.1.1-vanilla.
-# Signing: F-Droid-hosted; do not add Binaries or AllowedAPKSigningKeys.
-#
-# The vanilla flavor appends "-vanilla" to the version name, so versionName
-# below is 0.1.1-vanilla.
-
 Categories:
   - Internet
   - System
-AuthorName: FossScout contributors
 License: MIT
+AuthorName: FossScout contributors
 SourceCode: https://github.com/FossScout/FossScout
 IssueTracker: https://github.com/FossScout/FossScout/issues
 Liberapay: FossScout
+
 RepoType: git
 Repo: https://github.com/FossScout/FossScout.git
 
 Builds:
-  - versionName: '0.1.1-vanilla'
+  - versionName: 0.1.1-vanilla
     versionCode: 2
-    commit: v0.1.1-vanilla
+    commit: 42e8cc71b0245f51a5cd12af0f93ce9261ab11b4
     submodules: true
     gradle:
       - vanilla
     output: app/build/outputs/apk/vanilla/release/app-vanilla-release-unsigned.apk
+    scandelete:
+      - .github/fixtures/f19/repo/entry.jar
 
-RequiresRoot: false
-UpdateCheckMode: Static
-CurrentVersion: '0.1.1-vanilla'
-CurrentVersionCode: 2
-MaintainerNotes: |
+MaintainerNotes: |-
   The vanilla build declares QUERY_ALL_PACKAGES solely to enumerate installed
   apps for the local full scan. The scan stays on-device. The app has no install,
   uninstall, or accessibility permissions. The Play flavor does not declare
   QUERY_ALL_PACKAGES.
+
+AutoUpdateMode: None
+UpdateCheckMode: Static
+CurrentVersion: 0.1.1-vanilla
+CurrentVersionCode: 2
