@@ -40,7 +40,7 @@ file after every feature session with the new commit, test result, and status.
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
 | Feature completion | **15 of 21 fully done; 2 partial; 3 deferred; 1 spec-only** (F22 support link is Done outside the v1 map) |
 
-**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md), especially the F19 tracker section, local APK picker, and audit export. The latest CI emulator baseline passes for version `0.1.1`, including the F19 fixtures; the Stores screenshot artifact from run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921) remains current. The Play upload secrets are configured and the signed AAB is ready; create the Play Console app entry and internal testing track, then open the F-Droid metadata merge request for `v0.1.1-vanilla`. The F-Droid buildserver API 37 check is complete, and the first fork pipeline resolved `android-37` without the documented workaround. F18 unified store search, F20 matching correction, and F22 support link are complete; F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
+**Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md), especially the F19 tracker section, local APK picker, F19 audit export, and F14 verification-audit export. The latest CI emulator baseline passes for version `0.1.1`, including the F19 fixtures; the Stores screenshot artifact from run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921) remains current. The Play upload secrets are configured and the signed AAB is ready; create the Play Console app entry and internal testing track, then open the F-Droid metadata merge request for `v0.1.1-vanilla`. The F-Droid buildserver API 37 check is complete, and the first fork pipeline resolved `android-37` without the documented workaround. F18 unified store search, F20 matching correction, and F22 support link are complete; F21 needs an evidence-source decision. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
 ### Current verification baseline (2026-11-17)
 
@@ -170,7 +170,7 @@ file after every feature session with the new commit, test result, and status.
 | F11 | Favourites and notes | **Done** | Add/remove, private notes, persistence, duplicate handling, note limit, tags, local search across names/notes/tags, optional preferred store, installed-state badge, error states, and versioned collection integration work. The badge is advisory and does not refresh live while the Saved screen stays foregrounded; real package-manager transitions still need device verification. | S06, S07 |
 | F12 | Collections and sharing | **Done** | Versioned collections with create/rename/reorder/edit, local JSON/text/file sharing and import, notes excluded by default, merge/replace/skip conflict handling, inert imported store references, unsupported-version rejection, and a non-exported FileProvider. QR/deep links (R8) and subset sharing (R9) are deferred. | S07 |
 | F13 | Backup and migration | **Done** | Versioned full-profile JSON backup with visible included/excluded manifest, SHA-256 checksum, merge/replace/skip restore planner, custom-store fingerprint/trust preservation, optional PBKDF2/AES-GCM passphrase encryption, share-sheet export, document-picker import, and Android auto-backup rules including DataStore. F13-R6 per-item conflict resolution remains SHOULD and is deferred; device share/document-picker checks remain. | S09 |
-| F14 | Security verification | **Done** | Repository fingerprint pinning/change blocking, index JAR signature verification, signed index/diff hash and size checks, HTTPS policy, and local trust records exist. S10 adds the security-details panel, distinct verified/unverified/failed/rotation states, a bounded local verification audit, and a fingerprint-rotation approval/removal flow. Match evidence shows index trust without claiming APK integrity. APK hash/signer continuity (R3/R4) is deferred with F09; audit export (R8) and transparency metadata (R9) remain post-v1. | S03, S10 |
+| F14 | Security verification | **Done** | Repository fingerprint pinning/change blocking, index JAR signature verification, signed index/diff hash and size checks, HTTPS policy, and local trust records exist. S10 adds the security-details panel, distinct verified/unverified/failed/rotation states, a bounded local verification audit, a fingerprint-rotation approval/removal flow, and per-store JSON audit export. Match evidence shows index trust without claiming APK integrity. APK hash/signer continuity (R3/R4) is deferred with F09; transparency metadata (R9) remains post-v1. | S03, S10 |
 | F15 | Update tracking | **Deferred** | Not enabled in either v1 profile. | S12 |
 | F16 | Contribution hooks | **Done** | Pure-JVM schema-v1 report builder and redaction boundary, configurable prefilled issue URL, preview-gated ViewModel, Compose contribution screen, and Settings/Stores/Match entry points. Default reports exclude inventory, notes, account data, device identifiers, raw errors, query tokens, and local paths; coverage keeps statuses/reasons only. Copy/share work offline; debug details are opt-in and exported as redacted JSON. The GitHub issue URL is configurable in the builder. Device checks for preview, clipboard, share sheet, browser opening, and debug JSON remain. | S11 |
 | F17 | Feature configuration | **Done** | Descriptor settings model (boolean/text/integer with defaults and validation), versioned envelope with legacy migration, registry-authoritative availability, basic/advanced sections, per-feature/global reset, and read-only snapshot used by F13. `INDEX_CACHE` declares the real `storage_budget_mb` setting; S09 adds the backup import/export UI. | S01, S09 |
@@ -318,6 +318,18 @@ Commands run on `feat/f19-alternative-apk-manifest`:
 | Boundary check | No Gradle, dependency, manifest, or permission change. The user-selected APK is copied to the cache under a 128 MiB cap, parsed with `PackageManager.getPackageArchiveInfo`, and deleted; it is not installed, executed, or uploaded. |
 | Deferred | Real-device/UI verification of the APK picker and the interaction with the audit export. |
 
+### F14 security audit export (2026-11-17)
+
+Commands run on `feat/f14-security-audit-export`:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test lint assembleDebug` | **Passed** (final run 2m 18s, 668 actionable tasks; both debug variants built). |
+| Unit tests | **597 test executions across 84 result files; 0 failures, 0 errors, 0 skipped** |
+| New tests | `SecurityAuditExportTest` covers UTC export time, record timestamps, source URLs, fingerprints, failure evidence, empty-audit rejection, cross-store rejection, and negative timestamps. `StoresViewModelTest` covers the per-store request and the no-history state. |
+| Boundary check | No Gradle, dependency, manifest, or permission change. The export is user-initiated, local, and shared through the existing cache-backed `FileProvider`; it is not uploaded. Store names, notes, favourites, and installed-app inventory are excluded from the JSON. |
+| Deferred | Real-device/UI verification of the security-details button and share sheet. |
+
 ## Known gaps and blockers
 
 Device/UI verification for the completed features is tracked in
@@ -436,9 +448,9 @@ has no attached device; the CI emulator baseline is current.
   construction, and ViewModel behavior are covered by JVM tests. The issue
   tracker URL is configurable in `ContributionReportBuilder`, not exposed as an
   in-app setting.
-- F14-R8 audit export is not implemented; the local 100-entry audit is visible
-  in the security details panel. F14-R9 binary-transparency/reproducibility
-  metadata is not displayed. F14-R3/R4 remain deferred with F09.
+- F14-R8 audit export is implemented from the security details panel for one
+  store's bounded history. F14-R9 binary-transparency/reproducibility metadata
+  is not displayed. F14-R3/R4 remain deferred with F09.
 - F13-R6 per-item conflict resolution is not implemented; restore uses global
   merge/replace/skip modes with aggregate preview counts and conflict flags in
   the restore plan. Per-item keep-local/use-backup selection is missing.

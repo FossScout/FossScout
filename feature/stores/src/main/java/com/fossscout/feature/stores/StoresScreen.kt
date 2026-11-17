@@ -94,6 +94,7 @@ fun StoresScreen(
     onCancelSync: (StoreId) -> Unit,
     onOpenSecurityDetails: (StoreId) -> Unit,
     onDismissSecurityDetails: () -> Unit,
+    onExportSecurityAudit: (StoreId) -> Unit,
     onApproveFingerprint: (StoreId, String) -> Unit,
     onCleanupStorage: () -> Unit,
     onRetry: () -> Unit,
@@ -294,6 +295,7 @@ fun StoresScreen(
             onApproveFingerprint = { fingerprint ->
                 onApproveFingerprint(details.storeId, fingerprint)
             },
+            onExportAudit = { onExportSecurityAudit(details.storeId) },
             onRemoveStore = {
                 state.entries
                     .firstOrNull { it.descriptor.id == details.storeId }
@@ -815,6 +817,7 @@ private fun SyncFailureKind.messageRes(): Int = when (this) {
 private fun StoreSecurityDetailsDialog(
     details: StoreSecurityDetails,
     onApproveFingerprint: (String) -> Unit,
+    onExportAudit: () -> Unit,
     onRemoveStore: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -1076,6 +1079,18 @@ private fun StoreSecurityDetailsDialog(
                     recent.forEach { record ->
                         AuditRow(record)
                     }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedButton(
+                        onClick = onExportAudit,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.stores_security_audit_export))
+                    }
+                    Text(
+                        text = stringResource(R.string.stores_security_audit_export_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))

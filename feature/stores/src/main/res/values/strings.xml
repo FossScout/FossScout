@@ -122,6 +122,8 @@
     <string name="stores_security_audit_empty">No checks recorded yet.</string>
     <string name="stores_security_audit_line">%1$s · %2$s</string>
     <string name="stores_security_audit_failure">%1$s · %2$s · %3$s</string>
+    <string name="stores_security_audit_export">Export verification audit</string>
+    <string name="stores_security_audit_export_note">Exports timestamps, fingerprints, and source URLs. Notes and installed-app inventory are not included.</string>
     <string name="stores_security_rotation_title">Fingerprint change detected</string>
     <string name="stores_security_rotation_body">Current pin: %1$s\nNew fingerprint: %2$s\nSync is blocked until you approve the new fingerprint or remove the store.</string>
     <string name="stores_security_rotation_no_new">The stored pin is %1$s, but this store no longer has a pinned fingerprint. Re-add the fingerprint or remove the store.</string>

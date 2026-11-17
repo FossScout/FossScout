@@ -94,6 +94,7 @@ import com.fossscout.feature.matching.StoreSearchScreen
 import com.fossscout.feature.matching.StoreSearchViewModel
 import com.fossscout.feature.settings.FeatureSettingsScreen
 import com.fossscout.feature.settings.FeatureSettingsViewModel
+import com.fossscout.feature.stores.StoreAuditExportRequest
 import com.fossscout.feature.stores.StoreEditor
 import com.fossscout.feature.stores.StoreExportRequest
 import com.fossscout.feature.stores.StoresScreen
@@ -921,6 +922,10 @@ fun FossScoutApp(
                         onCancelSync = storesViewModel::cancelSync,
                         onOpenSecurityDetails = storesViewModel::openSecurityDetails,
                         onDismissSecurityDetails = storesViewModel::dismissSecurityDetails,
+                        onExportSecurityAudit = { id ->
+                            storesViewModel.exportSecurityAudit(id)
+                                ?.let(context::shareSecurityAudit)
+                        },
                         onApproveFingerprint = storesViewModel::approveFingerprintRotation,
                         onCleanupStorage = storesViewModel::cleanupStorage,
                         onRetry = storesViewModel::retry,
@@ -1148,6 +1153,16 @@ private fun Context.shareStoreDescriptor(request: StoreExportRequest) {
             Intent.createChooser(send, getString(R.string.share_store_descriptor)),
         )
     }
+}
+
+private fun Context.shareSecurityAudit(request: StoreAuditExportRequest) {
+    shareExportContent(
+        subject = getString(R.string.share_security_audit_subject, request.storeName),
+        fileName = "fossscout-security-audit-${request.exportedAtEpochMillis}.json",
+        mimeType = "application/json",
+        content = request.json,
+        chooserTitle = getString(R.string.share_security_audit_chooser),
+    )
 }
 
 /**

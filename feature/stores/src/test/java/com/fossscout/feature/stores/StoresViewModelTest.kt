@@ -20,6 +20,7 @@ import com.fossscout.core.index.StoreSnapshot
 import com.fossscout.core.index.SyncJob
 import com.fossscout.core.index.SyncState
 import com.fossscout.core.index.TrustRecord
+import com.fossscout.core.index.VerificationFailure
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.BuiltInStores
@@ -192,6 +193,52 @@ class StoresViewModelTest {
         assertEquals(BuiltInStores.fdroid, decoded)
         assertTrue(request.json.contains("\"schemaVersion\":1"))
         assertEquals("F-Droid", request.name)
+    }
+
+    @Test
+    fun `security audit export contains evidence but not the store name`() = runTest(dispatcher) {
+        val trust = TrustRecord(
+            storeId = BuiltInStores.FDROID_ID,
+            checkedAtEpochMillis = 1_000,
+            signatureStatus = SignatureStatus.INVALID,
+            expectedFingerprint = "a".repeat(64),
+            signerFingerprint = "b".repeat(64),
+            sourceUrl = "https://f-droid.org/repo/entry.jar",
+            failure = VerificationFailure.TAMPERED,
+        )
+        val indexRepository = IndexSyncRepository(
+            metadataStore = FakeSnapshotMetadataStore(
+                IndexState(trustAudit = listOf(trust)),
+            ),
+            payloadStore = UnusedPayloadStore(usageBytes = 0),
+            httpFetcher = UnusedHttpFetcher,
+            tempDir = Files.createTempDirectory("fossscout-audit-vm").toFile(),
+            storageBudgetBytes = { 16L * 1024L * 1024L },
+        )
+        val viewModel = StoresViewModel(
+            StoreRegistryRepository(store = FakeStoreRegistryStore()),
+            indexRepository,
+        )
+        advanceUntilIdle()
+
+        val request = requireNotNull(
+            viewModel.exportSecurityAudit(StoreId(BuiltInStores.FDROID_ID)),
+        )
+
+        assertEquals("F-Droid", request.storeName)
+        assertTrue(request.exportedAtEpochMillis > 0)
+        assertTrue(request.json.contains("\"checkedAtEpochMillis\": 1000"))
+        assertTrue(request.json.contains("\"sourceUrl\": \"https://f-droid.org/repo/entry.jar\""))
+        assertTrue(request.json.contains("\"failure\": \"TAMPERED\""))
+        assertFalse(request.json.contains("\"storeName\""))
+    }
+
+    @Test
+    fun `security audit export is absent when the store has no history`() = runTest(dispatcher) {
+        val viewModel = viewModel()
+        advanceUntilIdle()
+
+        assertNull(viewModel.exportSecurityAudit(StoreId(BuiltInStores.FDROID_ID)))
     }
 
     @Test

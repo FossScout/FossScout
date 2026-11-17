@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft (v1 index trust UI/audit implemented; post-v1 APK checks deferred) |
+| Status | **Done** for v1 index verification and audit; APK checks and transparency metadata deferred |
 | Availability | **General** for verification; **Restricted** for direct install |
 | Profiles | `playstore` (verify/handoff), `vanilla` (verify/install), `direct` (verify/install), `custom` |
 | Required capabilities | `STORE_INDEX_NETWORK`; `DIRECT_APK_INSTALL` only for install |
@@ -67,7 +67,7 @@ must make those checks visible and must fail closed.
 | F14-R5 | **Done.** HTTPS is required by default; plain HTTP is blocked unless the user explicitly opts in, and the opt-in state is visible. |
 | F14-R6 | **Done.** Security details show the pinned/expected fingerprint, index signer, signature status, verification source, index SHA-256/version, HTTP state, last successful sync, and failure reason. |
 | F14-R7 | **Done.** A changed or removed pin, or a signer mismatch, requires review. Old and new fingerprints are shown; the user can approve the new fingerprint (which clears old active trust and re-syncs) or remove the store. |
-| F14-R8 | **Partial.** Verification results are kept in a local, timestamped, bounded audit trail (100 entries) visible in the security details panel. Export is deferred to F16. |
+| F14-R8 | **Done.** Verification results are kept in a local, timestamped, bounded audit trail (100 entries) visible in the security details panel. The panel exports one store's audit as versioned local JSON with source URLs, fingerprints, and failure reasons; notes, favourites, and installed-app inventory are excluded. |
 | F14-R9 | **Not implemented.** Binary-transparency/reproducibility metadata is not displayed. |
 
 The UI explicitly states that APK hash and signer continuity are not checked in
