@@ -1,8 +1,10 @@
 # Play Internal Testing
 
 Play internal testing is the next distribution stage after the GitHub beta. The
-repository can build a signed AAB for manual upload, but the Play upload
-secrets, Play Console setup, and automated upload are not complete.
+four Play upload secrets are configured, and a signed AAB was built from
+`main` on 2026-11-17. The Play Console app entry, declarations, privacy-policy
+URL, testers, and internal testing track remain pending; automated upload is
+not configured.
 
 The account-independent submission package is in
 [`docs/play-store/`](play-store/README.md): store listing copy and graphics,
@@ -15,8 +17,9 @@ tracker scanning, local APK manifest import, and audit export stay on-device.
 | Item | Status |
 | --- | --- |
 | AAB build workflow | Ready: `.github/workflows/play-internal.yml` |
-| Play upload secrets | Pending: `PLAY_KEYSTORE_FILE`, `PLAY_KEYSTORE_PASSWORD`, `PLAY_KEY_ALIAS`, `PLAY_KEY_PASSWORD` |
-| Play Console app entry and Play App Signing | Pending |
+| Play upload secrets | **Done**: `PLAY_KEYSTORE_FILE`, `PLAY_KEYSTORE_PASSWORD`, `PLAY_KEY_ALIAS`, and `PLAY_KEY_PASSWORD` configured on 2026-11-17 |
+| Signed AAB | **Done**: [run 44077247261](https://github.com/FossScout/FossScout/actions/runs/44077247261) from `main` at `096245f`; version `0.1.1`/code `2`; artifacts `app-playstore-release.aab` and `.sha256` |
+| Play Console app entry and Play App Signing | Pending: app entry not created yet |
 | Store listing copy and graphics | Prepared under `docs/play-store/` |
 | App content and data safety declarations | Drafted under `docs/play-store/declarations/` |
 | Privacy-policy URL and contact email | Pending |
@@ -25,9 +28,11 @@ tracker scanning, local APK manifest import, and audit export stay on-device.
 
 ## Signing
 
-Use a dedicated Play upload key. Do not reuse the GitHub beta signing key.
+Use a dedicated Play upload key. Do not reuse the GitHub beta signing key. A
+dedicated key was generated on 2026-11-17 and stored outside the repository;
+the four repository secrets are configured. The key alias is `play-upload`.
 
-Create the key outside the repository:
+For a future key replacement, create it outside the repository:
 
 ```sh
 keytool -genkeypair -v \
@@ -57,13 +62,15 @@ Keep the keystore and passwords out of the repository.
 
 ## Build the AAB
 
-The `PLAY_*` repository secrets are not configured yet. No signed AAB is
-committed. A local unsigned `bundlePlaystoreRelease` check on 2026-11-16
-produced version `0.1.1`/code `2`; the Play merged manifest had only `INTERNET`
-and the AndroidX dynamic-receiver permission, with no `QUERY_ALL_PACKAGES`.
-That artifact is not for upload. After the secrets are configured, run the
-**Play Internal AAB** workflow manually from GitHub Actions from current
-`main`. Provide:
+The `PLAY_*` repository secrets are configured. No signed AAB is committed. The
+**Play Internal AAB** workflow ran on 2026-11-17 from `main` at `096245f` and
+produced a signed AAB for version `0.1.1`/code `2` with SHA-256
+`46a705a2a942e8561b5a10514b04bf591c21d4bc2e5e3d59f68235b78b418968`. The
+signer certificate SHA-256 is
+`74:C6:CD:F3:6A:57:6B:A5:3C:F7:60:86:75:CD:C3:A5:3C:CF:DD:E5:6E:22:8B:EB:BB:99:78:08:F5:55:3F:E4`.
+The Play merged manifest still has only `INTERNET` and the AndroidX
+dynamic-receiver permission, with no `QUERY_ALL_PACKAGES`. Run the workflow
+manually from GitHub Actions from current `main` for future uploads. Provide:
 
 - `version_name`: a Play version name that does not contain `-beta`
 - `version_code`: a positive integer higher than every previously uploaded code
@@ -99,10 +106,12 @@ manually in Play Console.
 
 ## Play Console setup
 
-Complete these once in Play Console:
+The app entry does not exist yet. Complete these in order in Play Console:
 
 1. Create the app entry for `com.fossscout.app`.
-2. Enroll in Play App Signing and register the Play upload key.
+2. Enroll in Play App Signing with a Google-generated app signing key and
+   register the Play upload key. The upload certificate fingerprint is recorded
+   in the build section above.
 3. Complete app content declarations, data safety, store listing, and privacy
    policy requirements using `docs/play-store/declarations/` and
    `docs/play-store/listing/`.
