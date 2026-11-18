@@ -50,8 +50,17 @@
     </plurals>
     <string name="backup_preview_notes">Private notes included: %1$d</string>
     <string name="backup_preview_manifest">This file contains:</string>
-    <string name="backup_preview_conflicts">Favourite conflicts: %1$d. Custom-store conflicts: %2$d. The selected mode handles them.</string>
+    <string name="backup_preview_conflicts">Favourite conflicts: %1$d. Custom-store conflicts: %2$d. Resolve favourites below or use the selected mode for the rest.</string>
     <string name="backup_preview_conflicts_overrides">Match-correction conflicts: %1$d. The selected mode handles them.</string>
+    <string name="backup_conflict_items_title">Favourite conflicts</string>
+    <string name="backup_conflict_hint">Choose per favourite, or use the selected mode for that item.</string>
+    <string name="backup_conflict_device">This device: note "%1$s"; preferred store: %2$s</string>
+    <string name="backup_conflict_backup">Backup: note "%1$s"; preferred store: %2$s</string>
+    <string name="backup_conflict_no_note">no note</string>
+    <string name="backup_conflict_no_store">none</string>
+    <string name="backup_conflict_default">Mode default</string>
+    <string name="backup_conflict_keep_local">Keep device</string>
+    <string name="backup_conflict_use_backup">Use backup</string>
     <string name="backup_preview_settings_changed">Feature settings or preferred store clients will also change.</string>
     <string name="backup_mode">Conflict handling</string>
     <string name="backup_mode_merge">Merge</string>

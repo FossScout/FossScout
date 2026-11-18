@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft (v1 backup implemented in S09; per-item conflict resolution remains deferred) |
+| Status | **Done** for v1 backup; per-item favourite conflict resolution implemented, device checks pending |
 | Availability | **General** |
 | Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | `SHARE_IMPORT_EXPORT` |
@@ -51,7 +51,7 @@ guaranteed across OEMs.
 | F13-R3 | MUST | Import validates schema and shows a preview. | Invalid files fail without changing data. |
 | F13-R4 | MUST | A passphrase-protected backup cannot be imported without the passphrase. | Wrong passphrase produces an error, not partial data. |
 | F13-R5 | MUST | Store fingerprints and trust settings survive migration. | A restored store retains its pinned fingerprint. |
-| F13-R6 | SHOULD | Conflicts (same favourite, different note/store) are shown per item. | User can choose which version to keep. |
+| F13-R6 | SHOULD | Conflicts (same favourite, different note/store) are shown per item. | The preview shows both notes and preferred stores; the user can keep the device version, use the backup version, or keep the selected mode default for each favourite. |
 | F13-R7 | SHOULD | The app documents whether Android auto-backup includes the data. | Documentation and in-app text match actual behaviour. |
 | F13-R8 | MAY | Export can be triggered from a share sheet. | The backup file can be sent to a user-chosen destination. |
 
@@ -100,6 +100,11 @@ default; if included, they require encryption.
   existing handoff choices win. `replace` uses the backup for all sections.
   `skip` only adds missing favourites, collections, and custom stores and leaves
   settings/handoff unchanged.
+- **Per-item favourite conflicts:** the restore preview lists each existing
+  favourite with the local and backup notes and preferred stores. A per-item
+  keep-local/use-backup override is applied on top of the selected mode. The
+  override is session-only and cleared when the global mode changes; the backup
+  format is unchanged.
 - **Built-in stores:** the app preserves its current built-in descriptors during
   restore, so a backup cannot downgrade their endpoints or pinned fingerprints.
   Custom-store merge/skip keeps the existing descriptor on ID conflict.

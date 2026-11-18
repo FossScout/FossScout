@@ -112,7 +112,7 @@ preservation. Manually verify the document picker/share flow if possible.
   - **F13-R3 — complete:** schema, format, checksum, and payload validation run before planning; invalid/unsupported/tampered files leave repositories untouched.
   - **F13-R4 — complete:** encrypted files require the passphrase; wrong passphrase and tampering surface as an error and no repository write occurs.
   - **F13-R5 — complete:** custom-store fingerprints and trust notes survive restore; built-in descriptors are preserved from the current app so a backup cannot downgrade them.
-  - **F13-R6 — deferred SHOULD:** restore uses global merge/replace/skip modes with per-item conflict flags in the plan and aggregate counts in the UI. Per-item keep-local/use-backup selection is not implemented.
+  - **F13-R6 — complete (follow-up 2026-11-18):** restore lists each existing favourite with the local and backup notes and preferred stores. The user can keep the device version, use the backup version, or keep the selected mode default per item. The override is session-only, clears when the global mode changes, and does not alter the backup format.
   - **F13-R7 — complete:** Android backup rules include DataStore files and legacy shared preferences; in-app text and `STATUS.md` describe the actual behavior.
   - **F13-R8 — complete:** export is delivered through the Android share sheet with a non-exported FileProvider URI.
-- **Remaining F13 gaps:** per-item conflict resolution (R6); device/emulator verification of the share sheet, document picker, FileProvider reads, and large-profile behavior; cross-DataStore rollback is best-effort rather than transactional.
+- **Remaining F13 gaps:** device/emulator verification of the share sheet, document picker, FileProvider reads, per-item conflict selection, and large-profile behavior; cross-DataStore rollback is best-effort rather than transactional.

@@ -971,6 +971,8 @@ fun FossScoutApp(
                             backupViewModel::setImportPassphrase,
                         onUnlockImport = backupViewModel::unlockImport,
                         onModeChange = backupViewModel::setImportMode,
+                        onFavouriteResolutionChange =
+                            backupViewModel::setFavouriteResolution,
                         onRestore = backupViewModel::applyImport,
                         onDismissImport = backupViewModel::dismissImport,
                         onDismissError = backupViewModel::dismissError,

@@ -256,6 +256,9 @@ run, or failure fixture.
 - [ ] Export an unencrypted backup through the system share sheet.
 - [ ] Import it through the document picker.
 - [ ] Restore with merge, replace, and skip. The preview counts match the result.
+- [ ] Create a favourite conflict with different notes or preferred stores.
+      Confirm both versions are shown; choose Keep device, Use backup, and Mode
+      default for different favourites. The restored result matches each choice.
 - [ ] Export and import an encrypted backup with the correct passphrase.
 - [ ] Try a wrong passphrase and a corrupted checksum. Both fail safely.
 - [ ] Restore custom-store fingerprints and trust state.

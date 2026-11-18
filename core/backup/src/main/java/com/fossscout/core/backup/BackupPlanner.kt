@@ -23,6 +23,9 @@ enum class BackupConflictMode {
     SKIP,
 }
 
+/** Per-favourite conflict override; absent means use the selected global mode. */
+enum class BackupFavouriteResolution { KEEP_LOCAL, USE_BACKUP }
+
 enum class BackupChangeAction { ADD, MERGE, REPLACE, SKIP, NONE }
 
 enum class BackupSettingsAction { NONE, MERGE, REPLACE, SKIP }
@@ -36,6 +39,11 @@ data class BackupFavouritePreview(
     val noteChanged: Boolean = false,
     val tagsAdded: Int = 0,
     val preferredStoreChanged: Boolean = false,
+    val localNote: String = "",
+    val incomingNote: String = "",
+    val localPreferredStoreId: StoreId? = null,
+    val incomingPreferredStoreId: StoreId? = null,
+    val resolution: BackupFavouriteResolution? = null,
 )
 
 data class BackupCollectionPreview(
@@ -158,29 +166,43 @@ object BackupPlanner {
         local: BackupLocalState,
         mode: BackupConflictMode,
         nowEpochMillis: Long,
+        favouriteResolutions: Map<AppKey, BackupFavouriteResolution> = emptyMap(),
     ): BackupRestorePlan {
         envelope.validateStructure()
         val incoming = envelope.payload
         val incomingFavourites = incoming.favourites
+        val incomingFavouritesByKey = incomingFavourites.associateBy(Favourite::appKey)
         val localFavouritesByKey = local.favourites.associateBy(Favourite::appKey)
 
         val favouritePreview = incomingFavourites.map { item ->
             val existing = localFavouritesByKey[item.appKey]
-            val action = actionFor(existing != null, mode)
+            val resolution = favouriteResolutions[item.appKey]
             BackupFavouritePreview(
                 appKey = item.appKey,
                 displayName = item.displayName,
-                action = action,
+                action = favouriteAction(existing != null, mode, resolution),
                 noteChanged = existing != null && existing.note != item.note,
                 tagsAdded = (item.tags - existing?.tags.orEmpty()).size,
                 preferredStoreChanged = existing != null &&
                     item.preferredStoreId != null &&
                     existing.preferredStoreId != item.preferredStoreId,
+                localNote = existing?.note.orEmpty(),
+                incomingNote = item.note,
+                localPreferredStoreId = existing?.preferredStoreId,
+                incomingPreferredStoreId = item.preferredStoreId,
+                resolution = resolution,
             )
         }
 
         val targetFavourites = when (mode) {
-            BackupConflictMode.REPLACE -> incomingFavourites
+            BackupConflictMode.REPLACE -> incomingFavourites.map { item ->
+                if (favouriteResolutions[item.appKey] == BackupFavouriteResolution.KEEP_LOCAL) {
+                    localFavouritesByKey[item.appKey] ?: item
+                } else {
+                    item
+                }
+            }
+
             BackupConflictMode.MERGE -> {
                 val result = local.favourites.toMutableList()
                 incomingFavourites.forEach { item ->
@@ -188,18 +210,30 @@ object BackupPlanner {
                     if (index < 0) {
                         result += item
                     } else {
-                        result[index] = mergeFavourite(
-                            existing = result[index],
-                            incoming = item,
-                            nowEpochMillis = nowEpochMillis,
-                        )
+                        result[index] = when (favouriteResolutions[item.appKey]) {
+                            BackupFavouriteResolution.KEEP_LOCAL -> result[index]
+                            BackupFavouriteResolution.USE_BACKUP -> item
+                            null -> mergeFavourite(
+                                existing = result[index],
+                                incoming = item,
+                                nowEpochMillis = nowEpochMillis,
+                            )
+                        }
                     }
                 }
                 result
             }
 
-            BackupConflictMode.SKIP -> local.favourites +
-                incomingFavourites.filter { it.appKey !in localFavouritesByKey }
+            BackupConflictMode.SKIP -> {
+                val result = local.favourites.map { existing ->
+                    val incoming = incomingFavouritesByKey[existing.appKey]
+                    val useBackup = favouriteResolutions[existing.appKey] ==
+                        BackupFavouriteResolution.USE_BACKUP
+                    if (incoming != null && useBackup) incoming else existing
+                }.toMutableList()
+                result += incomingFavourites.filter { it.appKey !in localFavouritesByKey }
+                result
+            }
         }
 
         val incomingCollectionsById = incoming.collections.associateBy(AppCollection::id)
@@ -380,6 +414,17 @@ object BackupPlanner {
             mode == BackupConflictMode.MERGE -> BackupChangeAction.MERGE
             else -> BackupChangeAction.REPLACE
         }
+
+    private fun favouriteAction(
+        exists: Boolean,
+        mode: BackupConflictMode,
+        resolution: BackupFavouriteResolution?,
+    ): BackupChangeAction = when {
+        !exists -> BackupChangeAction.ADD
+        resolution == BackupFavouriteResolution.KEEP_LOCAL -> BackupChangeAction.SKIP
+        resolution == BackupFavouriteResolution.USE_BACKUP -> BackupChangeAction.REPLACE
+        else -> actionFor(true, mode)
+    }
 
     private fun mergeFavourite(
         existing: Favourite,
