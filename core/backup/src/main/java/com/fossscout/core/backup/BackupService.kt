@@ -3,6 +3,7 @@ package com.fossscout.core.backup
 import com.fossscout.core.feature.FeatureSettings
 import com.fossscout.core.handoff.HandoffPreferences
 import com.fossscout.core.model.AppCollection
+import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.Favourite
 import com.fossscout.core.model.MatchOverride
 import com.fossscout.core.store.StoreDescriptor
@@ -34,6 +35,7 @@ interface BackupService {
     suspend fun preview(
         envelope: BackupEnvelope,
         mode: BackupConflictMode,
+        favouriteResolutions: Map<AppKey, BackupFavouriteResolution> = emptyMap(),
     ): BackupRestorePlan
 
     suspend fun apply(plan: BackupRestorePlan)

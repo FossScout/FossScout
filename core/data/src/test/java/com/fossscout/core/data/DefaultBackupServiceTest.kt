@@ -2,6 +2,7 @@ package com.fossscout.core.data
 
 import com.fossscout.core.backup.BackupConflictMode
 import com.fossscout.core.backup.BackupEncryptionException
+import com.fossscout.core.backup.BackupFavouriteResolution
 import com.fossscout.core.backup.BackupFormatException
 import com.fossscout.core.feature.BuildProfile
 import com.fossscout.core.feature.FeatureCatalog
@@ -112,6 +113,45 @@ class DefaultBackupServiceTest {
         assertEquals(handoff, target.handoff.preferences.first())
         assertEquals(listOf(matchOverride), target.overrides.overrides.first())
         assertEquals(1, plan.preview.notesItemCount)
+    }
+
+    @Test
+    fun `preview applies a per-favourite keep-local resolution`() = runTest {
+        val localFavourite = favourite.copy(
+            note = "local note",
+            preferredStoreId = StoreId("local-store"),
+        )
+        val source = service(
+            favourites = FakeFavouritesStore(
+                listOf(
+                    favourite.copy(
+                        note = "backup note",
+                        preferredStoreId = StoreId("backup-store"),
+                    ),
+                ),
+            ),
+        )
+        val target = service(
+            favourites = FakeFavouritesStore(listOf(localFavourite)),
+        )
+        val envelope = source.service.prepareExport()
+        val decoded = target.service.decodeImport(
+            source.service.encodeExport(envelope, null),
+        )
+
+        val plan = target.service.preview(
+            envelope = decoded,
+            mode = BackupConflictMode.MERGE,
+            favouriteResolutions = mapOf(
+                localFavourite.appKey to BackupFavouriteResolution.KEEP_LOCAL,
+            ),
+        )
+        target.service.apply(plan)
+
+        assertEquals(
+            listOf(localFavourite),
+            target.favourites.favourites.first(),
+        )
     }
 
     @Test
