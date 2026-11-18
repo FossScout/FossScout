@@ -72,6 +72,11 @@ repository URL, fingerprint, enabled, priority, trust note, last sync, health,
 schema version. Secrets, if ever supported, belong in encrypted storage and are
 never exported in a shared collection.
 
+Shared descriptor import uses the same versioned export. It parses and previews
+the descriptor before any write; confirmation adds a custom entry with a new
+local ID, enabled state, end priority, and no imported sync health. A source ID
+already present is rejected until the existing entry is removed.
+
 ## 8. Edge cases
 
 - Store URL ends with or without `/repo`.
