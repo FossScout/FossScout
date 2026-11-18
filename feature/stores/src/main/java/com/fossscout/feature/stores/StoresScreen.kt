@@ -76,6 +76,11 @@ import java.util.Locale
 fun StoresScreen(
     state: StoresUiState,
     onAdd: () -> Unit,
+    onStartImport: () -> Unit,
+    onImportTextChange: (String) -> Unit,
+    onPreviewImport: () -> Unit,
+    onConfirmImport: () -> Unit,
+    onDismissImport: () -> Unit,
     onEdit: (StoreDescriptor) -> Unit,
     onEditorChange: (StoreEditor) -> Unit,
     onSaveEditor: () -> Unit,
@@ -103,6 +108,8 @@ fun StoresScreen(
     onOpenStoreSearch: (() -> Unit)? = null,
     onReportProblem: ((StoreEditor?) -> Unit)? = null,
 ) {
+    var showAddMenu by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -138,8 +145,29 @@ fun StoresScreen(
                         Text(stringResource(R.string.stores_search))
                     }
                 }
-                Button(onClick = onAdd) {
-                    Text(stringResource(R.string.stores_add))
+                Box {
+                    Button(onClick = { showAddMenu = true }) {
+                        Text(stringResource(R.string.stores_add))
+                    }
+                    DropdownMenu(
+                        expanded = showAddMenu,
+                        onDismissRequest = { showAddMenu = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.stores_add_new)) },
+                            onClick = {
+                                showAddMenu = false
+                                onAdd()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.stores_import)) },
+                            onClick = {
+                                showAddMenu = false
+                                onStartImport()
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -289,6 +317,152 @@ fun StoresScreen(
         )
     }
 
+    state.importText?.let { text ->
+        AlertDialog(
+            onDismissRequest = onDismissImport,
+            title = { Text(stringResource(R.string.stores_import_title)) },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 420.dp)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    Text(
+                        text = stringResource(R.string.stores_import_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = text,
+                        onValueChange = onImportTextChange,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.stores_import_json_label)) },
+                        minLines = 6,
+                        maxLines = 10,
+                        isError = state.importError != null,
+                    )
+                    state.importError?.let { error ->
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(error.messageRes()),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = onPreviewImport,
+                    enabled = text.isNotBlank(),
+                ) {
+                    Text(stringResource(R.string.stores_import_preview))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissImport) {
+                    Text(stringResource(R.string.stores_editor_cancel))
+                }
+            },
+        )
+    }
+
+    state.importPreview?.let { preview ->
+        val descriptor = preview.descriptor
+        val linkOnlyReason = descriptor.availability().reason
+        AlertDialog(
+            onDismissRequest = onDismissImport,
+            title = { Text(stringResource(R.string.stores_import_preview_title)) },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 420.dp)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    Text(
+                        text = stringResource(R.string.stores_import_preview_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    ImportDetail(R.string.stores_import_name, descriptor.name)
+                    ImportDetail(
+                        R.string.stores_import_adapter,
+                        stringResource(descriptor.adapterType.labelRes()),
+                    )
+                    ImportDetail(R.string.stores_import_homepage, descriptor.homepage)
+                    descriptor.indexUrl?.takeIf(String::isNotBlank)?.let {
+                        ImportDetail(R.string.stores_import_index, it)
+                    }
+                    descriptor.apiUrl?.takeIf(String::isNotBlank)?.let {
+                        ImportDetail(R.string.stores_import_api, it)
+                    }
+                    descriptor.repositoryUrl?.takeIf(String::isNotBlank)?.let {
+                        ImportDetail(R.string.stores_import_repository, it)
+                    }
+                    val fingerprint = descriptor.fingerprint?.takeIf(String::isNotBlank)
+                    if (fingerprint == null) {
+                        ImportDetailText(stringResource(R.string.stores_import_fingerprint_none))
+                    } else {
+                        ImportDetail(R.string.stores_import_fingerprint, fingerprint)
+                    }
+                    if (descriptor.trustNote.isNotBlank()) {
+                        ImportDetail(R.string.stores_import_trust_note, descriptor.trustNote)
+                    }
+                    if (linkOnlyReason != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.stores_import_link_only,
+                                stringResource(linkOnlyReason.labelRes()),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    if (descriptor.allowInsecureHttp) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.stores_import_http_warning),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                    if (!preview.canImport) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.stores_import_conflict,
+                                preview.existingStoreName.orEmpty(),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                    state.importError?.let { error ->
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(error.messageRes()),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = onConfirmImport,
+                    enabled = preview.canImport,
+                ) {
+                    Text(stringResource(R.string.stores_import_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissImport) {
+                    Text(stringResource(R.string.stores_editor_cancel))
+                }
+            },
+        )
+    }
+
     state.securityDetails?.let { details ->
         StoreSecurityDetailsDialog(
             details = details,
@@ -306,6 +480,24 @@ fun StoresScreen(
             onDismiss = onDismissSecurityDetails,
         )
     }
+}
+
+@Composable
+private fun ImportDetail(@StringRes labelRes: Int, value: String) {
+    Text(
+        text = stringResource(labelRes, value),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun ImportDetailText(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 @Composable
@@ -354,6 +546,8 @@ private fun StoresError.messageRes(): Int = when (this) {
     StoresError.SYNC_FAILED -> R.string.stores_error_sync
     StoresError.SYNC_UNAVAILABLE -> R.string.stores_error_sync_unavailable
     StoresError.STORAGE_FAILED -> R.string.stores_error_storage
+    StoresError.IMPORT_INVALID -> R.string.stores_import_invalid
+    StoresError.IMPORT_CONFLICT -> R.string.stores_import_conflict_error
 }
 
 @Composable

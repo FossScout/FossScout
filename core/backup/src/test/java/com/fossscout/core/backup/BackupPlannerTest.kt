@@ -96,6 +96,95 @@ class BackupPlannerTest {
     }
 
     @Test
+    fun `keep local resolution overrides merge and exposes both versions`() {
+        val localFavourite = sampleFavourite(
+            note = "local note",
+            preferredStoreId = StoreId("local-store"),
+        )
+        val incomingFavourite = sampleFavourite(
+            note = "backup note",
+            preferredStoreId = StoreId("backup-store"),
+        )
+        val envelope = sampleEnvelope(
+            samplePayload(favourites = listOf(incomingFavourite)),
+        )
+        val local = BackupLocalState(favourites = listOf(localFavourite))
+
+        val plan = BackupPlanner.plan(
+            envelope = envelope,
+            local = local,
+            mode = BackupConflictMode.MERGE,
+            nowEpochMillis = 500,
+            favouriteResolutions = mapOf(
+                localFavourite.appKey to BackupFavouriteResolution.KEEP_LOCAL,
+            ),
+        )
+
+        val target = plan.target.favourites.single()
+        val preview = plan.preview.favourites.single()
+        assertEquals(localFavourite, target)
+        assertEquals(BackupChangeAction.SKIP, preview.action)
+        assertEquals(BackupFavouriteResolution.KEEP_LOCAL, preview.resolution)
+        assertEquals("local note", preview.localNote)
+        assertEquals("backup note", preview.incomingNote)
+        assertEquals(StoreId("local-store"), preview.localPreferredStoreId)
+        assertEquals(StoreId("backup-store"), preview.incomingPreferredStoreId)
+    }
+
+    @Test
+    fun `use backup resolution overrides skip`() {
+        val localFavourite = sampleFavourite(
+            note = "local note",
+            preferredStoreId = StoreId("local-store"),
+        )
+        val incomingFavourite = sampleFavourite(
+            note = "backup note",
+            preferredStoreId = StoreId("backup-store"),
+        )
+        val envelope = sampleEnvelope(
+            samplePayload(favourites = listOf(incomingFavourite)),
+        )
+
+        val plan = BackupPlanner.plan(
+            envelope = envelope,
+            local = BackupLocalState(favourites = listOf(localFavourite)),
+            mode = BackupConflictMode.SKIP,
+            nowEpochMillis = 500,
+            favouriteResolutions = mapOf(
+                localFavourite.appKey to BackupFavouriteResolution.USE_BACKUP,
+            ),
+        )
+
+        assertEquals(incomingFavourite, plan.target.favourites.single())
+        assertEquals(
+            BackupChangeAction.REPLACE,
+            plan.preview.favourites.single().action,
+        )
+    }
+
+    @Test
+    fun `keep local resolution overrides replace`() {
+        val localFavourite = sampleFavourite(note = "local note")
+        val incomingFavourite = sampleFavourite(note = "backup note")
+        val envelope = sampleEnvelope(
+            samplePayload(favourites = listOf(incomingFavourite)),
+        )
+
+        val plan = BackupPlanner.plan(
+            envelope = envelope,
+            local = BackupLocalState(favourites = listOf(localFavourite)),
+            mode = BackupConflictMode.REPLACE,
+            nowEpochMillis = 500,
+            favouriteResolutions = mapOf(
+                localFavourite.appKey to BackupFavouriteResolution.KEEP_LOCAL,
+            ),
+        )
+
+        assertEquals(localFavourite, plan.target.favourites.single())
+        assertEquals(BackupChangeAction.SKIP, plan.preview.favourites.single().action)
+    }
+
+    @Test
     fun `replace removes local entries absent from the backup`() {
         val localFavourite = sampleFavourite(key = "org.local.app", note = "local")
         val localCollection = sampleCollection(id = "local-collection")

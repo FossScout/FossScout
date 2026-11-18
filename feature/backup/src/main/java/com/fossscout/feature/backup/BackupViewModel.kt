@@ -8,11 +8,13 @@ import com.fossscout.core.backup.BackupConflictMode
 import com.fossscout.core.backup.BackupEncryptionException
 import com.fossscout.core.backup.BackupEncryptionReason
 import com.fossscout.core.backup.BackupEnvelope
+import com.fossscout.core.backup.BackupFavouriteResolution
 import com.fossscout.core.backup.BackupFormatException
 import com.fossscout.core.backup.BackupFormatReason
 import com.fossscout.core.backup.BackupPassphraseRequiredException
 import com.fossscout.core.backup.BackupRestorePlan
 import com.fossscout.core.backup.BackupService
+import com.fossscout.core.model.AppKey
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +56,7 @@ data class BackupUiState(
     val confirmPassphrase: String = "",
     val importPreview: BackupRestorePlan? = null,
     val importMode: BackupConflictMode = BackupConflictMode.MERGE,
+    val importFavouriteResolutions: Map<AppKey, BackupFavouriteResolution> = emptyMap(),
     val importNeedsPassphrase: Boolean = false,
     val importPassphrase: String = "",
     val importFileName: String? = null,
@@ -189,6 +192,7 @@ class BackupViewModel(
         _uiState.update {
             it.copy(
                 importPreview = null,
+                importFavouriteResolutions = emptyMap(),
                 importNeedsPassphrase = false,
                 importPassphrase = "",
                 importFileName = fileName,
@@ -225,13 +229,47 @@ class BackupViewModel(
 
     fun setImportMode(mode: BackupConflictMode) {
         if (_uiState.value.importMode == mode) return
-        _uiState.update { it.copy(importMode = mode, error = null) }
+        _uiState.update {
+            it.copy(
+                importMode = mode,
+                importFavouriteResolutions = emptyMap(),
+                error = null,
+            )
+        }
+        replanImport()
+    }
+
+    fun setFavouriteResolution(
+        appKey: AppKey,
+        resolution: BackupFavouriteResolution?,
+    ) {
+        if (_uiState.value.isApplying) return
+        val current = _uiState.value.importFavouriteResolutions
+        val next = current.toMutableMap()
+        if (resolution == null) {
+            next.remove(appKey)
+        } else {
+            next[appKey] = resolution
+        }
+        if (next == current) return
+        _uiState.update { it.copy(importFavouriteResolutions = next, error = null) }
+        replanImport()
+    }
+
+    private fun replanImport() {
         val envelope = pendingImportEnvelope ?: return
+        val state = _uiState.value
         previewJob?.cancel()
         previewJob = viewModelScope.launch {
-            _uiState.update { it.copy(isPreviewing = true, error = null) }
+            _uiState.update {
+                it.copy(isPreviewing = true, importPreview = null, error = null)
+            }
             try {
-                val plan = service.preview(envelope, mode)
+                val plan = service.preview(
+                    envelope = envelope,
+                    mode = state.importMode,
+                    favouriteResolutions = state.importFavouriteResolutions,
+                )
                 if (!isActive) return@launch
                 _uiState.update {
                     it.copy(isPreviewing = false, importPreview = plan)
@@ -269,6 +307,7 @@ class BackupViewModel(
                     it.copy(
                         isApplying = false,
                         importPreview = null,
+                        importFavouriteResolutions = emptyMap(),
                         importNeedsPassphrase = false,
                         importPassphrase = "",
                         importFileName = null,
@@ -296,6 +335,7 @@ class BackupViewModel(
         _uiState.update {
             it.copy(
                 importPreview = null,
+                importFavouriteResolutions = emptyMap(),
                 importNeedsPassphrase = false,
                 importPassphrase = "",
                 importFileName = null,
@@ -322,6 +362,7 @@ class BackupViewModel(
             it.copy(
                 isPreviewing = false,
                 importPreview = null,
+                importFavouriteResolutions = emptyMap(),
                 importNeedsPassphrase = false,
                 importPassphrase = "",
                 importFileName = null,
@@ -345,7 +386,12 @@ class BackupViewModel(
             }
             try {
                 val envelope = service.decodeImport(content, passphrase)
-                val plan = service.preview(envelope, _uiState.value.importMode)
+                val state = _uiState.value
+                val plan = service.preview(
+                    envelope = envelope,
+                    mode = state.importMode,
+                    favouriteResolutions = state.importFavouriteResolutions,
+                )
                 if (!isActive) return@launch
                 pendingImportContent = content
                 pendingImportEnvelope = envelope

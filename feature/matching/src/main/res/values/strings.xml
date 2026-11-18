@@ -237,6 +237,10 @@
     <string name="store_search_query">Search apps</string>
     <string name="store_search_hint">App name, package ID, or keyword</string>
     <string name="store_search_action">Search</string>
+    <string name="store_search_history_title">Search history</string>
+    <string name="store_search_history_privacy">Stored only on this device.</string>
+    <string name="store_search_history_off">Search history is off.</string>
+    <string name="store_search_history_clear">Clear history</string>
     <string name="store_search_filter_stores">Stores</string>
     <string name="store_search_filter_trust">Trust</string>
     <string name="store_search_filter_availability">Availability</string>

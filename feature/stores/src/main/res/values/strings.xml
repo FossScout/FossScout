@@ -3,6 +3,8 @@
     <string name="stores_title">Stores</string>
     <string name="stores_subtitle">Choose which stores FossScout may use for matching.</string>
     <string name="stores_add">Add store</string>
+    <string name="stores_add_new">New store</string>
+    <string name="stores_import">Import descriptor</string>
     <string name="stores_search">Search stores</string>
     <string name="stores_report_problem">Report</string>
     <string name="stores_loading">Loading stores…</string>
@@ -156,6 +158,28 @@
     <string name="stores_export_message">This versioned JSON can be shared with another FossScout install.</string>
     <string name="stores_export_share">Share</string>
     <string name="stores_export_close">Close</string>
+
+    <string name="stores_import_title">Import store descriptor</string>
+    <string name="stores_import_body">Paste a versioned store descriptor shared from FossScout. You can review it before adding.</string>
+    <string name="stores_import_json_label">Descriptor JSON</string>
+    <string name="stores_import_preview">Preview</string>
+    <string name="stores_import_preview_title">Import this store?</string>
+    <string name="stores_import_preview_body">This adds the store as a custom entry at the end of your list. Sync health is not imported.</string>
+    <string name="stores_import_name">Name: %1$s</string>
+    <string name="stores_import_adapter">Adapter: %1$s</string>
+    <string name="stores_import_homepage">Homepage: %1$s</string>
+    <string name="stores_import_index">Index URL: %1$s</string>
+    <string name="stores_import_api">API URL: %1$s</string>
+    <string name="stores_import_repository">Repository URL: %1$s</string>
+    <string name="stores_import_fingerprint">Fingerprint: %1$s</string>
+    <string name="stores_import_fingerprint_none">Fingerprint: none (unverified)</string>
+    <string name="stores_import_trust_note">Trust note: %1$s</string>
+    <string name="stores_import_http_warning">This descriptor enables plain HTTP for the store.</string>
+    <string name="stores_import_link_only">This store will be link-only and excluded from matching: %1$s.</string>
+    <string name="stores_import_conflict">A store with the same identifier is already in your list: %1$s. Remove it first or use a different descriptor.</string>
+    <string name="stores_import_confirm">Add store</string>
+    <string name="stores_import_invalid">That descriptor is malformed, invalid, or uses an unsupported version.</string>
+    <string name="stores_import_conflict_error">That store is already in your list.</string>
 
     <string name="stores_adapter_fdroid_v2">F-Droid index v2</string>
     <string name="stores_adapter_fdroid_v1">F-Droid index v1</string>

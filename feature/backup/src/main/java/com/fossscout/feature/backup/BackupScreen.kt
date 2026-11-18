@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -29,13 +30,18 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.fossscout.core.backup.BACKUP_PASSPHRASE_MIN_LENGTH
+import com.fossscout.core.backup.BackupChangeAction
 import com.fossscout.core.backup.BackupConflictMode
 import com.fossscout.core.backup.BackupExclusion
+import com.fossscout.core.backup.BackupFavouritePreview
+import com.fossscout.core.backup.BackupFavouriteResolution
 import com.fossscout.core.backup.BackupManifest
 import com.fossscout.core.backup.BackupRestorePlan
 import com.fossscout.core.backup.BackupSection
+import com.fossscout.core.model.AppKey
 
 @Composable
 fun BackupScreen(
@@ -49,6 +55,7 @@ fun BackupScreen(
     onImportPassphraseChange: (String) -> Unit,
     onUnlockImport: () -> Unit,
     onModeChange: (BackupConflictMode) -> Unit,
+    onFavouriteResolutionChange: (AppKey, BackupFavouriteResolution?) -> Unit,
     onRestore: () -> Unit,
     onDismissImport: () -> Unit,
     onDismissError: () -> Unit,
@@ -167,6 +174,7 @@ fun BackupScreen(
                     mode = state.importMode,
                     isApplying = state.isApplying,
                     onModeChange = onModeChange,
+                    onFavouriteResolutionChange = onFavouriteResolutionChange,
                     onRestore = onRestore,
                     onDismiss = onDismissImport,
                 )
@@ -347,6 +355,7 @@ private fun RestorePreviewCard(
     mode: BackupConflictMode,
     isApplying: Boolean,
     onModeChange: (BackupConflictMode) -> Unit,
+    onFavouriteResolutionChange: (AppKey, BackupFavouriteResolution?) -> Unit,
     onRestore: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -433,7 +442,7 @@ private fun RestorePreviewCard(
                 )
             }
             val storeConflictCount = preview.stores.count {
-                it.action != com.fossscout.core.backup.BackupChangeAction.ADD
+                it.action != BackupChangeAction.ADD
             }
             if (preview.conflictFavouriteCount > 0 || storeConflictCount > 0) {
                 Text(
@@ -444,6 +453,27 @@ private fun RestorePreviewCard(
                     ),
                     style = MaterialTheme.typography.bodySmall,
                 )
+            }
+            val favouriteConflicts = preview.favourites.filter {
+                it.action != BackupChangeAction.ADD
+            }
+            if (favouriteConflicts.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.backup_conflict_items_title),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Text(
+                    text = stringResource(R.string.backup_conflict_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                favouriteConflicts.forEach { favourite ->
+                    FavouriteConflictCard(
+                        favourite = favourite,
+                        enabled = !isApplying,
+                        onResolutionChange = onFavouriteResolutionChange,
+                    )
+                }
             }
             if (preview.conflictMatchOverrideCount > 0) {
                 Text(
@@ -531,6 +561,82 @@ private fun RestorePreviewCard(
                         },
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FavouriteConflictCard(
+    favourite: BackupFavouritePreview,
+    enabled: Boolean,
+    onResolutionChange: (AppKey, BackupFavouriteResolution?) -> Unit,
+) {
+    val noNote = stringResource(R.string.backup_conflict_no_note)
+    val noStore = stringResource(R.string.backup_conflict_no_store)
+    Card(shape = RoundedCornerShape(12.dp)) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = favourite.displayName,
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                text = favourite.appKey.value,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(
+                    R.string.backup_conflict_device,
+                    favourite.localNote.ifBlank { noNote },
+                    favourite.localPreferredStoreId?.value ?: noStore,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = stringResource(
+                    R.string.backup_conflict_backup,
+                    favourite.incomingNote.ifBlank { noNote },
+                    favourite.incomingPreferredStoreId?.value ?: noStore,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(
+                    selected = favourite.resolution == null,
+                    onClick = { onResolutionChange(favourite.appKey, null) },
+                    enabled = enabled,
+                    label = { Text(stringResource(R.string.backup_conflict_default)) },
+                )
+                FilterChip(
+                    selected = favourite.resolution == BackupFavouriteResolution.KEEP_LOCAL,
+                    onClick = {
+                        onResolutionChange(
+                            favourite.appKey,
+                            BackupFavouriteResolution.KEEP_LOCAL,
+                        )
+                    },
+                    enabled = enabled,
+                    label = { Text(stringResource(R.string.backup_conflict_keep_local)) },
+                )
+                FilterChip(
+                    selected = favourite.resolution == BackupFavouriteResolution.USE_BACKUP,
+                    onClick = {
+                        onResolutionChange(
+                            favourite.appKey,
+                            BackupFavouriteResolution.USE_BACKUP,
+                        )
+                    },
+                    enabled = enabled,
+                    label = { Text(stringResource(R.string.backup_conflict_use_backup)) },
+                )
             }
         }
     }
