@@ -76,7 +76,7 @@
     <string name="backup_dismiss">Dismiss</string>
 
     <string name="backup_auto_title">Android backup</string>
-    <string name="backup_auto_body">When Android system backup is enabled on your device, it can include FossScout\'s local app data. FossScout backups never include index snapshots, cached store data, or APK files.</string>
+    <string name="backup_auto_body">When Android system backup is enabled on your device, it can include FossScout\'s local app data. Search history is excluded. FossScout backups never include index snapshots, cached store data, or APK files.</string>
 
     <string name="backup_error_malformed">That file is not a valid FossScout backup.</string>
     <string name="backup_error_unsupported">That backup uses a newer or unsupported format.</string>

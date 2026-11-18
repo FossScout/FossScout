@@ -7,6 +7,7 @@ import com.fossscout.app.handoff.InventoryCompanionStoreDetector
 import com.fossscout.app.inventory.PackageManagerInstalledAppSource
 import com.fossscout.app.inventory.PackageManagerTrackerScanSource
 import com.fossscout.app.profile.ProfileFeatures
+import com.fossscout.app.search.DataStoreStoreSearchHistoryStore
 import com.fossscout.core.contribution.ContributionEnvironment
 import com.fossscout.core.contribution.ContributionReportBuilder
 import com.fossscout.core.data.DataStoreFeatureSettingsStore
@@ -39,6 +40,7 @@ import com.fossscout.core.inventory.InventoryRepository
 import com.fossscout.core.matching.KnownProprietaryApps
 import com.fossscout.core.matching.MatchingRepository
 import com.fossscout.core.matching.SnapshotCatalogSource
+import com.fossscout.core.matching.StoreSearchHistoryRepository
 import com.fossscout.core.matching.TrackerDatasetLoader
 import java.io.File
 import kotlinx.coroutines.flow.first
@@ -51,6 +53,9 @@ private val Context.inventoryDataStore by preferencesDataStore(name = "inventory
 private val Context.indexStateDataStore by preferencesDataStore(name = "index_state")
 private val Context.handoffDataStore by preferencesDataStore(name = "handoff")
 private val Context.matchOverridesDataStore by preferencesDataStore(name = "match_overrides")
+private val Context.storeSearchHistoryDataStore by preferencesDataStore(
+    name = "store_search_history",
+)
 
 /**
  * Composition root for app-wide dependencies. Android framework objects are
@@ -93,6 +98,10 @@ class AppContainer(context: Context) {
 
     val matchOverridesRepository = MatchOverridesRepository(
         DataStoreMatchOverridesStore(context.matchOverridesDataStore),
+    )
+
+    val storeSearchHistoryRepository = StoreSearchHistoryRepository(
+        DataStoreStoreSearchHistoryStore(context.storeSearchHistoryDataStore),
     )
 
     val shareExportFactory = ShareExportFactory()
