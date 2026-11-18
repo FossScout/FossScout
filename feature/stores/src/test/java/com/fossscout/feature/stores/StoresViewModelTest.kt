@@ -196,6 +196,83 @@ class StoresViewModelTest {
     }
 
     @Test
+    fun `import preview requires confirmation before adding a custom store`() = runTest(dispatcher) {
+        val viewModel = viewModel()
+        advanceUntilIdle()
+        val source = StoreDescriptor(
+            id = StoreId("shared-store"),
+            name = "Shared repo",
+            homepage = "https://example.org",
+            adapterType = AdapterType.FDROID_V2,
+            indexUrl = "https://example.org/repo",
+            fingerprint = BuiltInStores.FDROID_FINGERPRINT,
+        )
+
+        viewModel.startImport()
+        viewModel.updateImportText(StoreRegistryCodec().encodeDescriptor(source))
+        viewModel.previewImport()
+        advanceUntilIdle()
+
+        val preview = requireNotNull(viewModel.uiState.value.importPreview)
+        assertEquals(source, preview.descriptor)
+        assertTrue(preview.canImport)
+        assertNull(viewModel.uiState.value.importText)
+        assertEquals(2, viewModel.uiState.value.entries.size)
+
+        viewModel.confirmImport()
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.importPreview)
+        assertEquals(3, viewModel.uiState.value.entries.size)
+        val imported = viewModel.uiState.value.entries.last().descriptor
+        assertEquals("custom-0", imported.id.value)
+        assertEquals("Shared repo", imported.name)
+        assertEquals(BuiltInStores.FDROID_FINGERPRINT, imported.fingerprint)
+    }
+
+    @Test
+    fun `import preview reports malformed json without closing the dialog`() = runTest(dispatcher) {
+        val viewModel = viewModel()
+        advanceUntilIdle()
+
+        viewModel.startImport()
+        viewModel.updateImportText("{not-json")
+        viewModel.previewImport()
+        advanceUntilIdle()
+
+        assertEquals(StoresError.IMPORT_INVALID, viewModel.uiState.value.importError)
+        assertEquals("{not-json", viewModel.uiState.value.importText)
+        assertNull(viewModel.uiState.value.importPreview)
+    }
+
+    @Test
+    fun `import preview blocks a descriptor whose source id already exists`() = runTest(dispatcher) {
+        val viewModel = viewModel()
+        advanceUntilIdle()
+
+        viewModel.startImport()
+        viewModel.updateImportText(
+            StoreRegistryCodec().encodeDescriptor(BuiltInStores.fdroid),
+        )
+        viewModel.previewImport()
+        advanceUntilIdle()
+
+        val preview = requireNotNull(viewModel.uiState.value.importPreview)
+        assertFalse(preview.canImport)
+        assertEquals("F-Droid", preview.existingStoreName)
+
+        viewModel.confirmImport()
+        advanceUntilIdle()
+
+        assertEquals(2, viewModel.uiState.value.entries.size)
+        assertEquals(preview, viewModel.uiState.value.importPreview)
+
+        viewModel.dismissImport()
+
+        assertNull(viewModel.uiState.value.importPreview)
+    }
+
+    @Test
     fun `security audit export contains evidence but not the store name`() = runTest(dispatcher) {
         val trust = TrustRecord(
             storeId = BuiltInStores.FDROID_ID,

@@ -911,6 +911,11 @@ fun FossScoutApp(
                     StoresScreen(
                         state = storesState,
                         onAdd = storesViewModel::startAdd,
+                        onStartImport = storesViewModel::startImport,
+                        onImportTextChange = storesViewModel::updateImportText,
+                        onPreviewImport = storesViewModel::previewImport,
+                        onConfirmImport = storesViewModel::confirmImport,
+                        onDismissImport = storesViewModel::dismissImport,
                         onEdit = storesViewModel::startEdit,
                         onEditorChange = storesViewModel::updateEditor,
                         onSaveEditor = storesViewModel::saveEditor,
