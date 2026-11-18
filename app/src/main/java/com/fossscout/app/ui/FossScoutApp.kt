@@ -846,7 +846,11 @@ fun FossScoutApp(
                     val searchViewModel: StoreSearchViewModel = viewModel(
                         factory = viewModelFactory {
                             initializer {
-                                StoreSearchViewModel(container.matchingRepository)
+                                StoreSearchViewModel(
+                                    repository = container.matchingRepository,
+                                    historyRepository =
+                                        container.storeSearchHistoryRepository,
+                                )
                             }
                         },
                     )
@@ -862,6 +866,9 @@ fun FossScoutApp(
                         onBack = { showStoreSearch = false },
                         onQueryChange = searchViewModel::onQueryChange,
                         onSearch = searchViewModel::search,
+                        onSelectRecentSearch = searchViewModel::useRecentSearch,
+                        onClearSearchHistory = searchViewModel::clearSearchHistory,
+                        onHistoryEnabledChange = searchViewModel::setHistoryEnabled,
                         onToggleStore = searchViewModel::toggleStore,
                         onTrustFilterChange = searchViewModel::setTrustFilter,
                         onAvailabilityFilterChange =
@@ -904,6 +911,11 @@ fun FossScoutApp(
                     StoresScreen(
                         state = storesState,
                         onAdd = storesViewModel::startAdd,
+                        onStartImport = storesViewModel::startImport,
+                        onImportTextChange = storesViewModel::updateImportText,
+                        onPreviewImport = storesViewModel::previewImport,
+                        onConfirmImport = storesViewModel::confirmImport,
+                        onDismissImport = storesViewModel::dismissImport,
                         onEdit = storesViewModel::startEdit,
                         onEditorChange = storesViewModel::updateEditor,
                         onSaveEditor = storesViewModel::saveEditor,
@@ -971,6 +983,8 @@ fun FossScoutApp(
                             backupViewModel::setImportPassphrase,
                         onUnlockImport = backupViewModel::unlockImport,
                         onModeChange = backupViewModel::setImportMode,
+                        onFavouriteResolutionChange =
+                            backupViewModel::setFavouriteResolution,
                         onRestore = backupViewModel::applyImport,
                         onDismissImport = backupViewModel::dismissImport,
                         onDismissError = backupViewModel::dismissError,

@@ -53,6 +53,8 @@ rules, snooze, and Play handoff behaviour.
 
 ## F18 — Unified store search
 
+**Status:** Implemented; F18-R8 local search history is complete.
+
 **Recommendation:** S16 is the recommended next feature, subject to approval and
 an approved brief.
 

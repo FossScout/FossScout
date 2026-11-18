@@ -5,6 +5,7 @@ import com.fossscout.core.backup.BackupConflictMode
 import com.fossscout.core.backup.BackupEncryptionException
 import com.fossscout.core.backup.BackupEncryptionReason
 import com.fossscout.core.backup.BackupEnvelope
+import com.fossscout.core.backup.BackupFavouriteResolution
 import com.fossscout.core.backup.BackupFeatureSettings
 import com.fossscout.core.backup.BackupFormatException
 import com.fossscout.core.backup.BackupFormatReason
@@ -17,6 +18,7 @@ import com.fossscout.core.backup.BackupRestorePlan
 import com.fossscout.core.backup.BackupService
 import com.fossscout.core.feature.FeatureSettings
 import com.fossscout.core.handoff.HandoffPreferences
+import com.fossscout.core.model.AppKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -165,6 +167,45 @@ class BackupViewModelTest {
         assertTrue(viewModel.uiState.value.restoreCompleted)
     }
 
+    @Test
+    fun `favourite resolutions replan and mode changes clear them`() = runTest {
+        val service = FakeBackupService()
+        val viewModel = BackupViewModel(service)
+        advanceUntilIdle()
+        viewModel.startImport("plain", "backup.json")
+        advanceUntilIdle()
+        val appKey = AppKey("org.example.app")
+
+        viewModel.setFavouriteResolution(appKey, BackupFavouriteResolution.KEEP_LOCAL)
+        advanceUntilIdle()
+        assertEquals(
+            mapOf(appKey to BackupFavouriteResolution.KEEP_LOCAL),
+            viewModel.uiState.value.importFavouriteResolutions,
+        )
+        assertEquals(
+            mapOf(appKey to BackupFavouriteResolution.KEEP_LOCAL),
+            service.lastFavouriteResolutions,
+        )
+
+        viewModel.setFavouriteResolution(appKey, null)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.importFavouriteResolutions.isEmpty())
+        assertTrue(service.lastFavouriteResolutions.isEmpty())
+
+        viewModel.setFavouriteResolution(appKey, BackupFavouriteResolution.USE_BACKUP)
+        advanceUntilIdle()
+        assertEquals(
+            mapOf(appKey to BackupFavouriteResolution.USE_BACKUP),
+            service.lastFavouriteResolutions,
+        )
+
+        viewModel.setImportMode(BackupConflictMode.REPLACE)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.importFavouriteResolutions.isEmpty())
+        assertTrue(service.lastFavouriteResolutions.isEmpty())
+        assertEquals(BackupConflictMode.REPLACE, service.lastPreviewMode)
+    }
+
     private class FakeBackupService : BackupService {
         private val codec = BackupCodec()
         val envelope: BackupEnvelope = codec.create(
@@ -182,6 +223,8 @@ class BackupViewModelTest {
         var lastPassphrase: String? = null
             private set
         var lastPreviewMode: BackupConflictMode? = null
+            private set
+        var lastFavouriteResolutions: Map<AppKey, BackupFavouriteResolution> = emptyMap()
             private set
 
         override fun isEncrypted(content: String): Boolean = content == "encrypted"
@@ -224,13 +267,16 @@ class BackupViewModelTest {
         override suspend fun preview(
             envelope: BackupEnvelope,
             mode: BackupConflictMode,
+            favouriteResolutions: Map<AppKey, BackupFavouriteResolution>,
         ): BackupRestorePlan {
             lastPreviewMode = mode
+            lastFavouriteResolutions = favouriteResolutions
             return BackupPlanner.plan(
                 envelope = envelope,
                 local = BackupLocalState(),
                 mode = mode,
                 nowEpochMillis = 1,
+                favouriteResolutions = favouriteResolutions,
             )
         }
 

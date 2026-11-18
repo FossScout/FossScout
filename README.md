@@ -13,7 +13,8 @@ reports, all in a Material 3 Compose UI.
 
 The modular foundation for v1 is implemented. The app is split into core and
 feature modules, ships as `playstore` and `vanilla` build profiles, and persists
-favourites, collections, settings, and match corrections locally with DataStore.
+favourites, collections, settings, match corrections, and search history locally
+with DataStore.
 
 Current implementation status:
 [`docs/superpowers/specs/features/STATUS.md`](docs/superpowers/specs/features/STATUS.md).

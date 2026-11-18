@@ -139,6 +139,13 @@ run URL. Commit both images with the run URL recorded in
       next match without an app restart.
 - [ ] Add an unsupported store. It is saved as link-only with a visible reason.
 - [ ] Add an HTTP store. The warning and explicit opt-in are required.
+- [ ] Export a custom store descriptor, delete the store, then import the JSON
+      from **Add store → Import descriptor**. The preview shows the name,
+      endpoints, fingerprint, and link-only/HTTP warnings; cancel leaves the
+      registry unchanged; confirming adds an enabled custom store at the end.
+- [ ] Import the same descriptor again. The preview reports the existing source
+      ID and confirmation is disabled. Import malformed or future JSON and
+      confirm the registry is unchanged.
 - [ ] Sync a store over the network. Signature, fingerprint, hash, and size
       verification succeed.
 - [ ] Sync again with an unchanged index. ETag/diff reuse avoids a full download
@@ -212,6 +219,21 @@ run, or failure fixture.
 - [ ] Export with the network disabled and confirm the report is produced
       locally; no app or permission data is uploaded.
 
+## 4b. Unified store search (F18)
+
+- [ ] Open Store search, run an indexed query, and confirm grouped results and
+      per-store metadata still render.
+- [ ] Confirm the successful query appears in Search history.
+- [ ] Tap a recent-query chip. The field is filled and the search runs again.
+- [ ] Turn Search history off. The chips disappear and a new successful search is
+      not recorded. Leave and reopen the screen; history stays off and empty.
+- [ ] Turn Search history on, run a search, then tap Clear history. The chips
+      disappear and stay absent after leaving and reopening the screen.
+- [ ] Run six different successful searches. History shows at most five queries,
+      newest first, with case-insensitive duplicates removed.
+- [ ] With the network disabled, recent-query chips still fill and run the search
+      against cached indexes.
+
 ## 5. Matching correction (F20)
 
 - [ ] Search cached enabled-store catalogs for a correction target.
@@ -256,6 +278,9 @@ run, or failure fixture.
 - [ ] Export an unencrypted backup through the system share sheet.
 - [ ] Import it through the document picker.
 - [ ] Restore with merge, replace, and skip. The preview counts match the result.
+- [ ] Create a favourite conflict with different notes or preferred stores.
+      Confirm both versions are shown; choose Keep device, Use backup, and Mode
+      default for different favourites. The restored result matches each choice.
 - [ ] Export and import an encrypted backup with the correct passphrase.
 - [ ] Try a wrong passphrase and a corrupted checksum. Both fail safely.
 - [ ] Restore custom-store fingerprints and trust state.

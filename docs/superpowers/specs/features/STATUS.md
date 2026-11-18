@@ -1,7 +1,7 @@
 # FossScout Implementation Status
 
-Last updated: **2026-11-17**
-Feature baseline: `main` at `096245f`; F18 unified store search, the F19 permission comparison, tracker signatures, local alternative-APK manifest analysis, and audit export, F20 matching correction, F22 support link, the vanilla flavor rename, F19 emulator coverage, the dependency updates, the standardized Stores screenshot workflow, and the Play/F-Droid submission package are merged. Current GitHub beta `v0.1.0-beta.4`; the F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created.
+Last updated: **2026-11-18**
+Feature baseline: `main` at `e06d8a7`; F18 unified store search, the F19 permission comparison, tracker signatures, local alternative-APK manifest analysis, and audit export, F20 matching correction, F22 support link, the vanilla flavor rename, F19 emulator coverage, the dependency updates, the standardized Stores screenshot workflow, the Play/F-Droid submission package, and F04-R9 shared-descriptor import preview are merged. Current GitHub beta `v0.1.0-beta.4`; the F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created.
 Pending: real-device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); the latest CI emulator baseline passed on `9f82284` (run [43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411)) for version `0.1.1`. The `fdroiddata` fork branch and pipeline are green. Play upload secrets and the signed AAB are ready; the Play Console app entry, internal track, and F-Droid merge request remain pending. The F-Droid buildserver API 37 check is complete.
 Delivery: Toolchain upgraded to Gradle 9.9.0, AGP 9.5.1, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play upload secrets and the signed AAB are ready; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
@@ -160,7 +160,7 @@ file after every feature session with the new commit, test result, and status.
 | F01 | Installed app inventory | **Partial** | Manual package/label/store-link lookup, vanilla full scan, `PackageManager` source, persisted complete snapshots, stale marking, filters, hide list, and inventory UI exist. Production classification selects `FOSS` only for an exact package with license and source evidence; a curated catalog with vendor terms marks known proprietary apps; missing FOSS evidence and unlisted apps stay `UNKNOWN`; missing packages are `UNAVAILABLE`. Real device/emulator `PackageManager`, installer/signer/work-profile, shared-intent, and process-restart checks remain. | S04, S05 |
 | F02 | FOSS matching | **Done** | Pure-JVM matching engine with L0–L3, package identity first, source-URL/signer-derived L2, missing-metadata L0, offline cached indexes, evidence cards (store, package, license, source, version, signer), and inventory classification integration. Report-wrong-match (R7) is covered by the S11 contribution action; pinned source (R8) remains deferred. | S05, S11 |
 | F03 | Alternative suggestions | **Done** | Alternatives only when no L1/L2 exists, always labelled as a different app, with category/tag/description reasons, enabled-store and coverage awareness, relevance ranking, a cap of five, and session-only hide/undo. Side-by-side comparison (R7 MAY) is deferred. | S05 |
-| F04 | Store registry and adapters | **Partial** | Pure-Kotlin store/adapter contracts, verified built-in F-Droid and IzzyOnDroid descriptors, versioned registry persistence, custom-store CRUD, link-only fallback, HTTP opt-in, descriptor export, Stores UI, real cached-index adapter, and F04-R2 post-sync usability exist. Health history and import preview remain. | S02, S03 |
+| F04 | Store registry and adapters | **Partial** | Pure-Kotlin store/adapter contracts, verified built-in F-Droid and IzzyOnDroid descriptors, versioned registry persistence, custom-store CRUD, link-only fallback, HTTP opt-in, descriptor export, shared-descriptor import with preview/confirmation, Stores UI, real cached-index adapter, and F04-R2 post-sync usability exist. Richer health history remains. | S02, S03 |
 | F05 | Index sync and offline cache | **Done** | Signed F-Droid v2 sync, signer/hash/size verification, HTTPS policy, ETag/diff reuse, streaming parse, atomic snapshot replacement, cancellation safety, freshness/last-sync state, and bounded storage with a real integer setting. Live network and device/UI verification remain outstanding. | S03 |
 | F06 | Coverage and confidence | **Done** | Per-store coverage snapshot with checked/stale/failed/skipped reasons, 24-hour freshness, explicit incomplete results, a checked-vs-required summary, and label-first confidence. “Not found” is blocked by any enabled non-disabled store that was not checked. Shared-report coverage (R4) is included in S11 contribution payloads; targeted refresh (R5) remains deferred. | S05, S11 |
 | F07 | Replacement guidance | **Done** | Pure-JVM assessment compares package, signer, version code, and installer. UI shows update/replace/alternative/no-update/cannot-verify, installed and candidate versions, installer, data-loss/uninstall/system/other-store/cross-store/work-profile/disabled warnings, and requires explicit confirmation for `REPLACE`. Missing signer/version metadata fails closed. There is no install, uninstall, or delete path. Reminder/watchlist (R7 MAY) remains deferred. | S08 |
@@ -169,12 +169,12 @@ file after every feature session with the new commit, test result, and status.
 | F10 | Install-time suggestion | **Deferred** | Excluded from both v1 profiles. Requires matching, handoff, and the accessibility module. | S12 |
 | F11 | Favourites and notes | **Done** | Add/remove, private notes, persistence, duplicate handling, note limit, tags, local search across names/notes/tags, optional preferred store, installed-state badge, error states, and versioned collection integration work. The badge is advisory and does not refresh live while the Saved screen stays foregrounded; real package-manager transitions still need device verification. | S06, S07 |
 | F12 | Collections and sharing | **Done** | Versioned collections with create/rename/reorder/edit, local JSON/text/file sharing and import, notes excluded by default, merge/replace/skip conflict handling, inert imported store references, unsupported-version rejection, and a non-exported FileProvider. QR/deep links (R8) and subset sharing (R9) are deferred. | S07 |
-| F13 | Backup and migration | **Done** | Versioned full-profile JSON backup with visible included/excluded manifest, SHA-256 checksum, merge/replace/skip restore planner, custom-store fingerprint/trust preservation, optional PBKDF2/AES-GCM passphrase encryption, share-sheet export, document-picker import, and Android auto-backup rules including DataStore. F13-R6 per-item conflict resolution remains SHOULD and is deferred; device share/document-picker checks remain. | S09 |
+| F13 | Backup and migration | **Done** | Versioned full-profile JSON backup with visible included/excluded manifest, SHA-256 checksum, merge/replace/skip restore planner, per-item favourite conflict choices, custom-store fingerprint/trust preservation, optional PBKDF2/AES-GCM passphrase encryption, share-sheet export, document-picker import, and Android auto-backup rules including DataStore. Device share/document-picker and conflict-selection checks remain. | S09 |
 | F14 | Security verification | **Done** | Repository fingerprint pinning/change blocking, index JAR signature verification, signed index/diff hash and size checks, HTTPS policy, and local trust records exist. S10 adds the security-details panel, distinct verified/unverified/failed/rotation states, a bounded local verification audit, a fingerprint-rotation approval/removal flow, and per-store JSON audit export. Match evidence shows index trust without claiming APK integrity. APK hash/signer continuity (R3/R4) is deferred with F09; transparency metadata (R9) remains post-v1. | S03, S10 |
 | F15 | Update tracking | **Deferred** | Not enabled in either v1 profile. | S12 |
 | F16 | Contribution hooks | **Done** | Pure-JVM schema-v1 report builder and redaction boundary, configurable prefilled issue URL, preview-gated ViewModel, Compose contribution screen, and Settings/Stores/Match entry points. Default reports exclude inventory, notes, account data, device identifiers, raw errors, query tokens, and local paths; coverage keeps statuses/reasons only. Copy/share work offline; debug details are opt-in and exported as redacted JSON. The GitHub issue URL is configurable in the builder. Device checks for preview, clipboard, share sheet, browser opening, and debug JSON remain. | S11 |
 | F17 | Feature configuration | **Done** | Descriptor settings model (boolean/text/integer with defaults and validation), versioned envelope with legacy migration, registry-authoritative availability, basic/advanced sections, per-feature/global reset, and read-only snapshot used by F13. `INDEX_CACHE` declares the real `storage_budget_mb` setting; S09 adds the backup import/export UI. | S01, S09 |
-| F18 | Unified store search | **Done** | Search runs offline from every enabled indexed store through the shared cached-catalog loader; duplicate packages are grouped with every store/version and per-store metadata; store/trust/availability filters, anti-feature labels, cache-age timestamps, unavailable-cache notices, and link-only homepage handoffs are implemented. Results can be favourited locally; no install action is added. Search history (R8, MAY) remains deferred. Device/UI verification pending. | S16 (post-v1) |
+| F18 | Unified store search | **Done** | Search runs offline from every enabled indexed store through the shared cached-catalog loader; duplicate packages are grouped with every store/version and per-store metadata; store/trust/availability filters, anti-feature labels, cache-age timestamps, unavailable-cache notices, and link-only homepage handoffs are implemented. Results can be favourited locally; no install action is added. Search history is local-only, capped at five queries, opt-out, clearable, excluded from Android backup, and not part of profile backups. Device/UI verification pending. | S16 (post-v1) |
 | F19 | Permission and tracker diff | **Done** (R8 + manifest) | Permission comparison is implemented from primary, other-match, or alternative match cards: installed `PackageManager` requested permissions, cached index permissions for the store version, added/removed/shared summary counts, grouped details, readable dangerous/special/normal/signature labels, and explicit unknown state when store metadata is absent. Tracker matching uses the bundled Exodus ETIP `2026-11-10` snapshot (674 trackers / 987 signatures, ODbL 1.0/DbCL 1.0) and scans only the selected installed app's local base/split APK `classes*.dex` files, capped at 64 MiB. The UI shows dataset name/version/license/source, matched signature, dataset-entry confidence, and explicit unavailable/incomplete states; it never scans or downloads the store alternative. The optional local APK manifest import reads a user-selected APK through a temporary cache copy, rejects package mismatches, and recomputes the diff. F19-R8 exports the comparison as a local JSON audit report with sources, timestamp, manifest evidence, and limitations. Real-device/UI verification of the tracker section, APK picker, and audit export remains pending. | S17 |
 | F20 | Matching correction | **Done** | Local corrections from the match screen: cached enabled-store target search, no-suitable-match, private note, corrected badge, target-unavailable warning, undo, automatic result retained, and one override per package key. Backup schema 2 adds overrides with v1 checksum migration and merge/replace/skip preview. Store-scoped overrides (R8), shareable corrections, low-confidence prompts, and profile-scoped duplicates remain deferred. Device/UI verification pending. | S18 (post-v1) |
 | F21 | Trust badges | **Spec only** | Post-v1. No feature ID or code. | S12 |
@@ -330,6 +330,42 @@ Commands run on `feat/f14-security-audit-export`:
 | Boundary check | No Gradle, dependency, manifest, or permission change. The export is user-initiated, local, and shared through the existing cache-backed `FileProvider`; it is not uploaded. Store names, notes, favourites, and installed-app inventory are excluded from the JSON. |
 | Deferred | Real-device/UI verification of the security-details button and share sheet. |
 
+### F13 per-item favourite conflicts (2026-11-18)
+
+Commands run on `feat/f13-r6-per-item-conflict`:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test lint assembleDebug` | **Passed** (3m 37s, 668 actionable tasks; both debug variants built). |
+| Unit tests | **602 test executions across 84 result files; 0 failures, 0 errors, 0 skipped** |
+| New tests | `BackupPlannerTest` covers keep-local overrides for merge/replace, use-backup overrides for skip, and exposure of both local/backup notes and stores. `BackupViewModelTest` covers per-item resolution replanning and clearing on mode change. `DefaultBackupServiceTest` covers the service-level planner plumbing. |
+| Boundary check | No Gradle, dependency, manifest, permission, or backup-format change. Per-item choices are session-only and never persisted; notes are shown only in the local restore preview. |
+| Deferred | Real-device/UI verification of the conflict chips and the restored result. |
+
+### F18 search history (2026-11-18)
+
+Commands run on `feat/f18-r8-search-history`:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test lint assembleDebug` | **Passed** (final run 3m 44s, 668 actionable tasks; both debug variants built). |
+| Unit tests | **620 test executions across 88 result files; 0 failures, 0 errors, 0 skipped** |
+| New tests | `StoreSearchHistoryRepositoryTest` covers ordering, case-insensitive deduplication, the five-query limit, blank queries, disable/clear behavior, and normalization. `StoreSearchHistoryCodecTest` covers round-trip, malformed data, and future schemas. `StoreSearchViewModelTest` covers loading, successful recording, failed-search exclusion, clear, disable, and recent-query selection. `DataStoreStoreSearchHistoryStoreTest` covers persistence, key removal on clear, and malformed stored data. |
+| Boundary check | No Gradle, dependency, permission, provider, or network change. History is local DataStore data; the new store file is excluded from Android backup and from F13 profile backups. No upload or runtime tracking inference is added. |
+| Deferred | Real-device/UI verification of recent-query chips, the remember toggle, clear persistence, and the five-query cap. |
+
+### F04-R9 store descriptor import (2026-11-18)
+
+Commands run on `feat/f04-r9-store-import`:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test lint assembleDebug` | **Passed** (4m 28s, 668 actionable tasks; both debug variants built). |
+| Unit tests | **628 test executions across 88 result files; 0 failures, 0 errors, 0 skipped** |
+| New tests | `StoreRegistryRepositoryTest` covers preview conflict reporting, sanitized custom-store insertion, preserved HTTP opt-in, duplicate-source rejection, and malformed/future descriptors. `StoresViewModelTest` covers preview/confirmation, malformed JSON, conflict blocking, and dismissal. |
+| Boundary check | No Gradle, dependency, manifest, permission, provider, or network change. Imported JSON is pasted locally; no file or network import path is added. The source ID is checked against the current registry before any write. |
+| Deferred | Real-device/UI verification of paste, preview, confirmation, link-only/HTTP warnings, and error states. |
+
 ## Known gaps and blockers
 
 Device/UI verification for the completed features is tracked in
@@ -451,10 +487,10 @@ has no attached device; the CI emulator baseline is current.
 - F14-R8 audit export is implemented from the security details panel for one
   store's bounded history. F14-R9 binary-transparency/reproducibility metadata
   is not displayed. F14-R3/R4 remain deferred with F09.
-- F13-R6 per-item conflict resolution is not implemented; restore uses global
-  merge/replace/skip modes with aggregate preview counts and conflict flags in
-  the restore plan. Per-item keep-local/use-backup selection is missing.
-  F13-R7 is satisfied by matching in-app text and Android backup XML rules.
+- F13-R6 per-item conflict resolution is implemented for favourite note and
+  preferred-store conflicts. Custom-store, collection, settings, and handoff
+  conflicts still use the global merge/replace/skip modes. F13-R7 is satisfied
+  by matching in-app text and Android backup XML rules.
 - Backup rollback is best-effort across independent DataStores. A failure after
   an earlier write attempts to restore the captured previous state, but there is
   no cross-DataStore transaction.

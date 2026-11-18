@@ -5,12 +5,14 @@ import com.fossscout.core.backup.BackupConflictMode
 import com.fossscout.core.backup.BackupCrypto
 import com.fossscout.core.backup.BackupEnvelope
 import com.fossscout.core.backup.BackupExportFactory
+import com.fossscout.core.backup.BackupFavouriteResolution
 import com.fossscout.core.backup.BackupLocalState
 import com.fossscout.core.backup.BackupPassphraseRequiredException
 import com.fossscout.core.backup.BackupPlanner
 import com.fossscout.core.backup.BackupRestorePlan
 import com.fossscout.core.backup.BackupService
 import com.fossscout.core.handoff.HandoffPreferencesRepository
+import com.fossscout.core.model.AppKey
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -90,12 +92,14 @@ class DefaultBackupService(
     override suspend fun preview(
         envelope: BackupEnvelope,
         mode: BackupConflictMode,
+        favouriteResolutions: Map<AppKey, BackupFavouriteResolution>,
     ): BackupRestorePlan = withContext(Dispatchers.IO) {
         BackupPlanner.plan(
             envelope = envelope,
             local = readLocalState(),
             mode = mode,
             nowEpochMillis = now(),
+            favouriteResolutions = favouriteResolutions,
         )
     }
 

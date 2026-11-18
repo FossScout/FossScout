@@ -7,6 +7,8 @@ import com.fossscout.core.store.LinkOnlyReason
 import com.fossscout.core.store.StoreDescriptor
 import com.fossscout.core.store.StoreDraft
 import com.fossscout.core.store.StoreEntry
+import com.fossscout.core.store.StoreHealth
+import com.fossscout.core.store.StoreHealthStatus
 import com.fossscout.core.store.StoreMode
 import com.fossscout.core.store.StoreRegistry
 import java.io.IOException
@@ -18,6 +20,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -237,6 +241,118 @@ class StoreRegistryRepositoryTest {
 
         assertEquals(BuiltInStores.izzyOnDroid, decoded)
         assertTrue(encoded.contains("\"schemaVersion\":1"))
+    }
+
+    @Test
+    fun `import preview reports an existing source id without writing`() = runTest {
+        val store = FakeStoreRegistryStore()
+        val repository = repository(store)
+
+        val preview = repository.previewImport(
+            StoreRegistryCodec().encodeDescriptor(BuiltInStores.fdroid),
+        )
+
+        assertEquals(BuiltInStores.fdroid, preview.descriptor)
+        assertFalse(preview.canImport)
+        assertEquals("F-Droid", preview.existingStoreName)
+        assertEquals(0, store.saveCount)
+    }
+
+    @Test
+    fun `import adds a sanitized custom store at the end`() = runTest {
+        val repository = repository()
+        val fingerprint = BuiltInStores.FDROID_FINGERPRINT
+            .chunked(2)
+            .joinToString(":")
+            .uppercase()
+        val source = StoreDescriptor(
+            id = StoreId("shared-store"),
+            name = " Shared repo ",
+            homepage = "https://example.org ",
+            adapterType = AdapterType.FDROID_V2,
+            indexUrl = " https://example.org/repo ",
+            fingerprint = fingerprint,
+            enabled = false,
+            priority = 42,
+            trustNote = " Shared note ",
+            health = StoreHealth(
+                status = StoreHealthStatus.OK,
+                itemCount = 3,
+            ),
+            builtIn = true,
+        )
+        val preview = repository.previewImport(
+            StoreRegistryCodec().encodeDescriptor(source),
+        )
+        assertTrue(preview.canImport)
+
+        val imported = requireNotNull(repository.importDescriptor(preview.descriptor))
+
+        val entries = repository.entries.first()
+        assertEquals(3, entries.size)
+        assertEquals(imported, entries.last().descriptor)
+        assertNotEquals(source.id, imported.id)
+        assertEquals("custom-0", imported.id.value)
+        assertEquals("Shared repo", imported.name)
+        assertEquals("https://example.org", imported.homepage)
+        assertEquals("https://example.org/repo", imported.indexUrl)
+        assertEquals(BuiltInStores.FDROID_FINGERPRINT, imported.fingerprint)
+        assertEquals("Shared note", imported.trustNote)
+        assertTrue(imported.enabled)
+        assertEquals(2, imported.priority)
+        assertEquals(StoreHealth(), imported.health)
+        assertFalse(imported.builtIn)
+    }
+
+    @Test
+    fun `import preserves an explicit HTTP opt-in`() = runTest {
+        val repository = repository()
+        val source = StoreDescriptor(
+            id = StoreId("shared-http-store"),
+            name = "HTTP repo",
+            homepage = "http://example.org",
+            adapterType = AdapterType.FDROID_V2,
+            indexUrl = "http://example.org/repo",
+            allowInsecureHttp = true,
+        )
+        val preview = repository.previewImport(
+            StoreRegistryCodec().encodeDescriptor(source),
+        )
+
+        val imported = requireNotNull(repository.importDescriptor(preview.descriptor))
+
+        assertTrue(imported.allowInsecureHttp)
+        assertEquals("http://example.org/repo", imported.indexUrl)
+    }
+
+    @Test
+    fun `import returns null for a duplicate source id and leaves the registry untouched`() =
+        runTest {
+            val store = FakeStoreRegistryStore()
+            val repository = repository(store)
+            val preview = repository.previewImport(
+                StoreRegistryCodec().encodeDescriptor(BuiltInStores.fdroid),
+            )
+
+            assertNull(repository.importDescriptor(preview.descriptor))
+
+            assertEquals(2, repository.entries.first().size)
+            assertEquals(0, store.saveCount)
+        }
+
+    @Test
+    fun `import preview rejects malformed and future descriptors`() = runTest {
+        val repository = repository()
+
+        val malformed = runCatching { repository.previewImport("{not-json") }
+        val future = runCatching {
+            repository.previewImport(
+                """{"schemaVersion":99,"descriptor":{"id":"future"}}""",
+            )
+        }
+
+        assertTrue(malformed.exceptionOrNull() is StoreRegistryFormatException)
+        assertTrue(future.exceptionOrNull() is StoreRegistryFormatException)
     }
 
     @Test

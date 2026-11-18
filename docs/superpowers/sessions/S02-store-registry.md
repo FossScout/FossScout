@@ -120,9 +120,16 @@ Implemented on `feat/s02-store-registry` on 2026-10-23.
   and share), R6 (HTTP requires explicit opt-in). The registry codec rejects
   malformed and future data without overwriting the active registry.
 - remaining F04 criteria (expected: R2 sync): R2's actual index usability waits
-  for S03 sync; R7 fingerprint-change security events, richer R8 health history
-  (last-sync/latency display), and MAY R9 import preview remain for later
-  sessions.
+  for S03 sync; R7 fingerprint-change security events and richer R8 health
+  history (last-sync/latency display) remain for later sessions.
+- Follow-up 2026-11-18: F04-R9 import preview is implemented on
+  `feat/f04-r9-store-import`. The Add menu offers **Import descriptor**; pasted
+  versioned JSON is parsed and previewed before confirmation. Confirmation adds
+  a sanitized custom entry (new local ID, enabled, end priority, no imported
+  health or built-in marker) and rejects a source ID that is already present.
+  Codec/repository and ViewModel tests cover valid, malformed, and conflicting
+  imports. Device paste and confirmation remain in
+  [`DEVICE_SMOKE_TEST.md`](../../DEVICE_SMOKE_TEST.md).
 - verified store sources (checked 2026-10-23; not guessed):
   - F-Droid: homepage <https://f-droid.org>, index
     <https://f-droid.org/repo>, fingerprint
@@ -135,5 +142,5 @@ Implemented on `feat/s02-store-registry` on 2026-10-23.
     Source: <https://apt.izzysoft.de/fdroid/>, whose repository link publishes
     the value in its `fingerprint` query parameter.
 - known gaps: no real adapter/network implementation, index parsing, sync
-  cache/freshness, signature-verification UI, APK install, import preview, or
-  deep-link handoff was added (all intentionally out of S02 scope).
+  cache/freshness, signature-verification UI, APK install, or deep-link handoff
+  was added (all intentionally out of S02 scope).
