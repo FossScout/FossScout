@@ -1,6 +1,6 @@
 # FossScout Privacy Policy
 
-**Effective date:** 2026-11-01
+**Effective date:** 2026-11-18
 
 This policy applies to the FossScout Android app (`com.fossscout.app`) and the
 FossScout project. FossScout is free software maintained by FossScout
@@ -21,10 +21,13 @@ FossScout stores the following locally on your device:
 - Custom store entries, pinned fingerprints, and trust notes.
 - Match corrections and preferred store clients.
 - Cached store index data, verification history, and sync metadata.
+- Recent store-search queries, when search history is enabled.
 - Backup files you choose to export.
 
-This information stays on your device unless you explicitly export it, share
-it, or include it in an Android system backup.
+This information stays on your device unless you explicitly export or share it,
+or Android system backup includes it. Most of it can be included in an Android
+system backup when system backup is enabled; search history is excluded from
+Android backup.
 
 ## Installed-app information
 
@@ -69,9 +72,10 @@ optionally protect it with a passphrase. You control where the backup is saved
 and who receives it. If you share a file or report through Android's share
 sheet, the receiving app's privacy policy applies.
 
-If Android system backup is enabled on your device, Android may include
-FossScout's local app data in a device backup. That backup is handled by Android
-and your device provider; you can disable system backup in Android settings.
+If Android system backup is enabled on your device, Android may include most of
+FossScout's local app data in a device backup. Search history is excluded. That
+backup is handled by Android and your device provider; you can disable system
+backup in Android settings.
 
 ## Permissions
 
@@ -92,10 +96,11 @@ collect personal information from children.
 
 ## Data deletion
 
-FossScout does not maintain server-side user data. To delete local data, clear
-the app's storage in Android settings or uninstall the app. Exported backup
-files remain under your control and must be deleted separately if you no longer
-want them.
+FossScout does not maintain server-side user data. You can clear search history
+in the store-search screen or turn history off there. To delete other local
+data, clear the app's storage in Android settings or uninstall the app. Exported
+backup files remain under your control and must be deleted separately if you no
+longer want them.
 
 ## Changes
 

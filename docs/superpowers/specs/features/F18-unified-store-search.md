@@ -52,7 +52,7 @@ exist in several stores with different versions or build status.
 | F18-R5 | MUST | Search works offline against cached indexes and states the cache age. | Airplane mode search returns cached results with an “as of” timestamp. |
 | F18-R6 | SHOULD | A result can be favourited without installing it. | Favourite action appears before any install action. |
 | F18-R7 | SHOULD | Search can be filtered by store and trust state. | Filters combine and persist for the session. |
-| F18-R8 | MAY | Search history is stored locally and can be cleared. | Clearing history removes it from device storage. |
+| F18-R8 | MAY | Search history is stored locally, optional, and can be cleared. | Clearing history removes the stored queries from device storage; turning history off also clears it. |
 
 ## 6. Edge cases
 
@@ -65,9 +65,12 @@ exist in several stores with different versions or build status.
 
 ## 7. Privacy
 
-Queries stay on the device. Opening a link-only store opens its website without
-sending the query; once the user searches there, the store's own privacy policy
-applies, and the UI says so before opening.
+Queries stay on the device. When search history is enabled, the five most recent
+successful queries are stored in a local DataStore file excluded from Android
+backup. History can be turned off or cleared in the search screen. Opening a
+link-only store opens its website without sending the query; once the user
+searches there, the store's own privacy policy applies, and the UI says so before
+opening.
 
 ## 8. Resolved decisions
 
@@ -79,6 +82,10 @@ applies, and the UI says so before opening.
 3. **Link-only handoff:** open the store homepage. The query is not sent, and the
    UI explains that searching there falls under the store's own privacy policy.
 4. **Source-code repositories:** not a separate result type in this iteration.
+5. **Search history:** local-only and enabled by default, with an opt-out toggle.
+   Only successful non-blank queries are kept, at most five, newest first and
+   deduplicated case-insensitively. Disabling history or clearing it removes the
+   stored queries. History is not part of portable FossScout backups.
 
 ## 9. Implementation notes
 
@@ -90,4 +97,8 @@ applies, and the UI says so before opening.
 - Results report cache age per store. Enabled stores with no cache or an
   unreadable cache are listed instead of being silently treated as no results.
 - Favourites use the existing local favourite store; no install action is added.
-- Search history (F18-R8, MAY) is not implemented in this iteration.
+- Search history (F18-R8) is stored through the app's DataStore composition root.
+  The search screen shows recent-query chips, a clear action, and a remember
+  toggle. Successful searches are recorded; blank and failed searches are not.
+  The DataStore file is excluded from Android backup and is not exported by the
+  F13 profile backup.

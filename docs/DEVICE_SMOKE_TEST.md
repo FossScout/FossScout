@@ -212,6 +212,21 @@ run, or failure fixture.
 - [ ] Export with the network disabled and confirm the report is produced
       locally; no app or permission data is uploaded.
 
+## 4b. Unified store search (F18)
+
+- [ ] Open Store search, run an indexed query, and confirm grouped results and
+      per-store metadata still render.
+- [ ] Confirm the successful query appears in Search history.
+- [ ] Tap a recent-query chip. The field is filled and the search runs again.
+- [ ] Turn Search history off. The chips disappear and a new successful search is
+      not recorded. Leave and reopen the screen; history stays off and empty.
+- [ ] Turn Search history on, run a search, then tap Clear history. The chips
+      disappear and stay absent after leaving and reopening the screen.
+- [ ] Run six different successful searches. History shows at most five queries,
+      newest first, with case-insensitive duplicates removed.
+- [ ] With the network disabled, recent-query chips still fill and run the search
+      against cached indexes.
+
 ## 5. Matching correction (F20)
 
 - [ ] Search cached enabled-store catalogs for a correction target.

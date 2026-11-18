@@ -112,9 +112,10 @@ default; if included, they require encryption.
   and from incoming custom stores during planning; it is not portable profile
   data.
 - **Android auto-backup:** the app's backup rules include the DataStore files
-  under `files/datastore` and legacy shared preferences. The in-app text says
-  Android may include local app data when system backup is enabled, while
-  FossScout exports never include index snapshots, cached store data, or APKs.
+  under `files/datastore` and legacy shared preferences, except the store-search
+  history file. The in-app text says Android may include local app data when
+  system backup is enabled and that search history is excluded, while FossScout
+  exports never include index snapshots, cached store data, or APKs.
 - **File transfer:** export uses the Android share sheet with a non-exported
   FileProvider URI; import uses the system document picker. No storage
   permission is requested.

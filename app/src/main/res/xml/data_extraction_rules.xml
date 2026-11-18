@@ -3,9 +3,11 @@
     <cloud-backup>
         <include domain="sharedpref" path="." />
         <include domain="file" path="datastore/" />
+        <exclude domain="file" path="datastore/store_search_history.preferences_pb" />
     </cloud-backup>
     <device-transfer>
         <include domain="sharedpref" path="." />
         <include domain="file" path="datastore/" />
+        <exclude domain="file" path="datastore/store_search_history.preferences_pb" />
     </device-transfer>
 </data-extraction-rules>

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.fossscout.core.matching.MatchingRepository
 import com.fossscout.core.matching.StoreSearchAvailabilityFilter
 import com.fossscout.core.matching.StoreSearchGroup
+import com.fossscout.core.matching.StoreSearchHistoryRepository
 import com.fossscout.core.matching.StoreSearchLinkOnly
 import com.fossscout.core.matching.StoreSearchQuery
 import com.fossscout.core.matching.StoreSearchStoreOption
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -39,6 +41,8 @@ data class StoreSearchUiState(
     val searchedAtEpochMillis: Long? = null,
     val error: StoreSearchError? = null,
     val detailPackageName: String? = null,
+    val recentSearches: List<String> = emptyList(),
+    val historyEnabled: Boolean = true,
 ) {
     val detailGroup: StoreSearchGroup?
         get() = detailPackageName?.let { packageName ->
@@ -53,6 +57,7 @@ data class StoreSearchUiState(
 
 class StoreSearchViewModel(
     private val repository: MatchingRepository,
+    private val historyRepository: StoreSearchHistoryRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(StoreSearchUiState())
     val uiState: StateFlow<StoreSearchUiState> = _uiState.asStateFlow()
@@ -61,6 +66,7 @@ class StoreSearchViewModel(
 
     init {
         loadStoreOptions()
+        observeSearchHistory()
     }
 
     fun onQueryChange(value: String) {
@@ -69,6 +75,42 @@ class StoreSearchViewModel(
                 query = value,
                 error = state.error?.takeUnless { it == StoreSearchError.QUERY_REQUIRED },
             )
+        }
+    }
+
+    fun useRecentSearch(query: String) {
+        onQueryChange(query)
+        search()
+    }
+
+    fun clearSearchHistory() {
+        _uiState.update { it.copy(recentSearches = emptyList()) }
+        viewModelScope.launch {
+            try {
+                historyRepository.clear()
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                Log.w(TAG, "Could not clear search history", throwable)
+            }
+        }
+    }
+
+    fun setHistoryEnabled(enabled: Boolean) {
+        _uiState.update {
+            it.copy(
+                historyEnabled = enabled,
+                recentSearches = if (enabled) it.recentSearches else emptyList(),
+            )
+        }
+        viewModelScope.launch {
+            try {
+                historyRepository.setEnabled(enabled)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                Log.w(TAG, "Could not update search history", throwable)
+            }
         }
     }
 
@@ -114,6 +156,7 @@ class StoreSearchViewModel(
                         },
                     )
                 }
+                recordSearchHistory(query)
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (throwable: Throwable) {
@@ -176,6 +219,37 @@ class StoreSearchViewModel(
 
     private fun refreshIfSearched() {
         if (_uiState.value.hasSearched) search()
+    }
+
+    private fun observeSearchHistory() {
+        viewModelScope.launch {
+            try {
+                historyRepository.history.collect { history ->
+                    _uiState.update {
+                        it.copy(
+                            recentSearches = history.queries,
+                            historyEnabled = history.enabled,
+                        )
+                    }
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                Log.e(TAG, "Could not read search history", throwable)
+            }
+        }
+    }
+
+    private fun recordSearchHistory(query: String) {
+        viewModelScope.launch {
+            try {
+                historyRepository.record(query)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                Log.w(TAG, "Could not save search history", throwable)
+            }
+        }
     }
 
     private fun loadStoreOptions() {

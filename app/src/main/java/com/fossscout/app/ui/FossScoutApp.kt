@@ -846,7 +846,11 @@ fun FossScoutApp(
                     val searchViewModel: StoreSearchViewModel = viewModel(
                         factory = viewModelFactory {
                             initializer {
-                                StoreSearchViewModel(container.matchingRepository)
+                                StoreSearchViewModel(
+                                    repository = container.matchingRepository,
+                                    historyRepository =
+                                        container.storeSearchHistoryRepository,
+                                )
                             }
                         },
                     )
@@ -862,6 +866,9 @@ fun FossScoutApp(
                         onBack = { showStoreSearch = false },
                         onQueryChange = searchViewModel::onQueryChange,
                         onSearch = searchViewModel::search,
+                        onSelectRecentSearch = searchViewModel::useRecentSearch,
+                        onClearSearchHistory = searchViewModel::clearSearchHistory,
+                        onHistoryEnabledChange = searchViewModel::setHistoryEnabled,
                         onToggleStore = searchViewModel::toggleStore,
                         onTrustFilterChange = searchViewModel::setTrustFilter,
                         onAvailabilityFilterChange =
