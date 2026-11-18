@@ -2,4 +2,5 @@
 <full-backup-content>
     <include domain="sharedpref" path="." />
     <include domain="file" path="datastore/" />
+    <exclude domain="file" path="datastore/store_search_history.preferences_pb" />
 </full-backup-content>

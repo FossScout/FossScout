@@ -7,6 +7,9 @@ import com.fossscout.core.matching.MatchingRepository
 import com.fossscout.core.matching.StoreCatalog
 import com.fossscout.core.matching.StoreCatalogData
 import com.fossscout.core.matching.StoreSearchAvailabilityFilter
+import com.fossscout.core.matching.StoreSearchHistory
+import com.fossscout.core.matching.StoreSearchHistoryRepository
+import com.fossscout.core.matching.StoreSearchHistoryStore
 import com.fossscout.core.matching.StoreSearchTrustFilter
 import com.fossscout.core.model.StoreId
 import com.fossscout.core.store.AdapterType
@@ -17,8 +20,11 @@ import com.fossscout.core.store.StoreEntry
 import com.fossscout.core.store.StoreMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -26,6 +32,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -47,7 +54,7 @@ class StoreSearchViewModelTest {
 
     @Test
     fun `initial load lists stores and blank search requires a query`() = runTest(dispatcher) {
-        val viewModel = StoreSearchViewModel(repository(catalogs = twoCatalogs()))
+        val viewModel = createViewModel(repository(catalogs = twoCatalogs()))
         advanceUntilIdle()
 
         viewModel.search()
@@ -61,7 +68,7 @@ class StoreSearchViewModelTest {
 
     @Test
     fun `search groups stores and reports cache metadata`() = runTest(dispatcher) {
-        val viewModel = StoreSearchViewModel(repository(catalogs = twoCatalogs()))
+        val viewModel = createViewModel(repository(catalogs = twoCatalogs()))
 
         viewModel.onQueryChange("example")
         viewModel.search()
@@ -78,7 +85,7 @@ class StoreSearchViewModelTest {
 
     @Test
     fun `store and trust filters combine and rerun the search`() = runTest(dispatcher) {
-        val viewModel = StoreSearchViewModel(
+        val viewModel = createViewModel(
             repository(
                 entries = listOf(entry("fdroid", "F-Droid"), entry("izzy", "IzzyOnDroid")),
                 snapshots = mapOf(
@@ -112,7 +119,7 @@ class StoreSearchViewModelTest {
 
     @Test
     fun `link only availability keeps the handoff visible`() = runTest(dispatcher) {
-        val viewModel = StoreSearchViewModel(
+        val viewModel = createViewModel(
             repository(
                 entries = listOf(
                     entry("fdroid", "F-Droid"),
@@ -145,7 +152,8 @@ class StoreSearchViewModelTest {
             catalog = FakeCatalog(emptyMap()),
             now = { NOW },
         )
-        val viewModel = StoreSearchViewModel(repository)
+        val historyRepository = StoreSearchHistoryRepository(FakeHistoryStore())
+        val viewModel = createViewModel(repository, historyRepository)
 
         viewModel.onQueryChange("example")
         viewModel.search()
@@ -153,7 +161,81 @@ class StoreSearchViewModelTest {
 
         assertEquals(StoreSearchError.SEARCH_FAILED, viewModel.uiState.value.error)
         assertTrue(viewModel.uiState.value.hasSearched)
+        assertTrue(historyRepository.history.first().queries.isEmpty())
     }
+
+    @Test
+    fun `successful search records the query in history`() = runTest(dispatcher) {
+        val historyRepository = StoreSearchHistoryRepository(FakeHistoryStore())
+        val viewModel = createViewModel(
+            repository(catalogs = twoCatalogs()),
+            historyRepository,
+        )
+
+        viewModel.onQueryChange("example")
+        viewModel.search()
+        advanceUntilIdle()
+
+        assertEquals(listOf("example"), viewModel.uiState.value.recentSearches)
+        assertEquals(
+            listOf("example"),
+            historyRepository.history.first().queries,
+        )
+    }
+
+    @Test
+    fun `history can be cleared and disabled`() = runTest(dispatcher) {
+        val historyRepository = StoreSearchHistoryRepository(
+            FakeHistoryStore(
+                StoreSearchHistory(queries = listOf("old query")),
+            ),
+        )
+        val viewModel = createViewModel(
+            repository(catalogs = twoCatalogs()),
+            historyRepository,
+        )
+        advanceUntilIdle()
+
+        viewModel.clearSearchHistory()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.recentSearches.isEmpty())
+
+        viewModel.setHistoryEnabled(false)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.historyEnabled)
+
+        viewModel.onQueryChange("example")
+        viewModel.search()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.recentSearches.isEmpty())
+    }
+
+    @Test
+    fun `selecting a recent search fills the query and searches`() = runTest(dispatcher) {
+        val historyRepository = StoreSearchHistoryRepository(
+            FakeHistoryStore(
+                StoreSearchHistory(queries = listOf("example")),
+            ),
+        )
+        val viewModel = createViewModel(
+            repository(catalogs = twoCatalogs()),
+            historyRepository,
+        )
+        advanceUntilIdle()
+
+        viewModel.useRecentSearch("example")
+        advanceUntilIdle()
+
+        assertEquals("example", viewModel.uiState.value.query)
+        assertTrue(viewModel.uiState.value.hasSearched)
+        assertEquals(1, viewModel.uiState.value.groups.size)
+    }
+
+    private fun createViewModel(
+        repository: MatchingRepository,
+        historyRepository: StoreSearchHistoryRepository =
+            StoreSearchHistoryRepository(FakeHistoryStore()),
+    ) = StoreSearchViewModel(repository, historyRepository)
 
     private fun repository(
         entries: List<StoreEntry> = listOf(
@@ -242,6 +324,22 @@ class StoreSearchViewModelTest {
         override suspend fun load(snapshot: StoreSnapshot): StoreCatalogData =
             catalogs[snapshot.storeId]
                 ?: throw IllegalStateException("No catalog for ${snapshot.storeId}")
+    }
+
+    private class FakeHistoryStore(
+        initial: StoreSearchHistory = StoreSearchHistory(),
+    ) : StoreSearchHistoryStore {
+        private val state = MutableStateFlow(initial)
+
+        override val history = state
+
+        override suspend fun save(history: StoreSearchHistory) {
+            state.value = history
+        }
+
+        override suspend fun clearQueries() {
+            state.update { it.copy(queries = emptyList()) }
+        }
     }
 
     private companion object {

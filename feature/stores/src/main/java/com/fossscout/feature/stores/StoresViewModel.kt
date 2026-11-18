@@ -3,6 +3,8 @@ package com.fossscout.feature.stores
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fossscout.core.data.StoreImportPreview
+import com.fossscout.core.data.StoreRegistryFormatException
 import com.fossscout.core.data.StoreRegistryRepository
 import com.fossscout.core.index.IndexState
 import com.fossscout.core.index.IndexSyncRepository
@@ -39,6 +41,8 @@ enum class StoresError {
     SYNC_FAILED,
     SYNC_UNAVAILABLE,
     STORAGE_FAILED,
+    IMPORT_INVALID,
+    IMPORT_CONFLICT,
 }
 
 data class StoreEditor(
@@ -123,6 +127,9 @@ data class StoresUiState(
     val editor: StoreEditor? = null,
     val deleteRequest: StoreDeleteRequest? = null,
     val exportRequest: StoreExportRequest? = null,
+    val importText: String? = null,
+    val importPreview: StoreImportPreview? = null,
+    val importError: StoresError? = null,
     val syncStatuses: Map<String, StoreSyncStatus> = emptyMap(),
     val storage: StorageStatus? = null,
     val securityDetailsId: StoreId? = null,
@@ -269,6 +276,80 @@ class StoresViewModel(
 
     fun dismissExport() {
         _uiState.update { state -> state.copy(exportRequest = null) }
+    }
+
+    fun startImport() {
+        _uiState.update { state ->
+            state.copy(
+                importText = "",
+                importPreview = null,
+                importError = null,
+                error = state.error.takeUnless { it == StoresError.READ_FAILED },
+            )
+        }
+    }
+
+    fun updateImportText(value: String) {
+        _uiState.update { state ->
+            state.copy(importText = value, importError = null)
+        }
+    }
+
+    fun previewImport() {
+        val text = _uiState.value.importText ?: return
+        if (text.isBlank()) {
+            _uiState.update { state -> state.copy(importError = StoresError.IMPORT_INVALID) }
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val preview = repository.previewImport(text)
+                _uiState.update { state ->
+                    state.copy(
+                        importText = null,
+                        importPreview = preview,
+                        importError = null,
+                    )
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (format: StoreRegistryFormatException) {
+                Log.e(TAG, "Rejected an imported store descriptor", format)
+                _uiState.update { state ->
+                    state.copy(importError = StoresError.IMPORT_INVALID)
+                }
+            } catch (throwable: Throwable) {
+                Log.e(TAG, "Failed to preview an imported store descriptor", throwable)
+                _uiState.update { state ->
+                    state.copy(importError = StoresError.READ_FAILED)
+                }
+            }
+        }
+    }
+
+    fun confirmImport() {
+        val preview = _uiState.value.importPreview ?: return
+        if (!preview.canImport) return
+        write {
+            val imported = repository.importDescriptor(preview.descriptor)
+            _uiState.update { state ->
+                if (imported == null) {
+                    state.copy(importError = StoresError.IMPORT_CONFLICT)
+                } else {
+                    state.copy(importPreview = null, importError = null)
+                }
+            }
+        }
+    }
+
+    fun dismissImport() {
+        _uiState.update { state ->
+            state.copy(
+                importText = null,
+                importPreview = null,
+                importError = null,
+            )
+        }
     }
 
     /**

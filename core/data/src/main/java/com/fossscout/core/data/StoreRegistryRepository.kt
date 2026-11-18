@@ -157,6 +157,52 @@ class StoreRegistryRepository(
         codec.encodeDescriptor(descriptor)
     }
 
+    /** Parses a shared descriptor and reports whether its source id is already local. */
+    suspend fun previewImport(encoded: String): StoreImportPreview = mutex.withLock {
+        val descriptor = codec.decodeDescriptor(encoded)
+        val existing = currentRegistry().stores.firstOrNull { it.id == descriptor.id }
+        StoreImportPreview(
+            descriptor = descriptor,
+            existingStoreName = existing?.name,
+        )
+    }
+
+    /**
+     * Adds a shared descriptor as a new custom store at the end of the registry.
+     * Local state (id, priority, enabled, health, built-in marker) is regenerated;
+     * portable fields (name, endpoints, fingerprint, opt-in, trust note) are kept.
+     * Returns null when the descriptor's source id is already present.
+     */
+    suspend fun importDescriptor(descriptor: StoreDescriptor): StoreDescriptor? = mutex.withLock {
+        StoreValidation.requireValid(descriptor)
+        val current = currentRegistry()
+        if (current.stores.any { it.id == descriptor.id }) return@withLock null
+
+        val imported = descriptor.copy(
+            id = idFactory(),
+            name = descriptor.name.trim(),
+            homepage = descriptor.homepage.trim(),
+            indexUrl = descriptor.indexUrl?.trim()?.takeIf(String::isNotEmpty),
+            apiUrl = descriptor.apiUrl?.trim()?.takeIf(String::isNotEmpty),
+            repositoryUrl = descriptor.repositoryUrl?.trim()?.takeIf(String::isNotEmpty),
+            fingerprint = descriptor.fingerprint
+                ?.let(StoreValidation::normalizeFingerprint)
+                ?.takeIf(String::isNotEmpty),
+            enabled = true,
+            priority = current.stores.size,
+            trustNote = descriptor.trustNote.trim(),
+            health = StoreHealth(),
+            schemaVersion = STORE_DESCRIPTOR_SCHEMA_VERSION,
+            builtIn = false,
+        )
+        require(current.stores.none { it.id == imported.id }) {
+            "Store ${imported.id.value} already exists"
+        }
+        StoreValidation.requireValid(imported)
+        save(current.stores + imported)
+        imported
+    }
+
     private suspend fun currentRegistry(): StoreRegistry =
         store.registry.first().sortedByPriority()
 
