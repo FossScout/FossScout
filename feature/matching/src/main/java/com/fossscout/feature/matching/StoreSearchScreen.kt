@@ -24,9 +24,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star as StarOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -555,9 +555,9 @@ private fun SearchGroupCard(
                     IconButton(onClick = onToggleSaved) {
                         Icon(
                             imageVector = if (isSaved) {
-                                Icons.Filled.Favorite
+                                Icons.Filled.Star
                             } else {
-                                Icons.Filled.FavoriteBorder
+                                Icons.Outlined.StarOutline
                             },
                             contentDescription = stringResource(
                                 if (isSaved) {

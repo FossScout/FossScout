@@ -15,11 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -112,7 +112,7 @@ private enum class AppDestination(
 ) {
     DISCOVER(null, R.string.nav_discover, Icons.Filled.Search),
     INVENTORY(FeatureId.INVENTORY, R.string.nav_inventory, Icons.AutoMirrored.Filled.List),
-    SAVED(FeatureId.FAVOURITES, R.string.nav_saved, Icons.Filled.Favorite),
+    SAVED(FeatureId.FAVOURITES, R.string.nav_saved, Icons.Filled.Star),
     STORES(FeatureId.STORES, R.string.nav_stores, Icons.Filled.ShoppingCart),
     SETTINGS(FeatureId.SETTINGS, R.string.nav_settings, Icons.Filled.Settings),
     ABOUT(null, R.string.nav_about, Icons.Filled.Info),

@@ -21,8 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -277,7 +277,7 @@ private fun EmptyState(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = if (nothingSaved) Icons.Filled.Favorite else Icons.Filled.Search,
+                    imageVector = if (nothingSaved) Icons.Filled.Star else Icons.Filled.Search,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(28.dp),
