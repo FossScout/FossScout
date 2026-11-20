@@ -150,6 +150,7 @@ fun FossScoutApp(
     val favouritesEnabled = FeatureId.FAVOURITES in enabledFeatures
     val sharingEnabled = FeatureId.SHARING in enabledFeatures
     val storeSearchEnabled = FeatureId.STORE_SEARCH in enabledFeatures
+    val trustBadgesEnabled = FeatureId.TRUST_BADGES in enabledFeatures
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -631,6 +632,11 @@ fun FossScoutApp(
                                 },
                                 removeCorrection = container.matchOverridesRepository::remove,
                                 trackerScanSource = container.trackerScanSource,
+                                reproducibilityChecker = if (trustBadgesEnabled) {
+                                    container.fdroidVerificationClient
+                                } else {
+                                    null
+                                },
                             )
                         }
                     },
@@ -793,6 +799,12 @@ fun FossScoutApp(
                             } else {
                                 null
                             },
+                            showTrustBadges = trustBadgesEnabled,
+                            onCheckReproducibility = if (trustBadgesEnabled) {
+                                matchingViewModel::checkReproducibility
+                            } else {
+                                null
+                            },
                         )
                     }
                 } else {
@@ -850,6 +862,11 @@ fun FossScoutApp(
                                     repository = container.matchingRepository,
                                     historyRepository =
                                         container.storeSearchHistoryRepository,
+                                    reproducibilityChecker = if (trustBadgesEnabled) {
+                                        container.fdroidVerificationClient
+                                    } else {
+                                        null
+                                    },
                                 )
                             }
                         },
@@ -904,8 +921,10 @@ fun FossScoutApp(
                         },
                         onOpenHomepage = context::openWebsite,
                         onDismissError = searchViewModel::dismissError,
+                        onCheckReproducibility = searchViewModel::checkReproducibility,
                         modifier = screenModifier,
                         showFavoriteAction = favouritesEnabled,
+                        showTrustBadges = trustBadgesEnabled,
                     )
                 } else {
                     StoresScreen(

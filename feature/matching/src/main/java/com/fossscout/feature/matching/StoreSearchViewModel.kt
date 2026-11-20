@@ -3,6 +3,10 @@ package com.fossscout.feature.matching
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fossscout.core.index.ReproducibilityCheck
+import com.fossscout.core.index.ReproducibilityChecker
+import com.fossscout.core.index.ReproducibilityKey
+import com.fossscout.core.index.ReproducibilityStatus
 import com.fossscout.core.matching.MatchingRepository
 import com.fossscout.core.matching.StoreSearchAvailabilityFilter
 import com.fossscout.core.matching.StoreSearchGroup
@@ -12,6 +16,7 @@ import com.fossscout.core.matching.StoreSearchQuery
 import com.fossscout.core.matching.StoreSearchStoreOption
 import com.fossscout.core.matching.StoreSearchTrustFilter
 import com.fossscout.core.matching.StoreSearchUnavailable
+import com.fossscout.core.store.BuiltInStores
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +48,9 @@ data class StoreSearchUiState(
     val detailPackageName: String? = null,
     val recentSearches: List<String> = emptyList(),
     val historyEnabled: Boolean = true,
+    val reproducibility: Map<ReproducibilityKey, ReproducibilityCheck> = emptyMap(),
+    val checkingReproducibility: Set<ReproducibilityKey> = emptySet(),
+    val reproducibilityErrors: Set<ReproducibilityKey> = emptySet(),
 ) {
     val detailGroup: StoreSearchGroup?
         get() = detailPackageName?.let { packageName ->
@@ -58,6 +66,7 @@ data class StoreSearchUiState(
 class StoreSearchViewModel(
     private val repository: MatchingRepository,
     private val historyRepository: StoreSearchHistoryRepository,
+    private val reproducibilityChecker: ReproducibilityChecker? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(StoreSearchUiState())
     val uiState: StateFlow<StoreSearchUiState> = _uiState.asStateFlow()
@@ -215,6 +224,53 @@ class StoreSearchViewModel(
 
     fun dismissError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun checkReproducibility(packageName: String, storeId: String, versionCode: Long) {
+        val checker = reproducibilityChecker ?: return
+        if (storeId != BuiltInStores.FDROID_ID || versionCode <= 0L) return
+        val key = ReproducibilityKey(packageName, storeId, versionCode)
+        val state = _uiState.value
+        if (key in state.reproducibility || key in state.checkingReproducibility) return
+
+        _uiState.update {
+            it.copy(
+                checkingReproducibility = it.checkingReproducibility + key,
+                reproducibilityErrors = it.reproducibilityErrors - key,
+            )
+        }
+        viewModelScope.launch {
+            try {
+                val result = checker.check(packageName, versionCode)
+                _uiState.update { current ->
+                    current.copy(
+                        checkingReproducibility = current.checkingReproducibility - key,
+                        reproducibility = if (result.status == ReproducibilityStatus.UNAVAILABLE) {
+                            current.reproducibility
+                        } else {
+                            current.reproducibility + (key to result)
+                        },
+                        reproducibilityErrors = if (
+                            result.status == ReproducibilityStatus.UNAVAILABLE
+                        ) {
+                            current.reproducibilityErrors + key
+                        } else {
+                            current.reproducibilityErrors - key
+                        },
+                    )
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                Log.w(TAG, "Could not check reproducibility", throwable)
+                _uiState.update {
+                    it.copy(
+                        checkingReproducibility = it.checkingReproducibility - key,
+                        reproducibilityErrors = it.reproducibilityErrors + key,
+                    )
+                }
+            }
+        }
     }
 
     private fun refreshIfSearched() {

@@ -33,6 +33,7 @@ import com.fossscout.core.feature.FeatureSettingValue
 import com.fossscout.core.feature.IndexCacheSettings
 import com.fossscout.core.handoff.HandoffPreferencesRepository
 import com.fossscout.core.index.FileSnapshotPayloadStore
+import com.fossscout.core.index.FdroidVerificationClient
 import com.fossscout.core.index.IndexSyncRepository
 import com.fossscout.core.index.UrlConnectionHttpFetcher
 import com.fossscout.core.inventory.InstalledAppStateProvider
@@ -155,6 +156,10 @@ class AppContainer(context: Context) {
                 ?: IndexCacheSettings.DEFAULT_STORAGE_BUDGET_MB
             megabytes.toLong() * 1024L * 1024L
         },
+    )
+
+    val fdroidVerificationClient = FdroidVerificationClient(
+        httpFetcher = UrlConnectionHttpFetcher(),
     )
 
     private val broadPackageVisibility =

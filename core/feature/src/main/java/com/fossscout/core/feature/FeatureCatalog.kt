@@ -37,6 +37,14 @@ object FeatureCatalog {
             requiredCapabilities = setOf(Capability.STORE_INDEX_NETWORK),
         ),
         FeatureDescriptor(
+            id = FeatureId.TRUST_BADGES,
+            availability = Availability.GENERAL,
+            requiredCapabilities = setOf(
+                Capability.STORE_INDEX_NETWORK,
+                Capability.STORE_TRUST_BADGES,
+            ),
+        ),
+        FeatureDescriptor(
             id = FeatureId.INDEX_CACHE,
             availability = Availability.GENERAL,
             requiredCapabilities = setOf(Capability.STORE_INDEX_NETWORK),

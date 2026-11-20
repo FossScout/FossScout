@@ -3,9 +3,13 @@ package com.fossscout.feature.matching
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fossscout.core.index.ReproducibilityChecker
+import com.fossscout.core.index.ReproducibilityKey
+import com.fossscout.core.index.ReproducibilityStatus
 import com.fossscout.core.inventory.InstalledApp
 import com.fossscout.core.inventory.InstalledAppSource
 import com.fossscout.core.matching.CatalogSearchResult
+import com.fossscout.core.matching.MatchCandidate
 import com.fossscout.core.matching.MatchQuery
 import com.fossscout.core.matching.MatchingRepository
 import com.fossscout.core.matching.TrackerReport
@@ -17,6 +21,7 @@ import com.fossscout.core.matching.looksLikePackageName
 import com.fossscout.core.model.AppKey
 import com.fossscout.core.model.MatchOverrideTarget
 import com.fossscout.core.model.StoreId
+import com.fossscout.core.store.BuiltInStores
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +43,7 @@ class MatchingViewModel(
     private val setCorrection: (suspend (AppKey, MatchOverrideTarget?, String) -> Unit)? = null,
     private val removeCorrection: (suspend (AppKey) -> Unit)? = null,
     private val trackerScanSource: TrackerScanSource? = null,
+    private val reproducibilityChecker: ReproducibilityChecker? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MatchUiState())
     val uiState: StateFlow<MatchUiState> = _uiState.asStateFlow()
@@ -302,6 +308,54 @@ class MatchingViewModel(
 
     fun dismissError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun checkReproducibility(candidate: MatchCandidate) {
+        val checker = reproducibilityChecker ?: return
+        val versionCode = candidate.versionCode ?: return
+        if (candidate.storeId != BuiltInStores.FDROID_ID || versionCode <= 0L) return
+        val key = ReproducibilityKey(candidate.packageName, candidate.storeId, versionCode)
+        val state = _uiState.value
+        if (key in state.reproducibility || key in state.checkingReproducibility) return
+
+        _uiState.update {
+            it.copy(
+                checkingReproducibility = it.checkingReproducibility + key,
+                reproducibilityErrors = it.reproducibilityErrors - key,
+            )
+        }
+        viewModelScope.launch {
+            try {
+                val result = checker.check(candidate.packageName, versionCode)
+                _uiState.update { current ->
+                    current.copy(
+                        checkingReproducibility = current.checkingReproducibility - key,
+                        reproducibility = if (result.status == ReproducibilityStatus.UNAVAILABLE) {
+                            current.reproducibility
+                        } else {
+                            current.reproducibility + (key to result)
+                        },
+                        reproducibilityErrors = if (
+                            result.status == ReproducibilityStatus.UNAVAILABLE
+                        ) {
+                            current.reproducibilityErrors + key
+                        } else {
+                            current.reproducibilityErrors - key
+                        },
+                    )
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                Log.w(TAG, "Could not check reproducibility", throwable)
+                _uiState.update {
+                    it.copy(
+                        checkingReproducibility = it.checkingReproducibility - key,
+                        reproducibilityErrors = it.reproducibilityErrors + key,
+                    )
+                }
+            }
+        }
     }
 
     private fun updateCorrectionEditor(

@@ -118,7 +118,7 @@
         <header>
           <p class="eyebrow">FossScout</p>
           <h1>Privacy Policy</h1>
-          <p class="effective-date"><strong>Effective date:</strong> 2026-11-18</p>
+          <p class="effective-date"><strong>Effective date:</strong> 2026-11-19</p>
         </header>
 
         <p class="lede">
@@ -171,6 +171,16 @@
         <ul>
           <li>Download public store indexes from F-Droid and IzzyOnDroid.</li>
           <li>
+            Check reproducible-build evidence for an F-Droid app version after you
+            explicitly tap “Check reproducibility”. FossScout requests that version's
+            public report from <code>verification.f-droid.org</code>. The request
+            contains the package name and version code in the URL; it does not attach
+            your installed-app inventory, notes, favourites, collections, or other
+            local profile data. FossScout makes no automatic verification requests.
+            Verified, failed, and not-verified results are cached for the app session;
+            unavailable results are not cached, so you can retry.
+          </li>
+          <li>
             Open links you choose, such as store pages, project pages, or the issue
             tracker.
           </li>
@@ -180,7 +190,7 @@
           request metadata such as your IP address, request time, and user agent, as
           with any HTTPS request. FossScout does not attach your installed-app
           inventory, notes, favourites, collections, or other local profile data to
-          store-index requests.
+          store-index or verification-server requests.
         </p>
         <p>
           If you open a link or submit a prefilled GitHub issue, the destination
@@ -213,7 +223,7 @@
         <h2>Permissions</h2>
         <p>FossScout requests:</p>
         <ul>
-          <li><strong>Internet</strong> for store-index sync and links you open.</li>
+          <li><strong>Internet</strong> for store-index sync, optional on-demand reproducibility checks, and links you open.</li>
           <li>
             <strong>Package queries</strong> for apps with a launcher activity so
             manual checks can find user-facing apps, and for F-Droid, Droid-ify, and

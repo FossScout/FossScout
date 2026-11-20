@@ -137,15 +137,19 @@ object MatchEngine {
                 summary = entry.summary,
                 license = entry.license,
                 sourceUrl = entry.sourceCode,
+                storeHomepage = store.homepage,
                 versionName = entry.versionName,
                 versionCode = entry.versionCode,
                 signerSha256 = entry.signerSha256,
+                previousSignerSha256 = entry.previousSignerSha256,
                 confidence = ConfidenceLabel.UNKNOWN,
                 reasons = listOf("Package ID matches exactly.") +
                     missingEvidence + staleNote + signatureNote,
                 lastSeenEpochMillis = store.snapshot?.fetchedAtEpochMillis,
                 categories = entry.categories,
                 signatureStatus = store.snapshot?.signatureStatus,
+                snapshotFreshness = store.freshness,
+                antiFeatures = entry.antiFeatures,
                 permissions = entry.permissions,
             )
         }
@@ -187,14 +191,18 @@ object MatchEngine {
             summary = entry.summary,
             license = entry.license,
             sourceUrl = entry.sourceCode,
+            storeHomepage = store.homepage,
             versionName = entry.versionName,
             versionCode = entry.versionCode,
             signerSha256 = entry.signerSha256,
+            previousSignerSha256 = entry.previousSignerSha256,
             confidence = confidence,
             reasons = reasons,
             lastSeenEpochMillis = store.snapshot?.fetchedAtEpochMillis,
             categories = entry.categories,
             signatureStatus = store.snapshot?.signatureStatus,
+            snapshotFreshness = store.freshness,
+            antiFeatures = entry.antiFeatures,
             permissions = entry.permissions,
         )
     }
@@ -240,9 +248,11 @@ object MatchEngine {
                         summary = entry.summary,
                         license = entry.license,
                         sourceUrl = entry.sourceCode,
+                        storeHomepage = store.homepage,
                         versionName = entry.versionName,
                         versionCode = entry.versionCode,
                         signerSha256 = entry.signerSha256,
+                        previousSignerSha256 = entry.previousSignerSha256,
                         confidence = when {
                             level == MatchLevel.L0 -> ConfidenceLabel.UNKNOWN
                             store.freshness == SnapshotFreshness.STALE -> ConfidenceLabel.LOW
@@ -252,6 +262,8 @@ object MatchEngine {
                         lastSeenEpochMillis = store.snapshot?.fetchedAtEpochMillis,
                         categories = entry.categories,
                         signatureStatus = store.snapshot?.signatureStatus,
+                        snapshotFreshness = store.freshness,
+                        antiFeatures = entry.antiFeatures,
                         permissions = entry.permissions,
                     )
                 }

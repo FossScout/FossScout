@@ -273,6 +273,7 @@ data class StorePackageVersion(
     val signerSha256: List<String> = emptyList(),
     val nativeCode: List<String> = emptyList(),
     val permissions: List<String> = emptyList(),
+    val antiFeatures: List<String> = emptyList(),
 ) {
     init {
         require(fileSha256.isNotBlank()) { "Version file hash is blank" }

@@ -1,5 +1,7 @@
 package com.fossscout.feature.matching
 
+import com.fossscout.core.index.ReproducibilityCheck
+import com.fossscout.core.index.ReproducibilityKey
 import com.fossscout.core.inventory.InstalledApp
 import com.fossscout.core.matching.AlternativeSuggestion
 import com.fossscout.core.matching.CatalogSearchResult
@@ -46,6 +48,9 @@ data class MatchUiState(
     val correctionEditor: MatchCorrectionUiState? = null,
     val tracker: TrackerReport? = null,
     val isTrackerScanning: Boolean = false,
+    val reproducibility: Map<ReproducibilityKey, ReproducibilityCheck> = emptyMap(),
+    val checkingReproducibility: Set<ReproducibilityKey> = emptySet(),
+    val reproducibilityErrors: Set<ReproducibilityKey> = emptySet(),
 ) {
     /** Suggestions the user hid during this screen session. */
     val visibleAlternatives: List<AlternativeSuggestion>

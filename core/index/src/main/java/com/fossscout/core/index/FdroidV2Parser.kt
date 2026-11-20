@@ -275,6 +275,8 @@ class FdroidV2Parser(
                     (element as? JsonObject)?.string("name")
                 }
                 .orEmpty(),
+            // Live v2 indexes put anti-features on the version, not package metadata.
+            antiFeatures = value.antiFeatures().keys.sorted(),
         )
     }
 
