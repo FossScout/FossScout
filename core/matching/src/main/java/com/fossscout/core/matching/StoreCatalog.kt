@@ -3,6 +3,7 @@ package com.fossscout.core.matching
 import com.fossscout.core.index.FdroidV2Parser
 import com.fossscout.core.index.SnapshotPayloadStore
 import com.fossscout.core.index.StorePackage
+import com.fossscout.core.index.StorePackageVersion
 import com.fossscout.core.index.StoreSnapshot
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -22,6 +23,7 @@ data class CatalogEntry(
     val versionName: String? = null,
     val versionCode: Long? = null,
     val signerSha256: List<String> = emptyList(),
+    val previousSignerSha256: List<String> = emptyList(),
     val antiFeatures: List<String> = emptyList(),
     val permissions: List<String> = emptyList(),
 ) {
@@ -106,7 +108,10 @@ class SnapshotCatalogSource(
 }
 
 internal fun StorePackage.toCatalogEntry(): CatalogEntry {
-    val latest = latestVersion()
+    val versions = versions.sortedByDescending(StorePackageVersion::versionCode)
+    val latest = versions.firstOrNull()
+    val previous = versions.getOrNull(1)
+    val latestAntiFeatures = latest?.antiFeatures.orEmpty()
     return CatalogEntry(
         packageName = packageName,
         name = localizedName(),
@@ -119,7 +124,11 @@ internal fun StorePackage.toCatalogEntry(): CatalogEntry {
         signerSha256 = latest?.signerSha256?.map { it.trim().lowercase() }
             ?.filter(String::isNotEmpty)
             .orEmpty(),
-        antiFeatures = antiFeatures.keys.sorted(),
+        previousSignerSha256 = previous?.signerSha256?.map { it.trim().lowercase() }
+            ?.filter(String::isNotEmpty)
+            .orEmpty(),
+        // Older cached payloads only carried anti-features on package metadata.
+        antiFeatures = latestAntiFeatures.ifEmpty { antiFeatures.keys.sorted() },
         permissions = latest?.permissions.orEmpty()
             .map(String::trim)
             .filter(String::isNotEmpty)

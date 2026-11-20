@@ -56,7 +56,7 @@ requirements, acceptance criteria, data/privacy notes, and open questions.
   **SHOULD**, or **MAY**, and must include acceptance criteria.
 - F18–F21 were added after the first feature library as quality/completeness
   candidates: unified store search, permission/tracker comparison, local
-  matching correction, and trust badges. They are proposed for the post-v1
-  roadmap, not the first integrated foundation.
+  matching correction, and trust badges. They were implemented on the post-v1
+  roadmap, not in the first integrated foundation.
 - F22 is a post-v1 support feature. The About entry point is enabled with the
   verified Liberapay team URL.

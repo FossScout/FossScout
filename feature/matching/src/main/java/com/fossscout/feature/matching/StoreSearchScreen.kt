@@ -1,6 +1,5 @@
 package com.fossscout.feature.matching
 
-import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -44,12 +43,18 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.fossscout.core.index.ReproducibilityCheck
+import com.fossscout.core.index.ReproducibilityKey
 import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.matching.StoreSearchAvailabilityFilter
 import com.fossscout.core.matching.StoreSearchGroup
@@ -58,7 +63,11 @@ import com.fossscout.core.matching.StoreSearchStoreHit
 import com.fossscout.core.matching.StoreSearchTrustFilter
 import com.fossscout.core.matching.StoreSearchUnavailable
 import com.fossscout.core.matching.StoreSearchUnavailableReason
+import com.fossscout.core.matching.TrustBadge
+import com.fossscout.core.matching.toTrustBadge
+import com.fossscout.core.matching.toTrustBadges
 import com.fossscout.core.model.AppKey
+import com.fossscout.core.store.BuiltInStores
 import com.fossscout.core.store.LinkOnlyReason
 
 @Composable
@@ -80,9 +89,12 @@ fun StoreSearchScreen(
     onToggleSaved: (StoreSearchGroup) -> Unit,
     onOpenHomepage: (String) -> Unit,
     onDismissError: () -> Unit,
+    onCheckReproducibility: (String, String, Long) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier,
     showFavoriteAction: Boolean = true,
+    showTrustBadges: Boolean = true,
 ) {
+    var selectedBadge by remember { mutableStateOf<TrustBadge?>(null) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -226,6 +238,9 @@ fun StoreSearchScreen(
                         onOpenDetails = { onOpenDetails(group.packageName) },
                         onToggleSaved = { onToggleSaved(group) },
                         showFavoriteAction = showFavoriteAction,
+                        showTrustBadges = showTrustBadges,
+                        reproducibility = state.reproducibility,
+                        onBadgeClick = { badge -> selectedBadge = badge },
                     )
                 }
                 if (state.linkOnlyStores.isNotEmpty()) {
@@ -242,6 +257,8 @@ fun StoreSearchScreen(
                         LinkOnlyCard(
                             store = store,
                             onOpenHomepage = onOpenHomepage,
+                            showTrustBadges = showTrustBadges,
+                            onBadgeClick = { badge -> selectedBadge = badge },
                         )
                     }
                 }
@@ -253,6 +270,20 @@ fun StoreSearchScreen(
         SearchDetailsDialog(
             group = group,
             onDismiss = onDismissDetails,
+            showTrustBadges = showTrustBadges,
+            reproducibility = state.reproducibility,
+            checkingReproducibility = state.checkingReproducibility,
+            reproducibilityErrors = state.reproducibilityErrors,
+            onCheckReproducibility = onCheckReproducibility,
+            onBadgeClick = { badge -> selectedBadge = badge },
+        )
+    }
+
+    selectedBadge?.let { badge ->
+        TrustBadgeExplanationDialog(
+            badge = badge,
+            onDismiss = { selectedBadge = null },
+            onOpenSource = onOpenHomepage,
         )
     }
 }
@@ -490,6 +521,9 @@ private fun SearchGroupCard(
     onOpenDetails: () -> Unit,
     onToggleSaved: () -> Unit,
     showFavoriteAction: Boolean,
+    showTrustBadges: Boolean,
+    reproducibility: Map<ReproducibilityKey, ReproducibilityCheck>,
+    onBadgeClick: (TrustBadge) -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -554,81 +588,38 @@ private fun SearchGroupCard(
             }
 
             group.stores.forEach { hit ->
-                Text(
-                    text = stringResource(
-                        R.string.store_search_store_line,
-                        hit.storeName,
-                        hit.versionName ?: stringResource(
-                            R.string.store_search_version_unknown,
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(
+                            R.string.store_search_store_line,
+                            hit.storeName,
+                            hit.versionName ?: stringResource(
+                                R.string.store_search_version_unknown,
+                            ),
+                            cacheLabel(hit.fetchedAtEpochMillis),
                         ),
-                        cacheLabel(hit.fetchedAtEpochMillis),
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                TrustBadge(
-                    text = stringResource(
-                        if (group.isIndexVerified) {
-                            R.string.store_search_index_verified
-                        } else {
-                            R.string.store_search_index_unverified
-                        },
-                    ),
-                    isWarning = !group.isIndexVerified,
-                )
-                TrustBadge(
-                    text = stringResource(
-                        if (group.hasOpenSourceMetadata) {
-                            R.string.store_search_source_license
-                        } else {
-                            R.string.store_search_source_license_missing
-                        },
-                    ),
-                    isWarning = !group.hasOpenSourceMetadata,
-                )
-            }
-
-            if (group.antiFeatures.isNotEmpty()) {
-                Text(
-                    text = stringResource(
-                        R.string.store_search_anti_features,
-                        group.antiFeatures.joinToString(),
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    if (showTrustBadges) {
+                        val check = hit.versionCode
+                            ?.takeIf { versionCode -> versionCode > 0L }
+                            ?.let { versionCode ->
+                                reproducibility[
+                                    ReproducibilityKey(
+                                        group.packageName,
+                                        hit.storeId,
+                                        versionCode,
+                                    ),
+                                ]
+                            }
+                        TrustBadgeRow(
+                            badges = hit.toTrustBadges(check),
+                            onBadgeClick = onBadgeClick,
+                        )
+                    }
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun TrustBadge(text: String, isWarning: Boolean) {
-    Surface(
-        shape = RoundedCornerShape(10.dp),
-        color = if (isWarning) {
-            MaterialTheme.colorScheme.errorContainer
-        } else {
-            MaterialTheme.colorScheme.secondaryContainer
-        },
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isWarning) {
-                MaterialTheme.colorScheme.onErrorContainer
-            } else {
-                MaterialTheme.colorScheme.onSecondaryContainer
-            },
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-        )
     }
 }
 
@@ -636,6 +627,8 @@ private fun TrustBadge(text: String, isWarning: Boolean) {
 private fun LinkOnlyCard(
     store: StoreSearchLinkOnly,
     onOpenHomepage: (String) -> Unit,
+    showTrustBadges: Boolean,
+    onBadgeClick: (TrustBadge) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -661,6 +654,12 @@ private fun LinkOnlyCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (showTrustBadges) {
+                TrustBadgeRow(
+                    badges = listOf(store.toTrustBadge()),
+                    onBadgeClick = onBadgeClick,
+                )
+            }
             Button(onClick = { onOpenHomepage(store.homepage) }) {
                 Text(
                     stringResource(
@@ -677,6 +676,12 @@ private fun LinkOnlyCard(
 private fun SearchDetailsDialog(
     group: StoreSearchGroup,
     onDismiss: () -> Unit,
+    showTrustBadges: Boolean,
+    reproducibility: Map<ReproducibilityKey, ReproducibilityCheck>,
+    checkingReproducibility: Set<ReproducibilityKey>,
+    reproducibilityErrors: Set<ReproducibilityKey>,
+    onCheckReproducibility: (String, String, Long) -> Unit,
+    onBadgeClick: (TrustBadge) -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -707,7 +712,16 @@ private fun SearchDetailsDialog(
                     style = MaterialTheme.typography.titleSmall,
                 )
                 group.stores.forEach { hit ->
-                    StoreHitDetails(hit)
+                    StoreHitDetails(
+                        packageName = group.packageName,
+                        hit = hit,
+                        showTrustBadges = showTrustBadges,
+                        reproducibility = reproducibility,
+                        checkingReproducibility = checkingReproducibility,
+                        reproducibilityErrors = reproducibilityErrors,
+                        onCheckReproducibility = onCheckReproducibility,
+                        onBadgeClick = onBadgeClick,
+                    )
                 }
             }
         },
@@ -720,7 +734,16 @@ private fun SearchDetailsDialog(
 }
 
 @Composable
-private fun StoreHitDetails(hit: StoreSearchStoreHit) {
+private fun StoreHitDetails(
+    packageName: String,
+    hit: StoreSearchStoreHit,
+    showTrustBadges: Boolean,
+    reproducibility: Map<ReproducibilityKey, ReproducibilityCheck>,
+    checkingReproducibility: Set<ReproducibilityKey>,
+    reproducibilityErrors: Set<ReproducibilityKey>,
+    onCheckReproducibility: (String, String, Long) -> Unit,
+    onBadgeClick: (TrustBadge) -> Unit,
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -795,20 +818,46 @@ private fun StoreHitDetails(hit: StoreSearchStoreHit) {
                 ),
                 style = MaterialTheme.typography.bodySmall,
             )
+            if (showTrustBadges) {
+                val versionCode = hit.versionCode?.takeIf { it > 0L }
+                val key = versionCode?.let { code ->
+                    ReproducibilityKey(packageName, hit.storeId, code)
+                }
+                val check = key?.let(reproducibility::get)
+                TrustBadgeRow(
+                    badges = hit.toTrustBadges(check),
+                    onBadgeClick = onBadgeClick,
+                )
+                if (hit.storeId == BuiltInStores.FDROID_ID && versionCode != null && key != null) {
+                    when {
+                        check != null -> Unit
+                        key in checkingReproducibility -> Text(
+                            text = stringResource(
+                                R.string.trust_badge_checking_reproducibility,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+
+                        else -> TextButton(
+                            onClick = {
+                                onCheckReproducibility(packageName, hit.storeId, versionCode)
+                            },
+                        ) {
+                            Text(stringResource(R.string.trust_badge_check_reproducibility))
+                        }
+                    }
+                    if (key in reproducibilityErrors) {
+                        Text(
+                            text = stringResource(R.string.trust_badge_reproducibility_error),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            }
         }
     }
 }
-
-@Composable
-private fun cacheLabel(fetchedAtEpochMillis: Long?): String =
-    if (fetchedAtEpochMillis == null) {
-        stringResource(R.string.store_search_cache_never)
-    } else {
-        stringResource(
-            R.string.store_search_cache_as_of,
-            relativeTime(fetchedAtEpochMillis),
-        )
-    }
 
 @Composable
 private fun indexTrustLabel(status: SignatureStatus?): String = when (status) {
@@ -820,13 +869,6 @@ private fun indexTrustLabel(status: SignatureStatus?): String = when (status) {
     null,
     -> stringResource(R.string.store_search_index_unknown)
 }
-
-private fun relativeTime(epochMillis: Long): String =
-    DateUtils.getRelativeTimeSpanString(
-        epochMillis,
-        System.currentTimeMillis(),
-        DateUtils.MINUTE_IN_MILLIS,
-    ).toString()
 
 private fun StoreSearchTrustFilter.labelRes(): Int = when (this) {
     StoreSearchTrustFilter.ALL -> R.string.store_search_trust_all

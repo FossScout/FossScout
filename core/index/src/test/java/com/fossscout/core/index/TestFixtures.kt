@@ -140,6 +140,7 @@ internal object TestIndexFixtures {
                   "versions": {
                     "$alphaHash": {
                       "added": 2000,
+                      "antiFeatures": {"Tracking": {"en-US": "Tracks usage"}},
                       "file": {
                         "name": "/alpha-$alphaVersionCode.apk",
                         "sha256": "$alphaHash",

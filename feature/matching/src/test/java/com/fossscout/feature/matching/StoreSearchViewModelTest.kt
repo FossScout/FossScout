@@ -1,5 +1,9 @@
 package com.fossscout.feature.matching
 
+import com.fossscout.core.index.ReproducibilityCheck
+import com.fossscout.core.index.ReproducibilityChecker
+import com.fossscout.core.index.ReproducibilityKey
+import com.fossscout.core.index.ReproducibilityStatus
 import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.index.StoreSnapshot
 import com.fossscout.core.matching.CatalogEntry
@@ -231,11 +235,60 @@ class StoreSearchViewModelTest {
         assertEquals(1, viewModel.uiState.value.groups.size)
     }
 
+    @Test
+    fun `reproducibility check is F-Droid only and cached by the view model`() = runTest(dispatcher) {
+        val checker = FakeReproducibilityChecker()
+        val viewModel = createViewModel(
+            repository(catalogs = twoCatalogs()),
+            reproducibilityChecker = checker,
+        )
+        viewModel.onQueryChange("example")
+        viewModel.search()
+        advanceUntilIdle()
+
+        viewModel.checkReproducibility("org.example.app", "izzy", 1L)
+        viewModel.checkReproducibility("org.example.app", "fdroid", 1L)
+        viewModel.checkReproducibility("org.example.app", "fdroid", 1L)
+        advanceUntilIdle()
+
+        val key = ReproducibilityKey("org.example.app", "fdroid", 1L)
+        val state = viewModel.uiState.value
+        assertEquals(1, checker.calls)
+        assertEquals(listOf("org.example.app" to 1L), checker.requests)
+        assertEquals(ReproducibilityStatus.VERIFIED, state.reproducibility[key]?.status)
+        assertFalse(key in state.checkingReproducibility)
+        assertFalse(key in state.reproducibilityErrors)
+    }
+
+    @Test
+    fun `unavailable reproducibility checks stay retryable`() = runTest(dispatcher) {
+        val checker = FakeReproducibilityChecker(
+            result = checkResult(ReproducibilityStatus.UNAVAILABLE),
+        )
+        val viewModel = createViewModel(
+            repository(catalogs = twoCatalogs()),
+            reproducibilityChecker = checker,
+        )
+        viewModel.onQueryChange("example")
+        viewModel.search()
+        advanceUntilIdle()
+
+        viewModel.checkReproducibility("org.example.app", "fdroid", 1L)
+        advanceUntilIdle()
+
+        val key = ReproducibilityKey("org.example.app", "fdroid", 1L)
+        val state = viewModel.uiState.value
+        assertNull(state.reproducibility[key])
+        assertTrue(key in state.reproducibilityErrors)
+        assertFalse(key in state.checkingReproducibility)
+    }
+
     private fun createViewModel(
         repository: MatchingRepository,
         historyRepository: StoreSearchHistoryRepository =
             StoreSearchHistoryRepository(FakeHistoryStore()),
-    ) = StoreSearchViewModel(repository, historyRepository)
+        reproducibilityChecker: ReproducibilityChecker? = null,
+    ) = StoreSearchViewModel(repository, historyRepository, reproducibilityChecker)
 
     private fun repository(
         entries: List<StoreEntry> = listOf(
@@ -342,8 +395,32 @@ class StoreSearchViewModelTest {
         }
     }
 
+    private class FakeReproducibilityChecker(
+        private val result: ReproducibilityCheck =
+            checkResult(ReproducibilityStatus.VERIFIED),
+    ) : ReproducibilityChecker {
+        var calls: Int = 0
+            private set
+        val requests = mutableListOf<Pair<String, Long>>()
+
+        override suspend fun check(packageName: String, versionCode: Long): ReproducibilityCheck {
+            calls += 1
+            requests += packageName to versionCode
+            return result
+        }
+    }
+
     private companion object {
         const val NOW = 10_000_000L
         const val FRESHNESS = 24L * 60L * 60L * 1_000L
+
+        fun checkResult(status: ReproducibilityStatus) = ReproducibilityCheck(
+            packageName = "org.example.app",
+            versionCode = 1L,
+            status = status,
+            sourceUrl = "https://verification.f-droid.org/packages/org.example.app/",
+            checkedAtEpochMillis = NOW,
+            versionName = "1.0",
+        )
     }
 }

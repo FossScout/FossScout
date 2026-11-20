@@ -14,6 +14,7 @@ internal fun FeatureId.titleRes(): Int = when (this) {
     FeatureId.PERMISSION_DIFF -> R.string.feature_permission_diff_title
     FeatureId.STORES -> R.string.feature_stores_title
     FeatureId.STORE_SEARCH -> R.string.feature_store_search_title
+    FeatureId.TRUST_BADGES -> R.string.feature_trust_badges_title
     FeatureId.INDEX_CACHE -> R.string.feature_index_cache_title
     FeatureId.COVERAGE -> R.string.feature_coverage_title
     FeatureId.REPLACEMENT_GUIDANCE -> R.string.feature_replacement_guidance_title
@@ -49,6 +50,7 @@ internal fun Capability.labelRes(): Int = when (this) {
     Capability.DIRECT_APK_INSTALL -> R.string.capability_direct_apk_install
     Capability.BACKGROUND_UPDATE_CHECK -> R.string.capability_background_update_check
     Capability.STORE_INDEX_NETWORK -> R.string.capability_store_index_network
+    Capability.STORE_TRUST_BADGES -> R.string.capability_store_trust_badges
     Capability.SHARE_IMPORT_EXPORT -> R.string.capability_share_import_export
     Capability.CUSTOM_STORE_ADAPTERS -> R.string.capability_custom_store_adapters
     Capability.SOURCE_REPOSITORY_ADAPTERS -> R.string.capability_source_repository_adapters

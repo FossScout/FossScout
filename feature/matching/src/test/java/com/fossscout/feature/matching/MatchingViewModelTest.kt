@@ -1,5 +1,9 @@
 package com.fossscout.feature.matching
 
+import com.fossscout.core.index.ReproducibilityCheck
+import com.fossscout.core.index.ReproducibilityChecker
+import com.fossscout.core.index.ReproducibilityKey
+import com.fossscout.core.index.ReproducibilityStatus
 import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.index.StoreSnapshot
 import com.fossscout.core.inventory.InstalledApp
@@ -378,9 +382,39 @@ class MatchingViewModelTest {
         assertFalse(state.isTrackerScanning)
     }
 
+    @Test
+    fun `fdroid reproducibility check attaches to the primary candidate`() = runTest(dispatcher) {
+        val checker = FakeReproducibilityChecker()
+        val viewModel = viewModel(
+            initialApp = app,
+            storeEntries = flowOf(listOf(entry("fdroid"))),
+            snapshots = mapOf("fdroid" to snapshot("fdroid")),
+            reproducibilityChecker = checker,
+        )
+        advanceUntilIdle()
+
+        val primary = requireNotNull(viewModel.uiState.value.decision?.primary)
+        viewModel.checkReproducibility(primary)
+        viewModel.checkReproducibility(primary)
+        advanceUntilIdle()
+
+        val key = ReproducibilityKey(
+            primary.packageName,
+            primary.storeId,
+            requireNotNull(primary.versionCode),
+        )
+        assertEquals(1, checker.calls)
+        assertEquals(
+            ReproducibilityStatus.VERIFIED,
+            viewModel.uiState.value.reproducibility[key]?.status,
+        )
+        assertFalse(key in viewModel.uiState.value.checkingReproducibility)
+    }
+
     private fun viewModel(
         source: FakeSource = FakeSource(listOf(app)),
         storeEntries: Flow<List<StoreEntry>> = flowOf(listOf(entry())),
+        snapshots: Map<String, StoreSnapshot> = mapOf("store-1" to snapshot()),
         initialQuery: String? = null,
         initialApp: InstalledApp? = null,
         includeAlternatives: Boolean = true,
@@ -388,10 +422,11 @@ class MatchingViewModelTest {
         setCorrection: (suspend (AppKey, MatchOverrideTarget?, String) -> Unit)? = null,
         removeCorrection: (suspend (AppKey) -> Unit)? = null,
         trackerScanSource: TrackerScanSource? = null,
+        reproducibilityChecker: ReproducibilityChecker? = null,
     ): MatchingViewModel = MatchingViewModel(
         repository = MatchingRepository(
             storeEntries = storeEntries,
-            snapshots = flowOf(mapOf("store-1" to snapshot())),
+            snapshots = flowOf(snapshots),
             catalog = FakeCatalog(),
             now = { NOW },
             freshnessWindowMillis = FRESHNESS,
@@ -404,11 +439,12 @@ class MatchingViewModelTest {
         setCorrection = setCorrection,
         removeCorrection = removeCorrection,
         trackerScanSource = trackerScanSource,
+        reproducibilityChecker = reproducibilityChecker,
     )
 
-    private fun entry() = StoreEntry(
+    private fun entry(id: String = "store-1") = StoreEntry(
         descriptor = StoreDescriptor(
-            id = StoreId("store-1"),
+            id = StoreId(id),
             name = "Store 1",
             homepage = "https://store.example",
             adapterType = AdapterType.FDROID_V2,
@@ -417,11 +453,11 @@ class MatchingViewModelTest {
         availability = StoreAvailability(StoreMode.MATCHABLE),
     )
 
-    private fun snapshot() = StoreSnapshot(
-        storeId = "store-1",
+    private fun snapshot(id: String = "store-1") = StoreSnapshot(
+        storeId = id,
         fetchedAtEpochMillis = NOW - 1_000L,
         packageCount = 2,
-        payloadPath = "store-1.ndjson",
+        payloadPath = "$id.ndjson",
         payloadSizeBytes = 10L,
         signatureStatus = SignatureStatus.VERIFIED,
         sourceUrl = "https://store.example/repo",
@@ -439,6 +475,8 @@ class MatchingViewModelTest {
                         categories = listOf("Tools"),
                         license = "GPL-3.0-only",
                         sourceCode = "https://example.org/src",
+                        versionName = "1.0",
+                        versionCode = 1L,
                         signerSha256 = listOf("aaaa"),
                     ),
                     CatalogEntry(
@@ -489,6 +527,23 @@ class MatchingViewModelTest {
         override suspend fun scan(packageName: String): TrackerScanResult {
             if (failure) error("scan failed")
             return result
+        }
+    }
+
+    private class FakeReproducibilityChecker : ReproducibilityChecker {
+        var calls: Int = 0
+            private set
+
+        override suspend fun check(packageName: String, versionCode: Long): ReproducibilityCheck {
+            calls += 1
+            return ReproducibilityCheck(
+                packageName = packageName,
+                versionCode = versionCode,
+                status = ReproducibilityStatus.VERIFIED,
+                sourceUrl = "https://verification.f-droid.org/packages/$packageName/",
+                checkedAtEpochMillis = NOW,
+                versionName = "1.0",
+            )
         }
     }
 

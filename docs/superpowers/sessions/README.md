@@ -51,8 +51,8 @@ device/UI verification remain deferred.
 
 No next post-v1 feature is selected. F18 unified store search, the F19
 permission/tracker comparison including local manifest import and local JSON
-audit export, and the F14-R8 verification-audit export are implemented; F21
-still needs an evidence-source decision.
+audit export, and the F14-R8 verification-audit export are implemented. F21 trust
+badges are implemented and need device/UI smoke checks before release.
 If multiple sessions run in parallel in future, use the wave table and avoid
 editing the same app wiring files without coordinating.
 

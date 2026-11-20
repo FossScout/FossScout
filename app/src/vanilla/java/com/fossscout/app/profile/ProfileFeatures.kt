@@ -9,6 +9,7 @@ object ProfileFeatures {
         capabilities = setOf(
             Capability.MANUAL_PACKAGE_SELECTION,
             Capability.STORE_INDEX_NETWORK,
+            Capability.STORE_TRUST_BADGES,
             Capability.SHARE_IMPORT_EXPORT,
             Capability.CUSTOM_STORE_ADAPTERS,
             Capability.BROAD_PACKAGE_VISIBILITY,

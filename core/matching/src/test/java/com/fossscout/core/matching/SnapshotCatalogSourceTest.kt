@@ -41,6 +41,7 @@ class SnapshotCatalogSourceTest {
         assertEquals("1.2.3", entry.versionName)
         assertEquals(2L, entry.versionCode)
         assertEquals(listOf("aaaa"), entry.signerSha256)
+        assertEquals(listOf("old"), entry.previousSignerSha256)
         assertEquals(listOf("Tracking"), entry.antiFeatures)
         assertEquals(
             listOf("android.permission.CAMERA", "android.permission.INTERNET"),
@@ -48,6 +49,28 @@ class SnapshotCatalogSourceTest {
         )
         assertTrue(entry.hasLicense)
         assertTrue(entry.hasSource)
+    }
+
+    @Test
+    fun `latest version anti-features override package metadata`() = runTest {
+        val payloads = FakePayloadStore(
+            mapOf(
+                "one.ndjson" to listOf(
+                    packageRecord(
+                        antiFeatures = mapOf(
+                            "OldFeature" to mapOf("en-US" to "Old package metadata"),
+                        ),
+                        versionAntiFeatures = listOf("Tracking"),
+                    ),
+                ),
+            ),
+        )
+        val source = SnapshotCatalogSource(payloads)
+
+        val entry = source.load(snapshot("one.ndjson")).byPackage.getValue("org.example.app")
+
+        assertEquals(listOf("Tracking"), entry.antiFeatures)
+        assertEquals(listOf("old"), entry.previousSignerSha256)
     }
 
     @Test
@@ -117,6 +140,7 @@ class SnapshotCatalogSourceTest {
     private fun packageRecord(
         sourceCode: String = "https://example.org/src",
         antiFeatures: Map<String, Map<String, String>> = emptyMap(),
+        versionAntiFeatures: List<String> = emptyList(),
     ) = StorePackage(
         packageName = "org.example.app",
         name = mapOf("en-US" to "Example"),
@@ -136,6 +160,7 @@ class SnapshotCatalogSourceTest {
                     "android.permission.CAMERA",
                     "android.permission.CAMERA",
                 ),
+                antiFeatures = versionAntiFeatures,
             ),
             StorePackageVersion(
                 fileSha256 = "b".repeat(64),

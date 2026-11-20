@@ -142,14 +142,18 @@ data class MatchCandidate(
     val summary: String = "",
     val license: String? = null,
     val sourceUrl: String? = null,
+    val storeHomepage: String? = null,
     val versionName: String? = null,
     val versionCode: Long? = null,
     val signerSha256: List<String> = emptyList(),
+    val previousSignerSha256: List<String> = emptyList(),
     val confidence: ConfidenceLabel = ConfidenceLabel.UNKNOWN,
     val reasons: List<String> = emptyList(),
     val lastSeenEpochMillis: Long? = null,
     val categories: List<String> = emptyList(),
     val signatureStatus: SignatureStatus? = null,
+    val snapshotFreshness: SnapshotFreshness = SnapshotFreshness.NEVER_SYNCED,
+    val antiFeatures: List<String> = emptyList(),
     val permissions: List<String> = emptyList(),
 ) {
     init {

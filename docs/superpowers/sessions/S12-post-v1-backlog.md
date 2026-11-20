@@ -105,12 +105,13 @@ low-confidence prompts, profile-scoped duplicates, and device/UI verification.
 
 ## F21 — Trust badges
 
-**Prerequisites:** F04/F05/F14 and signer history.
+**Prerequisites:** F04/F05/F14 and cached signer metadata.
 
-**Must decide:** reproducible-build evidence source, badge taxonomy, retention of
-signer history, and accessibility wording.
-
-**Suggested future session:** S19 — explainable trust badges.
+**Status:** Implemented in S19. Reproducible-build evidence comes
+from the public F-Droid Verification Server only after an explicit user action.
+Signer changes compare the latest and previous version in the cached index; no
+separate signer history is persisted. Badges are gated by profile, off in Play
+and on in vanilla. Device/UI smoke checks remain.
 
 ## Profile work not yet scheduled
 

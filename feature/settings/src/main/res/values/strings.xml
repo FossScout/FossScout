@@ -36,6 +36,7 @@
     <string name="feature_permission_diff_title">Permission comparison</string>
     <string name="feature_stores_title">Store integration</string>
     <string name="feature_store_search_title">Unified store search</string>
+    <string name="feature_trust_badges_title">Trust badges</string>
     <string name="feature_index_cache_title">Offline index cache</string>
     <string name="feature_coverage_title">Coverage overview</string>
     <string name="feature_replacement_guidance_title">Replacement guidance</string>
@@ -56,6 +57,7 @@
     <string name="capability_direct_apk_install">direct APK install</string>
     <string name="capability_background_update_check">background update checks</string>
     <string name="capability_store_index_network">store index access</string>
+    <string name="capability_store_trust_badges">F-Droid trust evidence</string>
     <string name="capability_share_import_export">share and import</string>
     <string name="capability_custom_store_adapters">custom store adapters</string>
     <string name="capability_source_repository_adapters">source repository adapters</string>

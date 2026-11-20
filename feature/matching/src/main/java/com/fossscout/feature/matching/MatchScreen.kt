@@ -33,13 +33,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.fossscout.core.index.ReproducibilityCheck
+import com.fossscout.core.index.ReproducibilityKey
 import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.inventory.InstalledApp
 import com.fossscout.core.matching.AlternativeSuggestion
@@ -55,9 +60,12 @@ import com.fossscout.core.matching.PermissionAlternative
 import com.fossscout.core.matching.PermissionComparison
 import com.fossscout.core.matching.StoreCoverage
 import com.fossscout.core.matching.TrackerReport
+import com.fossscout.core.matching.TrustBadge
 import com.fossscout.core.matching.comparePermissions
 import com.fossscout.core.matching.toPermissionAlternative
+import com.fossscout.core.matching.toTrustBadges
 import com.fossscout.core.model.MAX_NOTE_LENGTH
+import com.fossscout.core.store.BuiltInStores
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -95,7 +103,10 @@ fun MatchScreen(
     tracker: TrackerReport? = null,
     isTrackerScanning: Boolean = false,
     onComparePermissions: ((PermissionComparison) -> Unit)? = null,
+    showTrustBadges: Boolean = true,
+    onCheckReproducibility: ((MatchCandidate) -> Unit)? = null,
 ) {
+    var selectedBadge by remember { mutableStateOf<TrustBadge?>(null) }
     val installedApp = state.installedApp
     val compareAlternative: ((PermissionAlternative) -> Unit)? =
         if (onComparePermissions != null && installedApp != null) {
@@ -234,6 +245,12 @@ fun MatchScreen(
                                 PrimaryEvidenceCard(
                                     candidate = primary,
                                     onOpenSource = onOpenSource,
+                                    evidence = state.evidenceFor(primary),
+                                    showTrustBadges = showTrustBadges,
+                                    onBadgeClick = { selectedBadge = it },
+                                    onCheckReproducibility = onCheckReproducibility?.let { check ->
+                                        { check(primary) }
+                                    },
                                     onComparePermissions = compareAlternative?.let { compare ->
                                         { compare(primary.toPermissionAlternative()) }
                                     },
@@ -251,7 +268,11 @@ fun MatchScreen(
                             item(key = "other_matches") {
                                 OtherMatchesCard(
                                     matches = decision.otherMatches,
+                                    state = state,
                                     onOpenSource = onOpenSource,
+                                    showTrustBadges = showTrustBadges,
+                                    onBadgeClick = { selectedBadge = it },
+                                    onCheckReproducibility = onCheckReproducibility,
                                     onCompare = compareAlternative?.let { compare ->
                                         { match ->
                                             compare(match.toPermissionAlternative())
@@ -290,6 +311,12 @@ fun MatchScreen(
                                 PrimaryEvidenceCard(
                                     candidate = primary,
                                     onOpenSource = onOpenSource,
+                                    evidence = state.evidenceFor(primary),
+                                    showTrustBadges = showTrustBadges,
+                                    onBadgeClick = { selectedBadge = it },
+                                    onCheckReproducibility = onCheckReproducibility?.let { check ->
+                                        { check(primary) }
+                                    },
                                     onComparePermissions = compareAlternative?.let { compare ->
                                         { compare(primary.toPermissionAlternative()) }
                                     },
@@ -300,7 +327,11 @@ fun MatchScreen(
                             item(key = "automatic_other_matches") {
                                 OtherMatchesCard(
                                     matches = decision.otherMatches,
+                                    state = state,
                                     onOpenSource = onOpenSource,
+                                    showTrustBadges = showTrustBadges,
+                                    onBadgeClick = { selectedBadge = it },
+                                    onCheckReproducibility = onCheckReproducibility,
                                     onCompare = compareAlternative?.let { compare ->
                                         { match ->
                                             compare(match.toPermissionAlternative())
@@ -340,6 +371,14 @@ fun MatchScreen(
             onSave = onSaveCorrection,
             onSaveNoMatch = onSaveNoMatch,
             onDismiss = onDismissCorrection,
+        )
+    }
+
+    selectedBadge?.let { badge ->
+        TrustBadgeExplanationDialog(
+            badge = badge,
+            onDismiss = { selectedBadge = null },
+            onOpenSource = onOpenSource,
         )
     }
 }
@@ -854,10 +893,66 @@ private fun CorrectionResultRow(
     }
 }
 
+private data class BadgeEvidence(
+    val check: ReproducibilityCheck? = null,
+    val isChecking: Boolean = false,
+    val hasError: Boolean = false,
+)
+
+private fun MatchUiState.evidenceFor(candidate: MatchCandidate): BadgeEvidence {
+    val versionCode = candidate.versionCode?.takeIf { it > 0L }
+        ?: return BadgeEvidence()
+    val key = ReproducibilityKey(candidate.packageName, candidate.storeId, versionCode)
+    return BadgeEvidence(
+        check = reproducibility[key],
+        isChecking = key in checkingReproducibility,
+        hasError = key in reproducibilityErrors,
+    )
+}
+
+@Composable
+private fun ReproducibilityAction(
+    storeId: String,
+    versionCode: Long?,
+    evidence: BadgeEvidence,
+    onCheck: (() -> Unit)?,
+) {
+    if (
+        onCheck == null ||
+        storeId != BuiltInStores.FDROID_ID ||
+        versionCode == null ||
+        versionCode <= 0L
+    ) {
+        return
+    }
+    when {
+        evidence.check != null -> Unit
+        evidence.isChecking -> Text(
+            text = stringResource(R.string.trust_badge_checking_reproducibility),
+            style = MaterialTheme.typography.bodySmall,
+        )
+
+        else -> TextButton(onClick = onCheck) {
+            Text(stringResource(R.string.trust_badge_check_reproducibility))
+        }
+    }
+    if (evidence.hasError) {
+        Text(
+            text = stringResource(R.string.trust_badge_reproducibility_error),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+}
+
 @Composable
 private fun PrimaryEvidenceCard(
     candidate: MatchCandidate,
     onOpenSource: (String) -> Unit,
+    evidence: BadgeEvidence,
+    showTrustBadges: Boolean,
+    onBadgeClick: (TrustBadge) -> Unit,
+    onCheckReproducibility: (() -> Unit)?,
     onComparePermissions: (() -> Unit)? = null,
 ) {
     Card(
@@ -888,6 +983,19 @@ private fun PrimaryEvidenceCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (showTrustBadges) {
+                TrustBadgeRow(
+                    badges = candidate.toTrustBadges(evidence.check),
+                    onBadgeClick = onBadgeClick,
+                    showCacheAge = true,
+                )
+                ReproducibilityAction(
+                    storeId = candidate.storeId,
+                    versionCode = candidate.versionCode,
+                    evidence = evidence,
+                    onCheck = onCheckReproducibility,
+                )
+            }
             Text(
                 text = stringResource(
                     candidate.signatureStatus?.matchLabelRes()
@@ -982,7 +1090,11 @@ private fun PrimaryEvidenceCard(
 @Composable
 private fun OtherMatchesCard(
     matches: List<MatchCandidate>,
+    state: MatchUiState,
     onOpenSource: (String) -> Unit,
+    showTrustBadges: Boolean,
+    onBadgeClick: (TrustBadge) -> Unit,
+    onCheckReproducibility: ((MatchCandidate) -> Unit)?,
     onCompare: ((MatchCandidate) -> Unit)? = null,
 ) {
     Card(
@@ -1008,6 +1120,20 @@ private fun OtherMatchesCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
                 )
+                if (showTrustBadges) {
+                    val evidence = state.evidenceFor(match)
+                    TrustBadgeRow(
+                        badges = match.toTrustBadges(evidence.check),
+                        onBadgeClick = onBadgeClick,
+                        showCacheAge = true,
+                    )
+                    ReproducibilityAction(
+                        storeId = match.storeId,
+                        versionCode = match.versionCode,
+                        evidence = evidence,
+                        onCheck = onCheckReproducibility?.let { check -> { check(match) } },
+                    )
+                }
                 Text(
                     text = stringResource(
                         match.signatureStatus?.matchLabelRes()

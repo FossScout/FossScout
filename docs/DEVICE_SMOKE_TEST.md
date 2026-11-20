@@ -60,8 +60,8 @@ Not covered:
 - Google Play and F-Droid client-provided installer labels. The mapping is
   unit-tested; the CI fixtures use installed packages.
 - Real repository index sync, signer rotation/mismatch, and the storage budget.
-- Matching correction, replacement handoff, other sharing/import flows,
-  backup/restore, and settings reset.
+- Matching correction, trust badges and verification-server requests, replacement
+  handoff, other sharing/import flows, backup/restore, and settings reset.
 - Stale-threshold, hide/unhide persistence, inaccessible-app counts, and
   real-device rendering, performance, and battery behavior.
 
@@ -233,6 +233,35 @@ run, or failure fixture.
       newest first, with case-insensitive duplicates removed.
 - [ ] With the network disabled, recent-query chips still fill and run the search
       against cached indexes.
+
+## 4c. Trust badges (F21)
+
+- [ ] In the vanilla/F-Droid build, open Store search or a match result. Badge
+      rows render without overlapping the surrounding text.
+- [ ] In the Play build, confirm no trust-badge row or reproducibility action is
+      shown.
+- [ ] Tap an anti-feature badge. The explanation names the store and lists the
+      declared anti-features; no aggregate trust score appears.
+- [ ] Tap the index, source/license, stale-metadata, and signer-change badges.
+      Each explanation names its source and shows cache age where applicable.
+- [ ] Confirm a positive badge appears only with its evidence: verified index
+      status, both source and license, or an explicit verified reproducibility
+      report.
+- [ ] For an F-Droid version, tap “Check reproducibility”. Confirm an explicit
+      verified, failed, or not-verified state appears, with a source link and
+      check time.
+- [ ] Repeat the same check. No second network request is made during the app
+      session.
+- [ ] Disable the network and tap “Check reproducibility” for a different
+      F-Droid version. An unavailable/retryable state appears and no failure
+      badge is invented.
+- [ ] Confirm no verification request occurs until the check action is tapped.
+- [ ] Show a link-only store. Only the link-only badge appears; no anti-feature,
+      signer, or reproducibility claim is shown.
+- [ ] Turn on TalkBack. Badge chips announce their label and explanation, and the
+      source link remains reachable.
+- [ ] Confirm signer fingerprints and verification evidence are not uploaded and
+      that the privacy policy describes the on-demand verification request.
 
 ## 5. Matching correction (F20)
 

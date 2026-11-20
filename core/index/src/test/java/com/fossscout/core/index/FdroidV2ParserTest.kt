@@ -52,6 +52,7 @@ class FdroidV2ParserTest {
             version.signerSha256,
         )
         assertEquals(listOf("android.permission.INTERNET"), version.permissions)
+        assertEquals(listOf("Tracking"), version.antiFeatures)
     }
 
     @Test
