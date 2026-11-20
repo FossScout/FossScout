@@ -875,6 +875,8 @@ private fun StoreSearchTrustFilter.labelRes(): Int = when (this) {
     StoreSearchTrustFilter.VERIFIED_INDEX -> R.string.store_search_trust_verified
     StoreSearchTrustFilter.OPEN_SOURCE -> R.string.store_search_trust_open_source
     StoreSearchTrustFilter.NO_ANTI_FEATURES -> R.string.store_search_trust_no_anti
+    StoreSearchTrustFilter.SIGNER_CHANGED -> R.string.store_search_trust_signer_changed
+    StoreSearchTrustFilter.STALE_METADATA -> R.string.store_search_trust_stale
 }
 
 private fun StoreSearchAvailabilityFilter.labelRes(): Int = when (this) {

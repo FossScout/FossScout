@@ -4,12 +4,14 @@ import com.fossscout.core.index.SignatureStatus
 import com.fossscout.core.index.SnapshotFreshness
 import com.fossscout.core.store.LinkOnlyReason
 
-/** Trust filters available to unified store search. */
+/** Trust and badge filters available to unified store search. */
 enum class StoreSearchTrustFilter {
     ALL,
     VERIFIED_INDEX,
     OPEN_SOURCE,
     NO_ANTI_FEATURES,
+    SIGNER_CHANGED,
+    STALE_METADATA,
 }
 
 /** Whether to show cached-index results, link-only stores, or both. */
@@ -62,6 +64,11 @@ data class StoreSearchStoreHit(
 
     val isIndexVerified: Boolean
         get() = signatureStatus == SignatureStatus.VERIFIED
+
+    val hasSignerChanged: Boolean
+        get() = previousSignerSha256.isNotEmpty() &&
+            signerSha256.isNotEmpty() &&
+            previousSignerSha256.toSet() != signerSha256.toSet()
 }
 
 /** One package grouped across every matching store. */

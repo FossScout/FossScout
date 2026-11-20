@@ -122,6 +122,42 @@ class StoreSearchViewModelTest {
     }
 
     @Test
+    fun `signer changed badge filter reruns search and clear filters resets it`() = runTest(dispatcher) {
+        val viewModel = createViewModel(
+            repository(
+                catalogs = mapOf(
+                    "fdroid" to catalog(
+                        "fdroid",
+                        example(
+                            signerSha256 = listOf("bbbb"),
+                            previousSignerSha256 = listOf("aaaa"),
+                        ),
+                    ),
+                    "izzy" to catalog("izzy", example()),
+                ),
+            ),
+        )
+        viewModel.onQueryChange("example")
+        viewModel.search()
+        advanceUntilIdle()
+
+        viewModel.setTrustFilter(StoreSearchTrustFilter.SIGNER_CHANGED)
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf("fdroid"),
+            viewModel.uiState.value.groups.single().stores.map { it.storeId },
+        )
+        assertTrue(viewModel.uiState.value.hasActiveFilters)
+
+        viewModel.clearFilters()
+        advanceUntilIdle()
+
+        assertEquals(2, viewModel.uiState.value.groups.single().stores.size)
+        assertEquals(StoreSearchTrustFilter.ALL, viewModel.uiState.value.trustFilter)
+    }
+
+    @Test
     fun `link only availability keeps the handoff visible`() = runTest(dispatcher) {
         val viewModel = createViewModel(
             repository(
@@ -324,6 +360,8 @@ class StoreSearchViewModelTest {
         source: String? = "https://example.org/src",
         version: String = "1.0",
         antiFeatures: List<String> = emptyList(),
+        signerSha256: List<String> = listOf("aaaa"),
+        previousSignerSha256: List<String> = emptyList(),
     ) = CatalogEntry(
         packageName = "org.example.app",
         name = "Example",
@@ -334,7 +372,8 @@ class StoreSearchViewModelTest {
         versionName = version,
         versionCode = 1L,
         antiFeatures = antiFeatures,
-        signerSha256 = listOf("aaaa"),
+        signerSha256 = signerSha256,
+        previousSignerSha256 = previousSignerSha256,
     )
 
     private fun entry(

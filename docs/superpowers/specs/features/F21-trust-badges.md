@@ -80,7 +80,7 @@ local; the app never uploads installed-app inventory, APKs, or signer data.
 | F21-R5 | MUST | Store-derived badges show metadata age. | A stale index is visibly marked. |
 | F21-R6 | SHOULD | Link-only stores show a link-only badge and no invented metadata. | No anti-feature or reproducibility claim appears for them. |
 | F21-R7 | SHOULD | Badge explanations are accessible to screen readers. | Content descriptions include badge meaning. |
-| F21-R8 | MAY | Badges can be filtered in search. | The filter matches only apps with the selected badge. Deferred; existing store trust filters remain. |
+| F21-R8 | MAY | Badges can be filtered in search. | The trust filter covers verified index, source/license, no anti-features, signer changed, and stale cache, matching only store hits with the selected badge. Reproducibility remains an explicit on-demand check; link-only stores use the availability filter. |
 | F21-R9 | MUST | Trust badges are gated by profile. | Play builds expose no trust-badge feature or badge UI; vanilla builds enable badges by default. |
 | F21-R10 | MUST | Reproducibility checks are explicit and on demand. | No request is made until the user taps the check action. Results are cached for the session; unavailable results remain retryable. |
 | F21-R11 | MUST | Signer evidence stays local. | Signer fingerprints are shown in badge explanations and the match evidence, and are never uploaded. |
@@ -118,4 +118,7 @@ local; the app never uploads installed-app inventory, APKs, or signer data.
    made.
 5. The live F-Droid v2 index stores anti-features on each version, so the parser
    reads them there.
-6. Existing trust filters remain. A badge-specific search filter is deferred.
+6. Existing trust filters remain and now include signer-change and stale-cache
+   badge filters. Reproducibility is excluded from search filters because it
+   requires an explicit per-version check; link-only usage remains under the
+   availability filter.
