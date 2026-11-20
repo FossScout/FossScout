@@ -11,7 +11,7 @@
     <string name="discover_saved_state_write_error">Couldn\'t update saved projects.</string>
     <string name="discover_retry">Retry</string>
     <string name="discover_empty_nothing_saved_title">Nothing saved yet</string>
-    <string name="discover_empty_nothing_saved_body">Tap the heart on a project to keep it here.</string>
+    <string name="discover_empty_nothing_saved_body">Tap the star on a project to keep it here.</string>
     <string name="discover_empty_no_results_title">No projects found</string>
     <string name="discover_empty_saved_no_match_body">Nothing in your saved list matches these filters.</string>
     <string name="discover_empty_no_match_body">Try a different search term or category.</string>

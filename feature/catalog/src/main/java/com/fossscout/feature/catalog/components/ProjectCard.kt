@@ -12,9 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star as StarOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -69,9 +68,9 @@ fun ProjectCard(
                     IconButton(onClick = onToggleSaved) {
                         Icon(
                             imageVector = if (isSaved) {
-                                Icons.Filled.Favorite
+                                Icons.Filled.Star
                             } else {
-                                Icons.Filled.FavoriteBorder
+                                Icons.Outlined.StarOutline
                             },
                             contentDescription = if (isSaved) {
                                 "Remove ${project.name} from saved projects"
