@@ -242,12 +242,14 @@
     <string name="store_search_history_off">Search history is off.</string>
     <string name="store_search_history_clear">Clear history</string>
     <string name="store_search_filter_stores">Stores</string>
-    <string name="store_search_filter_trust">Trust</string>
+    <string name="store_search_filter_trust">Trust &amp; badges</string>
     <string name="store_search_filter_availability">Availability</string>
-    <string name="store_search_trust_all">All trust</string>
+    <string name="store_search_trust_all">All</string>
     <string name="store_search_trust_verified">Verified index</string>
     <string name="store_search_trust_open_source">Source + license</string>
     <string name="store_search_trust_no_anti">No anti-features</string>
+    <string name="store_search_trust_signer_changed">Signer changed</string>
+    <string name="store_search_trust_stale">Stale cache</string>
     <string name="store_search_availability_all">All sources</string>
     <string name="store_search_availability_indexed">Cached indexes</string>
     <string name="store_search_availability_link_only">Link-only</string>

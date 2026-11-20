@@ -179,6 +179,10 @@ class MatchingRepository(
                             ranked.hit.hasOpenSourceMetadata
                         StoreSearchTrustFilter.NO_ANTI_FEATURES ->
                             ranked.hit.antiFeatures.isEmpty()
+                        StoreSearchTrustFilter.SIGNER_CHANGED ->
+                            ranked.hit.hasSignerChanged
+                        StoreSearchTrustFilter.STALE_METADATA ->
+                            ranked.hit.freshness == SnapshotFreshness.STALE
                     }
                 }
                 .groupBy { ranked -> ranked.entry.packageName }

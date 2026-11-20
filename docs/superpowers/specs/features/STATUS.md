@@ -60,6 +60,13 @@ file after every feature session with the new commit, test result, and status.
 | `./gradlew test --rerun-tasks` | Passed: 646 tests across 92 result files, 0 failures/errors/skipped; 315 tasks in 6m51s. |
 | `./gradlew assemblePlaystoreDebug assembleVanillaDebug :app:lintPlaystoreDebug :app:lintVanillaDebug` | Passed: both debug APKs assembled and both lint variants succeeded; 528 tasks in 2m17s. |
 
+### F21-R8 badge filters (2026-11-20)
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test --rerun-tasks` | Passed: 649 tests across 92 result files, 0 failures/errors/skipped; 315 tasks in 7m32s. |
+| `./gradlew assemblePlaystoreDebug assembleVanillaDebug :app:lintPlaystoreDebug :app:lintVanillaDebug` | Passed: both debug APKs assembled and both lint variants succeeded; 528 tasks in 6m05s. |
+
 Real-device F21 smoke checks and the privacy-policy deployment remain pending.
 
 ## What works today
@@ -88,9 +95,10 @@ Real-device F21 smoke checks and the privacy-policy deployment remain pending.
   setting.
 - Unified store search launched from Stores: offline cached-index results across
   every enabled indexed store, duplicate-package grouping with every store and
-  version retained, per-store cache age and trust, anti-feature labels, filters
-  for store/trust/availability, explicit link-only homepage handoffs, and local
-  favourites without an install action.
+  version retained, per-store cache age and trust, anti-feature labels,
+  store/trust/availability filters including signer-change and stale-cache
+  badges, explicit link-only homepage handoffs, and local favourites without an
+  install action.
 - Local installed-app inventory with manual package/label/store-link lookup on
   both profiles, vanilla full scan, persisted complete snapshots, stale
   marking, system/disabled/work-profile/hide filters, and production
@@ -183,10 +191,10 @@ Real-device F21 smoke checks and the privacy-policy deployment remain pending.
 | F15 | Update tracking | **Deferred** | Not enabled in either v1 profile. | S12 |
 | F16 | Contribution hooks | **Done** | Pure-JVM schema-v1 report builder and redaction boundary, configurable prefilled issue URL, preview-gated ViewModel, Compose contribution screen, and Settings/Stores/Match entry points. Default reports exclude inventory, notes, account data, device identifiers, raw errors, query tokens, and local paths; coverage keeps statuses/reasons only. Copy/share work offline; debug details are opt-in and exported as redacted JSON. The GitHub issue URL is configurable in the builder. Device checks for preview, clipboard, share sheet, browser opening, and debug JSON remain. | S11 |
 | F17 | Feature configuration | **Done** | Descriptor settings model (boolean/text/integer with defaults and validation), versioned envelope with legacy migration, registry-authoritative availability, basic/advanced sections, per-feature/global reset, and read-only snapshot used by F13. `INDEX_CACHE` declares the real `storage_budget_mb` setting; S09 adds the backup import/export UI. | S01, S09 |
-| F18 | Unified store search | **Done** | Search runs offline from every enabled indexed store through the shared cached-catalog loader; duplicate packages are grouped with every store/version and per-store metadata; store/trust/availability filters, anti-feature labels, cache-age timestamps, unavailable-cache notices, and link-only homepage handoffs are implemented. Results can be favourited locally; no install action is added. Search history is local-only, capped at five queries, opt-out, clearable, excluded from Android backup, and not part of profile backups. Device/UI verification pending. | S16 (post-v1) |
+| F18 | Unified store search | **Done** | Search runs offline from every enabled indexed store through the shared cached-catalog loader; duplicate packages are grouped with every store/version and per-store metadata; store/trust/availability filters (including signer-change and stale-cache badges), anti-feature labels, cache-age timestamps, unavailable-cache notices, and link-only homepage handoffs are implemented. Results can be favourited locally; no install action is added. Search history is local-only, capped at five queries, opt-out, clearable, excluded from Android backup, and not part of profile backups. Device/UI verification pending. | S16 (post-v1) |
 | F19 | Permission and tracker diff | **Done** (R8 + manifest) | Permission comparison is implemented from primary, other-match, or alternative match cards: installed `PackageManager` requested permissions, cached index permissions for the store version, added/removed/shared summary counts, grouped details, readable dangerous/special/normal/signature labels, and explicit unknown state when store metadata is absent. Tracker matching uses the bundled Exodus ETIP `2026-11-10` snapshot (674 trackers / 987 signatures, ODbL 1.0/DbCL 1.0) and scans only the selected installed app's local base/split APK `classes*.dex` files, capped at 64 MiB. The UI shows dataset name/version/license/source, matched signature, dataset-entry confidence, and explicit unavailable/incomplete states; it never scans or downloads the store alternative. The optional local APK manifest import reads a user-selected APK through a temporary cache copy, rejects package mismatches, and recomputes the diff. F19-R8 exports the comparison as a local JSON audit report with sources, timestamp, manifest evidence, and limitations. Real-device/UI verification of the tracker section, APK picker, and audit export remains pending. | S17 |
 | F20 | Matching correction | **Done** | Local corrections from the match screen: cached enabled-store target search, no-suitable-match, private note, corrected badge, target-unavailable warning, undo, automatic result retained, and one override per package key. Backup schema 2 adds overrides with v1 checksum migration and merge/replace/skip preview. Store-scoped overrides (R8), shareable corrections, low-confidence prompts, and profile-scoped duplicates remain deferred. Device/UI verification pending. | S18 (post-v1) |
-| F21 | Trust badges | **Implemented** (device/UI verification pending) | Per-version F-Droid anti-features, index/source/license/signer/staleness badges, link-only badge, accessible explanations with source links and cache age, on-demand F-Droid Verification Server checks with session cache and retryable unavailable state, and signer comparison between the latest and previous cached version. Gated by `TRUST_BADGES` + `STORE_TRUST_BADGES`: off in Play, on in vanilla. No aggregate score, no background verification requests, no uploads. Badge-specific search filter (R8) deferred. | S19 (post-v1) |
+| F21 | Trust badges | **Implemented** (device/UI verification pending) | Per-version F-Droid anti-features, index/source/license/signer/staleness badges, link-only badge, accessible explanations with source links and cache age, on-demand F-Droid Verification Server checks with session cache and retryable unavailable state, and signer comparison between the latest and previous cached version. Gated by `TRUST_BADGES` + `STORE_TRUST_BADGES`: off in Play, on in vanilla. No aggregate score, no background verification requests, no uploads. The trust filter includes signer-change and stale-cache badge filters; reproducibility remains on-demand and link-only uses the availability filter. | S19 (post-v1) |
 | F22 | Support and donations | **Done** | About support section and URL validation are enabled with the verified Liberapay team URL `https://liberapay.com/FossScout/`; the README links to the same profile. No payment SDK, permission, account, tracking, or feature gating. Device verification of the browser handoff remains pending. | Post-v1 support |
 
 ## Verification snapshot
