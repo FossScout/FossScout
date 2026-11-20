@@ -133,6 +133,56 @@ class StoreSearchRepositoryTest {
     }
 
     @Test
+    fun `signer changed badge filter keeps only stores with changed signers`() = runTest {
+        val repository = repository(
+            entries = listOf(entry("fdroid", "F-Droid"), entry("izzy", "IzzyOnDroid")),
+            catalogs = mapOf(
+                "fdroid" to catalog(
+                    "fdroid",
+                    example(
+                        signerSha256 = listOf("bbbb"),
+                        previousSignerSha256 = listOf("aaaa"),
+                    ),
+                ),
+                "izzy" to catalog(
+                    "izzy",
+                    example(
+                        signerSha256 = listOf("aaaa"),
+                        previousSignerSha256 = listOf("aaaa"),
+                    ),
+                ),
+            ),
+        )
+
+        val response = repository.searchStores(
+            query("example", trustFilter = StoreSearchTrustFilter.SIGNER_CHANGED),
+        )
+
+        assertEquals(listOf("F-Droid"), response.groups.single().stores.map { it.storeName })
+    }
+
+    @Test
+    fun `stale cache badge filter keeps only stale store hits`() = runTest {
+        val repository = repository(
+            entries = listOf(entry("fdroid", "F-Droid"), entry("izzy", "IzzyOnDroid")),
+            snapshots = mapOf(
+                "fdroid" to snapshot("fdroid", fetchedAt = NOW - FRESHNESS - 1L),
+                "izzy" to snapshot("izzy", fetchedAt = NOW - 1_000L),
+            ),
+            catalogs = mapOf(
+                "fdroid" to catalog("fdroid", example()),
+                "izzy" to catalog("izzy", example()),
+            ),
+        )
+
+        val response = repository.searchStores(
+            query("example", trustFilter = StoreSearchTrustFilter.STALE_METADATA),
+        )
+
+        assertEquals(listOf("F-Droid"), response.groups.single().stores.map { it.storeName })
+    }
+
+    @Test
     fun `link only stores are explicit handoffs and never parsed`() = runTest {
         val repository = repository(
             entries = listOf(
@@ -281,6 +331,8 @@ class StoreSearchRepositoryTest {
         version: String = "1.0",
         summary: String = "An example app",
         antiFeatures: List<String> = emptyList(),
+        signerSha256: List<String> = listOf("aaaa"),
+        previousSignerSha256: List<String> = emptyList(),
     ) = CatalogEntry(
         packageName = "org.example.app",
         name = "Example",
@@ -291,7 +343,8 @@ class StoreSearchRepositoryTest {
         versionName = version,
         versionCode = version.substringBefore('.').toLong(),
         antiFeatures = antiFeatures,
-        signerSha256 = listOf("aaaa"),
+        signerSha256 = signerSha256,
+        previousSignerSha256 = previousSignerSha256,
     )
 
     private fun entry(

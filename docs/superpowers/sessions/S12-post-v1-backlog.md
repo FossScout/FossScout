@@ -111,7 +111,8 @@ low-confidence prompts, profile-scoped duplicates, and device/UI verification.
 from the public F-Droid Verification Server only after an explicit user action.
 Signer changes compare the latest and previous version in the cached index; no
 separate signer history is persisted. Badges are gated by profile, off in Play
-and on in vanilla. Device/UI smoke checks remain.
+and on in vanilla. The trust filter includes signer-change and stale-cache
+badges; device/UI smoke checks remain.
 
 ## Profile work not yet scheduled
 

@@ -247,6 +247,8 @@ run, or failure fixture.
 - [ ] Confirm a positive badge appears only with its evidence: verified index
       status, both source and license, or an explicit verified reproducibility
       report.
+- [ ] Filter by “Signer changed” and “Stale cache”. Only matching store hits
+      remain, and clearing filters restores all results.
 - [ ] For an F-Droid version, tap “Check reproducibility”. Confirm an explicit
       verified, failed, or not-verified state appears, with a source link and
       check time.
