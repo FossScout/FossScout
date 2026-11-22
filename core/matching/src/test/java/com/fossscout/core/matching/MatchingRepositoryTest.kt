@@ -237,6 +237,45 @@ class MatchingRepositoryTest {
     }
 
     @Test
+    fun `correction target in a different store is marked unavailable`() = runTest {
+        val correction = matchOverride(
+            target = MatchOverrideTarget(
+                appKey = AppKey.from("org.example.other"),
+                displayName = "Other",
+                storeId = StoreId("store-1"),
+                storeName = "Store 1",
+            ),
+        )
+        val repository = MatchingRepository(
+            storeEntries = flowOf(
+                listOf(
+                    entry("store-1", "Store 1"),
+                    entry("store-2", "Store 2"),
+                ),
+            ),
+            snapshots = flowOf(
+                mapOf(
+                    "store-1" to snapshot("store-1"),
+                    "store-2" to snapshot("store-2"),
+                ),
+            ),
+            catalog = FakeCatalog(
+                mapOf(
+                    "store-1" to StoreCatalogData("store-1", listOf(ENTRY)),
+                    "store-2" to StoreCatalogData("store-2", listOf(OTHER_ENTRY)),
+                ),
+            ),
+            now = { NOW },
+            freshnessWindowMillis = FRESHNESS,
+            overrides = flowOf(listOf(correction)),
+        )
+
+        val decision = repository.match(query("org.example.app"))
+
+        assertEquals(false, decision.correctionTargetAvailable)
+    }
+
+    @Test
     fun `no-match correction keeps classification unknown`() = runTest {
         val correction = matchOverride(target = null)
         val repository = repository(

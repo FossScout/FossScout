@@ -95,13 +95,14 @@ local `main` was ahead of `origin/main`.
 **Prerequisites:** F02/F06 and F12/F13 for export/backup.
 
 **Decisions:** one override per installed package key; target search over cached
-enabled-store catalogs; a no-match is stored as a null target; notes are
-private; backup schema 2 carries overrides with v1 checksum migration. Merge
-keeps the newer `updatedAtEpochMillis`, replace removes local-only overrides,
-and skip adds only missing overrides.
+enabled-store catalogs; a target is available only in its selected store; a
+no-match is stored as a null target; notes are private; backup schema 2 carries
+overrides with v1 checksum migration. Merge keeps the newer
+`updatedAtEpochMillis`, replace removes local-only overrides, and skip adds only
+missing overrides.
 
-**Deferred:** store-scoped overrides (R8), shareable correction files,
-low-confidence prompts, profile-scoped duplicates, and device/UI verification.
+**Deferred:** shareable correction files, low-confidence prompts,
+profile-scoped duplicates, and device/UI verification.
 
 ## F21 — Trust badges
 
