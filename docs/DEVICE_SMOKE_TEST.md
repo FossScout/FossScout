@@ -273,7 +273,9 @@ run, or failure fixture.
 - [ ] Mark an app as having no suitable match.
 - [ ] Add a private note and reopen the correction. The note persists.
 - [ ] Select a target that becomes unavailable. The warning is visible and the
-      correction fails safely.
+      correction fails safely. If another store still has the same package, the
+      target remains marked unavailable because its selected store is
+      authoritative.
 - [ ] Undo a correction.
 - [ ] Export a backup with a correction, restore it, and confirm the override
       survives.

@@ -50,7 +50,8 @@ class MatchingRepository(
             ?: return decision
         val targetAvailable = correction.target?.let { target ->
             stores.any { store ->
-                store.contributesCatalogResults &&
+                store.storeId == target.storeId.value &&
+                    store.contributesCatalogResults &&
                     store.catalog?.byPackage?.containsKey(target.appKey.value) == true
             }
         }

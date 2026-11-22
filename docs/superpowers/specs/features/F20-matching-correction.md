@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | **Done** (F20-R8 deferred) |
+| Status | **Done** |
 | Availability | **General** |
 | Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | None beyond local storage |
@@ -71,7 +71,7 @@ override.
 | F20-R5 | MUST | A correction can be undone without losing the original automatic result. | Undo restores the previous match. |
 | F20-R6 | SHOULD | The correction reason is optional and private by default. | The reason is absent from shared collections unless explicitly included. |
 | F20-R7 | SHOULD | Overrides can be exported and imported with the profile backup. | Import preview lists override changes before applying. |
-| F20-R8 | MAY | A correction can be scoped to a store. | The same package from another store can still appear separately. |
+| F20-R8 | MAY | A correction can be scoped to a store. | The target is checked only in the selected store; the same package in another store does not satisfy it. The same package from another store can still appear separately in target search. |
 
 ### Implementation notes (2026-10-28)
 
@@ -96,8 +96,11 @@ override.
 - One override is stored per installed package key. Work-profile duplicates that
   share a package key therefore share an override; profile-scoped overrides are
   not implemented.
-- Deferred: store-scoped overrides (F20-R8), shareable correction files,
-  low-confidence correction prompts, and multiple overrides per installed app.
+- A target's store is authoritative: the target is available only when the
+  selected store's cached catalog still contains that package. The same package
+  in a different store does not make the target available.
+- Deferred: shareable correction files, low-confidence correction prompts, and
+  multiple simultaneous overrides per installed app.
 
 ## 7. Edge cases
 
@@ -113,5 +116,6 @@ override.
    version. They travel only through profile backup.
 2. The app does not prompt for a correction when confidence is low. The user
    starts a correction from the match screen.
-3. Multiple overrides per installed app are not allowed. Store-scoped overrides
-   remain deferred under F20-R8.
+3. Multiple simultaneous overrides per installed app are not allowed. R8 is
+   implemented by making the target's selected store authoritative, not by
+   storing separate overrides for each source store.

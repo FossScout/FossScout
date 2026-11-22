@@ -120,9 +120,9 @@ Real-device F21 smoke checks and the privacy-policy deployment remain pending.
 - Local match correction: search cached enabled-store catalogs, replace a match
   or mark no suitable match, add a private note, see a corrected badge, undo, and
   keep the automatic result inspectable. Overrides survive index refreshes and
-  profile backup (schema v2); v1 backups migrate. Store-scoped overrides
-  (F20-R8), sharing corrections, low-confidence prompts, and profile-scoped
-  duplicates remain deferred.
+  profile backup (schema v2); v1 backups migrate. Target availability is checked
+  against the selected target store (F20-R8). Sharing corrections,
+  low-confidence prompts, and profile-scoped duplicates remain deferred.
 - Coverage and confidence: per-store checked/stale/failed/skipped reasons,
   24-hour freshness, conclusive “not found” only when every enabled non-disabled
   store was checked, and explicit “incomplete” results otherwise.
@@ -193,7 +193,7 @@ Real-device F21 smoke checks and the privacy-policy deployment remain pending.
 | F17 | Feature configuration | **Done** | Descriptor settings model (boolean/text/integer with defaults and validation), versioned envelope with legacy migration, registry-authoritative availability, basic/advanced sections, per-feature/global reset, and read-only snapshot used by F13. `INDEX_CACHE` declares the real `storage_budget_mb` setting; S09 adds the backup import/export UI. | S01, S09 |
 | F18 | Unified store search | **Done** | Search runs offline from every enabled indexed store through the shared cached-catalog loader; duplicate packages are grouped with every store/version and per-store metadata; store/trust/availability filters (including signer-change and stale-cache badges), anti-feature labels, cache-age timestamps, unavailable-cache notices, and link-only homepage handoffs are implemented. Results can be favourited locally; no install action is added. Search history is local-only, capped at five queries, opt-out, clearable, excluded from Android backup, and not part of profile backups. Device/UI verification pending. | S16 (post-v1) |
 | F19 | Permission and tracker diff | **Done** (R8 + manifest) | Permission comparison is implemented from primary, other-match, or alternative match cards: installed `PackageManager` requested permissions, cached index permissions for the store version, added/removed/shared summary counts, grouped details, readable dangerous/special/normal/signature labels, and explicit unknown state when store metadata is absent. Tracker matching uses the bundled Exodus ETIP `2026-11-10` snapshot (674 trackers / 987 signatures, ODbL 1.0/DbCL 1.0) and scans only the selected installed app's local base/split APK `classes*.dex` files, capped at 64 MiB. The UI shows dataset name/version/license/source, matched signature, dataset-entry confidence, and explicit unavailable/incomplete states; it never scans or downloads the store alternative. The optional local APK manifest import reads a user-selected APK through a temporary cache copy, rejects package mismatches, and recomputes the diff. F19-R8 exports the comparison as a local JSON audit report with sources, timestamp, manifest evidence, and limitations. Real-device/UI verification of the tracker section, APK picker, and audit export remains pending. | S17 |
-| F20 | Matching correction | **Done** | Local corrections from the match screen: cached enabled-store target search, no-suitable-match, private note, corrected badge, target-unavailable warning, undo, automatic result retained, and one override per package key. Backup schema 2 adds overrides with v1 checksum migration and merge/replace/skip preview. Store-scoped overrides (R8), shareable corrections, low-confidence prompts, and profile-scoped duplicates remain deferred. Device/UI verification pending. | S18 (post-v1) |
+| F20 | Matching correction | **Done** | Local corrections from the match screen: cached enabled-store target search, no-suitable-match, private note, corrected badge, target-unavailable warning, undo, automatic result retained, and one override per package key. Backup schema 2 adds overrides with v1 checksum migration and merge/replace/skip preview. Target availability is checked against the selected target store (R8), so a matching package in another store does not mask a missing target. Shareable corrections, low-confidence prompts, and profile-scoped duplicates remain deferred. Device/UI verification pending. | S18 (post-v1) |
 | F21 | Trust badges | **Implemented** (device/UI verification pending) | Per-version F-Droid anti-features, index/source/license/signer/staleness badges, link-only badge, accessible explanations with source links and cache age, on-demand F-Droid Verification Server checks with session cache and retryable unavailable state, and signer comparison between the latest and previous cached version. Gated by `TRUST_BADGES` + `STORE_TRUST_BADGES`: off in Play, on in vanilla. No aggregate score, no background verification requests, no uploads. The trust filter includes signer-change and stale-cache badge filters; reproducibility remains on-demand and link-only uses the availability filter. | S19 (post-v1) |
 | F22 | Support and donations | **Done** | About support section and URL validation are enabled with the verified Liberapay team URL `https://liberapay.com/FossScout/`; the README links to the same profile. No payment SDK, permission, account, tracking, or feature gating. Device verification of the browser handoff remains pending. | Post-v1 support |
 
@@ -231,6 +231,16 @@ merged as PR #2 into `main` (`9e55acf`):
 Device/UI verification is still outstanding for target search, the correction
 dialog, note entry, target-unavailable warning, undo, and backup preview/restore
 on a real device.
+
+### F20-R8 target-store scope (2026-11-22)
+
+Commands run on `fix/f20-r8-target-store-scope`:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test --rerun-tasks` | Passed: 650 tests across 92 result files, 0 failures/errors/skipped; 315 tasks in 8m06s. |
+| `./gradlew assemblePlaystoreDebug assembleVanillaDebug :app:lintPlaystoreDebug :app:lintVanillaDebug` | Passed: both debug APKs assembled and both lint variants succeeded; 528 tasks in 6m17s. |
+| New coverage | A target that exists only in a different store is marked unavailable; existing same-store and missing-target cases still pass. |
 
 ### F22 support link (2026-11-02)
 
