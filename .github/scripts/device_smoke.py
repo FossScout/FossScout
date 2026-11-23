@@ -982,6 +982,7 @@ class Smoke:
             raise Failure("F19 store URL is required for the device run")
         self.open_destination("Stores", "Stores", build, "20-f19-stores-empty")
         self.tap_text("Add store", exact=True, timeout=20, scroll=True)
+        self.tap_text("New store", exact=True, timeout=20)
         self.wait_for_node("Homepage / repository URL", exact=True, timeout=20)
         self.fill_store_field(build, "Name", F19_STORE_NAME)
         self.fill_store_field(build, "Homepage / repository URL", self.f19_store_url)
