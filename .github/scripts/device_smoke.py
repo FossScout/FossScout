@@ -1149,12 +1149,17 @@ class Smoke:
                 if error is not None:
                     self.save_f19_sync_failure(build, "21-f19-store-sync-failure")
                     raise Failure(f"F19 store sync failed: {error}")
-                if any(
+                has_last_sync = any(
                     label.startswith("Last successful sync") for label in labels
-                ) and any(label in ("Fresh", "Stale") for label in labels):
+                )
+                if has_last_sync and any(
+                    label in ("Fresh", "Stale") for label in labels
+                ):
                     self.capture(build, "21-f19-store-synced")
                     self.save_ui(build, "21-f19-store-synced")
                     return "F19 fixture store synced"
+                if has_last_sync:
+                    self.nudge_up()
             else:
                 self.nudge_up()
             if time.time() >= deadline:
