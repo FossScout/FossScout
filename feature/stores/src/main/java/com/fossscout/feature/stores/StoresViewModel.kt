@@ -450,20 +450,17 @@ class StoresViewModel(
                 return@launch
             }
             try {
+                val startedAtNanos = System.nanoTime()
                 val result = syncRepository.sync(descriptor)
-                val health = if (result.job.state == SyncState.SUCCEEDED) {
-                    StoreHealth(
-                        status = StoreHealthStatus.OK,
-                        lastSyncEpochMillis = result.snapshot?.fetchedAtEpochMillis,
-                        itemCount = result.snapshot?.packageCount,
-                    )
-                } else {
-                    descriptor.health.copy(
-                        status = StoreHealthStatus.ERROR,
-                        error = result.job.error?.kind?.name
-                            ?: result.job.state.name,
-                    )
-                }
+                val elapsedMillis = (System.nanoTime() - startedAtNanos) / 1_000_000L
+                val health = syncHealth(
+                    previous = descriptor.health,
+                    state = result.job.state,
+                    snapshot = result.snapshot,
+                    error = result.job.error?.kind?.name
+                        ?: result.job.state.name,
+                    latencyMillis = elapsedMillis,
+                )
                 runCatching { repository.updateHealth(id, health) }
             } catch (cancellation: CancellationException) {
                 throw cancellation

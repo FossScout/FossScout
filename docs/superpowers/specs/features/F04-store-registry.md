@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft |
+| Status | Implemented |
 | Availability | **General** |
 | Profiles | `playstore`, `vanilla`, `direct`, `custom` |
 | Required capabilities | `CUSTOM_STORE_ADAPTERS`, `STORE_INDEX_NETWORK`; `DIRECT_APK_INSTALL` only for the install step |
@@ -62,7 +62,7 @@ they expose: a signed index, a live API, release pages, or only a website.
 | F04-R5 | MUST | A store's descriptor can be exported and shared. | Export produces a portable, versioned descriptor. |
 | F04-R6 | MUST | HTTP-only stores require an explicit warning and opt-in. | An HTTP URL is not silently accepted as trusted. |
 | F04-R7 | SHOULD | Fingerprint changes are surfaced as a security event. | A changed fingerprint blocks sync until the user approves or removes the store. |
-| F04-R8 | SHOULD | Store health is visible per store. | Last sync, count, and error are shown in store details. |
+| F04-R8 | SHOULD | Store health is visible per store. | Last successful sync, item count, sync duration, and error are shown in store details. |
 | F04-R9 | MAY | The user can import a store descriptor from a shared collection. | Import previews the store and requires confirmation. |
 
 ## 7. Data

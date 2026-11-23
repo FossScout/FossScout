@@ -718,29 +718,64 @@ private fun StoreCard(
 
             val health = descriptor.health
             val healthError = health.error
-            Spacer(modifier = Modifier.height(4.dp))
-            when {
-                health.status == StoreHealthStatus.ERROR && healthError != null -> Text(
-                    text = stringResource(R.string.stores_health_error, healthError),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
-
-                health.status == StoreHealthStatus.UNKNOWN -> Text(
-                    text = stringResource(R.string.stores_health_unknown),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                health.itemCount != null -> Text(
-                    text = pluralStringResource(
-                        R.plurals.stores_health_items,
-                        health.itemCount ?: 0,
-                        health.itemCount ?: 0,
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            val lastSync = health.lastSyncEpochMillis
+            val showLastSync = descriptor.adapterType != AdapterType.FDROID_V2
+            val showUnknown = showLastSync &&
+                health.status == StoreHealthStatus.UNKNOWN &&
+                lastSync == null
+            val hasHealthDetails = (showLastSync && lastSync != null) ||
+                showUnknown ||
+                health.itemCount != null ||
+                health.latencyMillis != null ||
+                (health.status == StoreHealthStatus.ERROR && healthError != null)
+            if (hasHealthDetails) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    if (showLastSync && lastSync != null) {
+                        Text(
+                            text = stringResource(
+                                R.string.stores_sync_last,
+                                formatRelativeTime(lastSync),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else if (showUnknown) {
+                        Text(
+                            text = stringResource(R.string.stores_health_unknown),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    health.itemCount?.let { count ->
+                        Text(
+                            text = pluralStringResource(
+                                R.plurals.stores_health_items,
+                                count,
+                                count,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    health.latencyMillis?.let { latency ->
+                        Text(
+                            text = stringResource(
+                                R.string.stores_health_latency,
+                                formatSyncLatency(latency),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (health.status == StoreHealthStatus.ERROR && healthError != null) {
+                        Text(
+                            text = stringResource(R.string.stores_health_error, healthError),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
             }
 
             val linkOnlyReason = entry.availability.reason

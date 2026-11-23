@@ -26,6 +26,8 @@ import com.fossscout.core.store.AdapterType
 import com.fossscout.core.store.BuiltInStores
 import com.fossscout.core.store.LinkOnlyReason
 import com.fossscout.core.store.StoreDescriptor
+import com.fossscout.core.store.StoreHealth
+import com.fossscout.core.store.StoreHealthStatus
 import com.fossscout.core.store.StoreMode
 import com.fossscout.core.store.StoreRegistry
 import java.io.IOException
@@ -476,6 +478,82 @@ class StoresViewModelTest {
             assertEquals(1, status.audit.size)
             assertEquals(SyncState.FAILED, status.job?.state)
         }
+
+    @Test
+    fun `successful sync health records snapshot and latency`() {
+        val snapshot = StoreSnapshot(
+            storeId = BuiltInStores.FDROID_ID,
+            fetchedAtEpochMillis = 1_234L,
+            indexTimestamp = 1_200L,
+            indexSha256 = "a".repeat(64),
+            packageCount = 42,
+            payloadPath = "fdroid.ndjson",
+            payloadSizeBytes = 1_024L,
+            signatureStatus = SignatureStatus.VERIFIED,
+            sourceUrl = "https://f-droid.org/repo/index-v2.json",
+        )
+
+        val health = syncHealth(
+            previous = StoreHealth(
+                status = StoreHealthStatus.ERROR,
+                lastSyncEpochMillis = 1L,
+                itemCount = 1,
+                error = "OLD",
+            ),
+            state = SyncState.SUCCEEDED,
+            snapshot = snapshot,
+            error = null,
+            latencyMillis = 1_250L,
+        )
+
+        assertEquals(StoreHealthStatus.OK, health.status)
+        assertEquals(1_234L, health.lastSyncEpochMillis)
+        assertEquals(42, health.itemCount)
+        assertEquals(1_250L, health.latencyMillis)
+        assertNull(health.error)
+    }
+
+    @Test
+    fun `failed sync health preserves previous snapshot details`() {
+        val health = syncHealth(
+            previous = StoreHealth(
+                status = StoreHealthStatus.OK,
+                lastSyncEpochMillis = 1_234L,
+                itemCount = 42,
+            ),
+            state = SyncState.FAILED,
+            snapshot = null,
+            error = "NETWORK",
+            latencyMillis = 2_500L,
+        )
+
+        assertEquals(StoreHealthStatus.ERROR, health.status)
+        assertEquals(1_234L, health.lastSyncEpochMillis)
+        assertEquals(42, health.itemCount)
+        assertEquals("NETWORK", health.error)
+        assertEquals(2_500L, health.latencyMillis)
+    }
+
+    @Test
+    fun `sync health clamps negative duration`() {
+        val health = syncHealth(
+            previous = StoreHealth(),
+            state = SyncState.FAILED,
+            snapshot = null,
+            error = "NETWORK",
+            latencyMillis = -5L,
+        )
+
+        assertEquals(0L, health.latencyMillis)
+    }
+
+    @Test
+    fun `sync latency uses milliseconds and seconds`() {
+        assertEquals("0 ms", formatSyncLatency(0L))
+        assertEquals("999 ms", formatSyncLatency(999L))
+        assertEquals("1.0 s", formatSyncLatency(1_000L))
+        assertEquals("1.3 s", formatSyncLatency(1_250L))
+    }
 
     private fun viewModel(
         store: FakeStoreRegistryStore = FakeStoreRegistryStore(),
