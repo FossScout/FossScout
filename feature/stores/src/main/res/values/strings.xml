@@ -34,6 +34,7 @@
     <string name="stores_export_store">Export %1$s</string>
     <string name="stores_health_error">Health error: %1$s</string>
     <string name="stores_health_unknown">Not synced yet</string>
+    <string name="stores_health_latency">Sync duration: %1$s</string>
     <string name="stores_storage_usage">Index storage: %1$s MB of %2$s MB</string>
     <string name="stores_storage_over_budget">Index storage is over its budget. Raise it in Settings or clean up old files.</string>
     <string name="stores_storage_cleanup">Clean up</string>

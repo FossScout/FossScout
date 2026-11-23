@@ -177,7 +177,7 @@ Real-device F21 smoke checks and the privacy-policy deployment remain pending.
 | F01 | Installed app inventory | **Partial** | Manual package/label/store-link lookup, vanilla full scan, `PackageManager` source, persisted complete snapshots, stale marking, filters, hide list, and inventory UI exist. Production classification selects `FOSS` only for an exact package with license and source evidence; a curated catalog with vendor terms marks known proprietary apps; missing FOSS evidence and unlisted apps stay `UNKNOWN`; missing packages are `UNAVAILABLE`. Real device/emulator `PackageManager`, installer/signer/work-profile, shared-intent, and process-restart checks remain. | S04, S05 |
 | F02 | FOSS matching | **Done** | Pure-JVM matching engine with L0–L3, package identity first, source-URL/signer-derived L2, missing-metadata L0, offline cached indexes, evidence cards (store, package, license, source, version, signer), and inventory classification integration. Report-wrong-match (R7) is covered by the S11 contribution action; pinned source (R8) remains deferred. | S05, S11 |
 | F03 | Alternative suggestions | **Done** | Alternatives only when no L1/L2 exists, always labelled as a different app, with category/tag/description reasons, enabled-store and coverage awareness, relevance ranking, a cap of five, and session-only hide/undo. Side-by-side comparison (R7 MAY) is deferred. | S05 |
-| F04 | Store registry and adapters | **Partial** | Pure-Kotlin store/adapter contracts, verified built-in F-Droid and IzzyOnDroid descriptors, versioned registry persistence, custom-store CRUD, link-only fallback, HTTP opt-in, descriptor export, shared-descriptor import with preview/confirmation, Stores UI, real cached-index adapter, and F04-R2 post-sync usability exist. Richer health history remains. | S02, S03 |
+| F04 | Store registry and adapters | **Done** | Pure-Kotlin store/adapter contracts, verified built-in F-Droid and IzzyOnDroid descriptors, versioned registry persistence, custom-store CRUD, link-only fallback, HTTP opt-in, descriptor export, shared-descriptor import with preview/confirmation, Stores UI, real cached-index adapter, post-sync usability, and current health details (last successful sync, item count, sync duration, and error) exist. Live device/emulator sync remains outstanding. | S02, S03 |
 | F05 | Index sync and offline cache | **Done** | Signed F-Droid v2 sync, signer/hash/size verification, HTTPS policy, ETag/diff reuse, streaming parse, atomic snapshot replacement, cancellation safety, freshness/last-sync state, and bounded storage with a real integer setting. Live network and device/UI verification remain outstanding. | S03 |
 | F06 | Coverage and confidence | **Done** | Per-store coverage snapshot with checked/stale/failed/skipped reasons, 24-hour freshness, explicit incomplete results, a checked-vs-required summary, and label-first confidence. “Not found” is blocked by any enabled non-disabled store that was not checked. Shared-report coverage (R4) is included in S11 contribution payloads; targeted refresh (R5) remains deferred. | S05, S11 |
 | F07 | Replacement guidance | **Done** | Pure-JVM assessment compares package, signer, version code, and installer. UI shows update/replace/alternative/no-update/cannot-verify, installed and candidate versions, installer, data-loss/uninstall/system/other-store/cross-store/work-profile/disabled warnings, and requires explicit confirmation for `REPLACE`. Missing signer/version metadata fails closed. There is no install, uninstall, or delete path. Reminder/watchlist (R7 MAY) remains deferred. | S08 |
@@ -241,6 +241,16 @@ Commands run on `fix/f20-r8-target-store-scope`:
 | `./gradlew test --rerun-tasks` | Passed: 650 tests across 92 result files, 0 failures/errors/skipped; 315 tasks in 8m06s. |
 | `./gradlew assemblePlaystoreDebug assembleVanillaDebug :app:lintPlaystoreDebug :app:lintVanillaDebug` | Passed: both debug APKs assembled and both lint variants succeeded; 528 tasks in 6m17s. |
 | New coverage | A target that exists only in a different store is marked unavailable; existing same-store and missing-target cases still pass. |
+
+### F04-R8 store health (2026-11-23)
+
+Commands run on `feat/f04-r8-store-health`:
+
+| Check | Result |
+| --- | --- |
+| `./gradlew test --rerun-tasks` | Passed: 654 tests across 92 result files, 0 failures/errors/skipped; 315 tasks in 7m43s. |
+| `./gradlew assemblePlaystoreDebug assembleVanillaDebug :app:lintPlaystoreDebug :app:lintVanillaDebug` | Passed: both debug APKs assembled and both lint variants succeeded; 528 tasks in 5m03s. |
+| New coverage | Success health records snapshot/count/latency and clears errors; failure preserves previous last sync/count and records the error/latency; negative latency clamps to zero; duration formatting covers milliseconds and seconds. |
 
 ### F22 support link (2026-11-02)
 
@@ -483,9 +493,9 @@ has no attached device; the CI emulator baseline is current.
   implemented. F07's signature-lineage/key-rotation, split-APK, and ABI/SDK
   compatibility checks remain post-v1. F08's last-handoff history is not
   persisted; only the preferred client per app is stored.
-- F04's cached-index adapter is real, but health history and import preview
-  remain. Live sync against the upstream F-Droid/IzzyOnDroid indexes has not
-  been exercised from a device or emulator.
+- F04's cached-index adapter, health display, and import preview are real. Live
+  sync against the upstream F-Droid/IzzyOnDroid indexes has not been exercised
+  from a device or emulator.
 - A valid signed index with no pinned fingerprint can activate as `UNVERIFIED`.
   The Stores UI marks it unverified and match evidence carries that state; v1
   has no one-tap install. A changed/removed pin or signer mismatch now requires

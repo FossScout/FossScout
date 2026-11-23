@@ -150,6 +150,9 @@ run URL. Commit both images with the run URL recorded in
       verification succeed.
 - [ ] Sync again with an unchanged index. ETag/diff reuse avoids a full download
       where supported.
+- [ ] After a successful sync, the store card shows the last successful sync,
+      item count, and sync duration. After a failed sync, the previous last
+      sync and item count remain, and the error and sync duration are shown.
 - [ ] Disable the network and open cached results. The app uses the cached
       snapshot and explains freshness.
 - [ ] Cancel a sync. The previous complete snapshot remains usable.

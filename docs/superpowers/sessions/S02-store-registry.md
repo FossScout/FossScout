@@ -120,8 +120,9 @@ Implemented on `feat/s02-store-registry` on 2026-10-23.
   and share), R6 (HTTP requires explicit opt-in). The registry codec rejects
   malformed and future data without overwriting the active registry.
 - remaining F04 criteria (expected: R2 sync): R2's actual index usability waits
-  for S03 sync; R7 fingerprint-change security events and richer R8 health
-  history (last-sync/latency display) remain for later sessions.
+  for S03 sync. R7 fingerprint-change security events were delivered by the
+  signed-index work; R8 health display is complete in the current store card:
+  last successful sync, item count, sync duration, and error.
 - Follow-up 2026-11-18: F04-R9 import preview is implemented on
   `feat/f04-r9-store-import`. The Add menu offers **Import descriptor**; pasted
   versioned JSON is parsed and previewed before confirmation. Confirmation adds
