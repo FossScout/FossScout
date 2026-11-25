@@ -982,6 +982,7 @@ class Smoke:
             raise Failure("F19 store URL is required for the device run")
         self.open_destination("Stores", "Stores", build, "20-f19-stores-empty")
         self.tap_text("Add store", exact=True, timeout=20, scroll=True)
+        self.tap_text("New store", exact=True, timeout=20)
         self.wait_for_node("Homepage / repository URL", exact=True, timeout=20)
         self.fill_store_field(build, "Name", F19_STORE_NAME)
         self.fill_store_field(build, "Homepage / repository URL", self.f19_store_url)
@@ -1148,12 +1149,17 @@ class Smoke:
                 if error is not None:
                     self.save_f19_sync_failure(build, "21-f19-store-sync-failure")
                     raise Failure(f"F19 store sync failed: {error}")
-                if any(
+                has_last_sync = any(
                     label.startswith("Last successful sync") for label in labels
-                ) and any(label in ("Fresh", "Stale") for label in labels):
+                )
+                if has_last_sync and any(
+                    label in ("Fresh", "Stale") for label in labels
+                ):
                     self.capture(build, "21-f19-store-synced")
                     self.save_ui(build, "21-f19-store-synced")
                     return "F19 fixture store synced"
+                if has_last_sync:
+                    self.nudge_up()
             else:
                 self.nudge_up()
             if time.time() >= deadline:
