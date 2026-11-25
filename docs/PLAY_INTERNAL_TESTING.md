@@ -2,7 +2,7 @@
 
 Play internal testing is the next distribution stage after the GitHub beta. The
 four Play upload secrets are configured, and a signed AAB was built from
-`main` on 2026-11-17. The Play Console app entry, declarations, testers, and
+`main` on 2026-11-23. The Play Console app entry, declarations, testers, and
 internal testing track remain pending; the public privacy policy and contact
 email are ready. Automated upload is not configured.
 
@@ -18,13 +18,13 @@ tracker scanning, local APK manifest import, and audit export stay on-device.
 | --- | --- |
 | AAB build workflow | Ready: `.github/workflows/play-internal.yml` |
 | Play upload secrets | **Done**: `PLAY_KEYSTORE_FILE`, `PLAY_KEYSTORE_PASSWORD`, `PLAY_KEY_ALIAS`, and `PLAY_KEY_PASSWORD` configured on 2026-11-17 |
-| Signed AAB | **Done**: [run 44077247261](https://github.com/FossScout/FossScout/actions/runs/44077247261) from `main` at `096245f`; version `0.1.1`/code `2`; artifacts `app-playstore-release.aab` and `.sha256` |
+| Signed AAB | **Done**: [run 45251114616](https://github.com/FossScout/FossScout/actions/runs/45251114616) from `main` at `f9de6cf`; version `0.1.1`/code `2`; artifacts `app-playstore-release.aab` and `.sha256` |
 | Play Console app entry and Play App Signing | Pending: app entry not created yet |
 | Store listing copy and graphics | Prepared under `docs/play-store/` |
 | App content and data safety declarations | Drafted under `docs/play-store/declarations/` |
 | Privacy-policy URL and contact email | **Done**: <https://fossscout.github.io/FossScout/privacy/>; `kanzel88@gmail.com` |
 | Internal testing track and testers | Pending |
-| Device smoke test | CI emulator baseline passes (run [43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411) on `9f82284`); physical-device Play build remains pending |
+| Device smoke test | CI emulator baseline passes (run [45629123988](https://github.com/FossScout/FossScout/actions/runs/45629123988) on `2915f4b`); physical-device Play build remains pending |
 
 ## Signing
 
@@ -63,9 +63,9 @@ Keep the keystore and passwords out of the repository.
 ## Build the AAB
 
 The `PLAY_*` repository secrets are configured. No signed AAB is committed. The
-**Play Internal AAB** workflow ran on 2026-11-17 from `main` at `096245f` and
+**Play Internal AAB** workflow ran on 2026-11-23 from `main` at `f9de6cf` and
 produced a signed AAB for version `0.1.1`/code `2` with SHA-256
-`46a705a2a942e8561b5a10514b04bf591c21d4bc2e5e3d59f68235b78b418968`. The
+`eac35b4d6acb610cf24c1867fe0b675e191f299253cab65fcb913cb5af973da8`. The
 signer certificate SHA-256 is
 `74:C6:CD:F3:6A:57:6B:A5:3C:F7:60:86:75:CD:C3:A5:3C:CF:DD:E5:6E:22:8B:EB:BB:99:78:08:F5:55:3F:E4`.
 The Play merged manifest still has only `INTERNET` and the AndroidX
