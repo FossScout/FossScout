@@ -28,11 +28,11 @@ runs the CI-emulatable subset on a GitHub-hosted Ubuntu 24.04 runner with an API
 36 AOSP x86_64 emulator. It builds both debug APKs and does not use release
 signing. Start it from the Actions tab with `Run workflow`.
 
-Passing baseline: 2026-11-16, run
-[43867944411](https://github.com/FossScout/FossScout/actions/runs/43867944411),
-commit `9f82284`, artifact `device-smoke`. This run uses version `0.1.1` and
-includes both flavors plus the F19 fixture, tracker, local APK manifest, and
-audit checks. The Stores screenshot artifact was not requested for this run.
+Passing baseline: 2026-11-25, run
+[45629123988](https://github.com/FossScout/FossScout/actions/runs/45629123988),
+commit `2915f4b`, artifact `device-smoke`. This run passed in 18m47s, uses
+version `0.1.1`, and includes both flavors plus the F19 fixture, tracker, local
+APK manifest, audit checks, and the refreshed `store-screenshot` artifact.
 
 Covered:
 

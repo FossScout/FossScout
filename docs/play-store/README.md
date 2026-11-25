@@ -63,7 +63,7 @@ images are:
 | `01-discover.png` | `01-discover-light.png` |
 | `02-search.png` | `02-discover-search.png` |
 | `03-foss-match.png` | `07-match-exact-result.png` |
-| `04-stores.png` | Device Smoke Test run [43853540921](https://github.com/FossScout/FossScout/actions/runs/43853540921), commit `d11a2a7`, `store-screenshot` artifact |
+| `04-stores.png` | Device Smoke Test run [45629123988](https://github.com/FossScout/FossScout/actions/runs/45629123988), commit `2915f4b`, `store-screenshot` artifact; SHA-256 `aca77068d460c366e5528cf37fc56fca777a1d73529faa14a514208959ecbd34`, committed in `e6d5bee` |
 | `05-saved-projects.png` | `13-saved-favourites.png` |
 | `06-collections.png` | `15-collections.png` |
 | `07-contribution-preview.png` | `21-contribution-preview.png` |
@@ -73,6 +73,11 @@ Seven screenshots contain sample data from the headless capture harness. The
 Stores screenshot uses the fresh-install emulator state from the main-branch
 run. Recapture the rest after a UI change, and replace them with real-device
 screenshots when a device is available.
+
+> **Release warning (2026-11-25):** The seven headless-derived screenshots
+> predate F21 trust badges, the saved-star icons, F20 corrections, and F04
+> store health. They must be recaptured before the Play listing is uploaded.
+> Only the Stores screenshot is refreshed by the current workflow.
 
 The Stores graphic is generated from a `main`-branch Device Smoke Test run.
 Dispatch the workflow from `main` with `publish_store_screenshot` enabled,
