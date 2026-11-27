@@ -2,7 +2,7 @@
 
 Last updated: 2026-11-25
 Branch: main
-Feature baseline: main @ `2915f4b`; F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created, the tag build passed locally, and the public `fdroiddata` fork pipeline passed on 2026-11-17; current beta release `v0.1.0-beta.4`. The standardized Stores screenshot workflow and the latest dependency updates are on `main`.
+Feature baseline: main @ `dc44f0c`; F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created, the tag build passed locally, and the public `fdroiddata` fork pipeline passed on 2026-11-17; current beta release `v0.1.0-beta.4`. The standardized Stores screenshot workflow and the latest dependency updates are on `main`.
 
 ## Completed
 | Task | Status | Details |
@@ -22,6 +22,7 @@ Feature baseline: main @ `2915f4b`; F-Droid source tag `v0.1.1-vanilla` (version
 | Toolchain upgrade | Done | Gradle 9.8.2, AGP 9.5.0, Kotlin 2.4.21, Compose BOM 2026.09.00, coroutines 1.11.0, and serialization 1.12.0; `kotlinOptions` migrated to `compilerOptions`. |
 | Gradle wrapper 9.8.2 | Done | Wrapper JAR matches the official Gradle SHA-256; `test`, `lint`, and main CI passed. |
 | Dependency updates | Done | PRs [#68](https://github.com/FossScout/FossScout/pull/68)–[#71](https://github.com/FossScout/FossScout/pull/71) updated AGP to 9.5.1, the Gradle wrapper to 9.9.0, setup-java to 6.2.0, and action-gh-release to 3.0.4; `main` CI passed. |
+| Gradle wrapper 9.9.2 | Done | PR [#101](https://github.com/FossScout/FossScout/pull/101) updated the wrapper from 9.9.0 to 9.9.2; `main` CI run [45662693172](https://github.com/FossScout/FossScout/actions/runs/45662693172) passed on `dc44f0c`. |
 | CI device smoke test | Done | `.github/workflows/device-smoke.yml` is a manual API 36 AOSP x86_64 emulator run. Run [45629123988](https://github.com/FossScout/FossScout/actions/runs/45629123988) passed in 18m47s on `2915f4b` for version `0.1.1` and includes both debug APKs, the F19 fixture store, tracker match/no-match, local APK manifest import and package-mismatch rejection, audit JSON export, and the refreshed Stores screenshot. |
 | F-Droid release readiness | Ready for MR | The `v0.1.1-vanilla` tag (`com.fossscout.app.vanilla`, version `0.1.1`/code `2`) is created from `42e8cc7` and includes the F19 tracker/audit/manifest slices and dependency updates. The `fdroiddata` metadata and `changelogs/2.txt` match the tag; a clean tag build passed locally on 2026-11-16. F-Droid's `sdkmanager` includes `platforms;android-37.0`, so buildserver API 37 support is confirmed. See [`docs/FDROID.md`](../FDROID.md) and [`docs/fdroid/`](../fdroid/). |
 | F-Droid fork pipeline | Done | The public `fdroiddata` fork branch `com.fossscout.app.vanilla` is at `0939a9b`; pipeline [#3077952136](https://gitlab.com/kanzel88/fdroiddata/-/pipelines/3077952136) passed all 9 jobs on 2026-11-17, including `fdroid build` and `check apk`. The build resolved `android-37` normally, so the documented symlink workaround was not needed. |

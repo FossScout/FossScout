@@ -91,7 +91,7 @@ More captures: [screenshots/](screenshots/).
 ## Tech stack
 
 - Kotlin 2.4
-- Gradle 9.9.0 and Android Gradle Plugin 9.5.1
+- Gradle 9.9.2 and Android Gradle Plugin 9.5.1
 - Jetpack Compose + Material 3
 - AndroidX Lifecycle and ViewModel with StateFlow
 - DataStore Preferences with kotlinx.serialization for local persistence
