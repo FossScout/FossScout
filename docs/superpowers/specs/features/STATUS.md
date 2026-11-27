@@ -1,9 +1,9 @@
 # FossScout Implementation Status
 
 Last updated: **2026-11-25**
-Feature baseline: `main` at `2915f4b`; F18 unified store search, the F19 permission comparison, tracker signatures, local alternative-APK manifest analysis, and audit export, F20 matching correction and store-scoped overrides, F21 trust badges and badge filters, F22 support link, the vanilla flavor rename, F19 emulator coverage, the dependency updates, the standardized Stores screenshot workflow, the Play/F-Droid submission package, F04-R8 store health, and F04-R9 shared-descriptor import preview are merged. Current GitHub beta `v0.1.0-beta.4`; the F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created.
+Feature baseline: `main` at `dc44f0c`; F18 unified store search, the F19 permission comparison, tracker signatures, local alternative-APK manifest analysis, and audit export, F20 matching correction and store-scoped overrides, F21 trust badges and badge filters, F22 support link, the vanilla flavor rename, F19 emulator coverage, the dependency updates, the standardized Stores screenshot workflow, the Play/F-Droid submission package, F04-R8 store health, and F04-R9 shared-descriptor import preview are merged. Current GitHub beta `v0.1.0-beta.4`; the F-Droid source tag `v0.1.1-vanilla` (version `0.1.1`/code `2`) is created.
 Pending: real-device/UI verification tracked in [`docs/DEVICE_SMOKE_TEST.md`](../../../DEVICE_SMOKE_TEST.md); the latest CI emulator baseline passed on `2915f4b` (run [45629123988](https://github.com/FossScout/FossScout/actions/runs/45629123988)) for version `0.1.1`, including the refreshed Stores screenshot. The seven other Play screenshots still need recapture. The `fdroiddata` fork branch and pipeline are green. Play upload secrets and the signed AAB are ready; the Play Console app entry, internal track, and F-Droid merge request remain pending. The F-Droid buildserver API 37 check is complete.
-Delivery: Toolchain upgraded to Gradle 9.9.0, AGP 9.5.1, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play upload secrets and the signed AAB are ready; Play Console setup and upload remain pending.
+Delivery: Toolchain upgraded to Gradle 9.9.2, AGP 9.5.1, Kotlin 2.4.21, Compose BOM 2026.09.00, and `compileSdk = 37`; Play upload secrets and the signed AAB are ready; Play Console setup and upload remain pending.
 Feature sessions: [`docs/superpowers/sessions/README.md`](../../sessions/README.md)
 Requirements: [`README.md`](README.md), [`F01`](F01-app-inventory.md) through [`F22`](F22-support-and-donations.md)
 
@@ -38,7 +38,7 @@ file after every feature session with the new commit, test result, and status.
 | Security details and trust audit | **Done** (S10; APK checks deferred with F09) |
 | Sharing, backup, contribution | **Done** (sharing/import, backup, and reviewed contribution reports; device checks pending) |
 | Support and donations | **Done** (About support entry point; verified Liberapay team URL configured) |
-| Feature completion | **15 of 21 fully done; 2 partial; 3 deferred; F21 implemented with device/UI checks pending** (F22 support link is Done outside the v1 map) |
+| Feature completion | **16 of 21 done; F01 partial; F21 implemented with device/UI checks pending; 3 deferred (F09, F10, F15)** (F22 support link is Done outside the v1 map) |
 
 **Recommended next session:** complete the remaining real-device checks in the [device smoke test](../../../DEVICE_SMOKE_TEST.md), especially the F19 tracker section, local APK picker, F19 audit export, F14 verification-audit export, and the F21 trust-badge/profile-gating checks. The latest CI emulator baseline passes for version `0.1.1`, including the F19 fixtures; the Stores screenshot from run [45629123988](https://github.com/FossScout/FossScout/actions/runs/45629123988) is current, while the seven other Play screenshots still need recapture. The Play upload secrets are configured and the signed AAB is ready; create the Play Console app entry and internal testing track, then open the F-Droid metadata merge request for `v0.1.1-vanilla`. The F-Droid buildserver API 37 check is complete, and the first fork pipeline resolved `android-37` without the documented workaround. F18 unified store search, F20 matching correction, F21 trust badges, and F22 support link are implemented; F21 and the other new UI paths still need real-device smoke checks. [S12](../../sessions/S12-post-v1-backlog.md) is the post-v1 backlog.
 
@@ -46,7 +46,7 @@ file after every feature session with the new commit, test result, and status.
 
 | Check | Result |
 | --- | --- |
-| `main` CI | `2915f4b`, run [45629054189](https://github.com/FossScout/FossScout/actions/runs/45629054189) passed in 4m4s after a transient plugin-resolution retry: screenshot composition tests, unit tests, lint, and both debug APK builds. |
+| `main` CI | `dc44f0c`, run [45662693172](https://github.com/FossScout/FossScout/actions/runs/45662693172) passed in 5m51s after the Gradle wrapper 9.9.2 merge: screenshot composition tests, unit tests, lint, and both debug APK builds. |
 | Device Smoke Test | `2915f4b`, run [45629123988](https://github.com/FossScout/FossScout/actions/runs/45629123988) passed in 18m47s for version `0.1.1`, including both flavors, the F19 fixture store, tracker match/no-match, local APK manifest import and package-mismatch rejection, audit JSON export, and the refreshed Stores screenshot. |
 | Local rerun | `./gradlew test --rerun-tasks` passed: 654 tests across 92 result files, 0 failures/errors/skipped; 315 tasks in 9m04s. |
 | Play Internal AAB | `f9de6cf`, run [45251114616](https://github.com/FossScout/FossScout/actions/runs/45251114616) passed in 3m55s; signed `0.1.1`/code `2` AAB, SHA-256 `eac35b4d6acb610cf24c1867fe0b675e191f299253cab65fcb913cb5af973da8`; signer certificate SHA-256 `74:C6:CD:F3:6A:57:6B:A5:3C:F7:60:86:75:CD:C3:A5:3C:CF:DD:E5:6E:22:8B:EB:BB:99:78:08:F5:55:3F:E4`. |
